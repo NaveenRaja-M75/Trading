@@ -113,3 +113,15 @@ never touches coins the user already owns, skips orders under Binance's 5 USDT m
 Caveat: BTC + ETH was chosen after also testing 1, 10 and 30 coins; all four were positive
 with roughly half the drawdown of holding, so the conclusion does not hinge on that choice.
 Live setup and steps: `docs/GO_LIVE.md`. The paper portfolio now runs this exact setup.
+
+## 9. Final live setup: daily 200-day trend with 2% buffer, BTC + ETH, 20 USDT
+Why it replaced the weekly version: weekly results depended on the rebalance weekday alone
+(+27% to +103% since 2022). Checking daily removes that; the 200-day rule was the most
+stable across buffer sizes (since 2022: +104% to +166%) with the smallest drops (-29% to -33%).
+
+Since 2022 (partly in-sample: the setup was chosen after seeing these years):
+- 14 trades, **win rate 50%**, average win +38.6%, average loss -7.4% (wins 5.2x losses),
+  biggest loss -10%, longest losing streak 4, average hold 111 days.
+- Total +136%, worst drop -31%; with double fees +132%; **traded 1 day late +78%** (run at 05:35 IST).
+- Next 12 months for 20 USDT (10,000 resampled futures, 5 USDT loss limit): 70% chance of
+  ending up, median 23.82, bad case (5%) 14.53, good case (5%) 44.53, loss limit hit 13%.

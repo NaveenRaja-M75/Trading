@@ -1,19 +1,18 @@
 # Going live with 10-20 USDT
 
-**Read first:** no strategy wins every trade or every year. This one lost money in 2022
-(-22%) in the honest year-by-year test, while holding Bitcoin lost 64%. Only use money you can
-afford to lose completely.
+**Read first:** no strategy wins every trade or every year. In testing this one won half its
+trades and lost money in some years. Only use money you can afford to lose completely.
 
-## The setup (chosen by the tests, not by hand)
-- Coins: **BTC and ETH** only (a 10-20 USDT budget cannot be split further: Binance's
-  minimum order is 5 USDT and the bot refuses positions under 8 USDT).
-- Strategy: **trend_filter_ma100**: once a week, hold each coin only while its price is above
-  its 100-day average; otherwise hold USDT.
-- 20 USDT -> 10 per coin. With 10-15 USDT use BTC only (`--symbols BTCUSDT`).
+## The setup (chosen by the tests)
+- Coins: **BTC and ETH** (20 USDT -> 10 each). With 10-15 USDT use BTC only (`--symbols BTCUSDT`):
+  Binance's minimum order is 5 USDT and the bot refuses positions under 8 USDT.
+- Strategy: **trend_band_ma200_2pct**, checked **daily**: buy a coin when its price is 2% above
+  its 200-day average, sell when it is 2% below; otherwise do nothing. Expect ~3-4 trades a year.
+- Loss limit: `WEEKLY_MAX_LOSS_USDT=5` (sell everything and stop if 20 USDT becomes 15).
 
 ## One-time setup on your computer (Windows or Mac)
 1. Install Python 3.12 from python.org (Windows: tick "Add python.exe to PATH").
-2. Download the bot: `git clone https://github.com/NaveenRaja-M75/Trading` then `cd Trading`
+2. `git clone https://github.com/NaveenRaja-M75/Trading` then `cd Trading`
    (or GitHub -> Code -> Download ZIP, unzip, open a terminal in the folder).
 3. `pip install numpy pandas`
 4. Copy `.env.example` to `.env` and set:
@@ -24,27 +23,26 @@ afford to lose completely.
    BINANCE_TESTNET=true
    ```
 5. Binance API key (binance.com -> Profile -> API Management -> Create API):
-   - enable **Spot trading** only; **never enable withdrawals**;
-   - restrict it to your home IP if Binance offers it;
-   - put the key and secret in `.env` (`BINANCE_API_KEY=`, `BINANCE_API_SECRET=`). Never share `.env`.
+   enable **Spot trading only**, **never enable withdrawals**, restrict to your IP if offered.
+   Put key and secret in `.env` (`BINANCE_API_KEY=`, `BINANCE_API_SECRET=`). Never share `.env`.
 
-## Every step before real money
-1. Dry run (no orders, no keys needed):
-   `python -m jevbot weekly-live --strategy trend_filter_ma100 --symbols BTCUSDT,ETHUSDT --force`
-   It prints exactly what it would buy or sell.
-2. Testnet (fake money on Binance's test exchange; needs testnet keys from testnet.binance.vision):
-   set `LIVE_TRADING=true`, keep `BINANCE_TESTNET=true`, then add
-   `--execute --i-understand-i-can-lose-money` to the command above.
-3. Real money: deposit 20 USDT, set `BINANCE_TESTNET=false`, run the same `--execute` command.
+## The command
+```
+python -m jevbot weekly-live --strategy trend_band_ma200_2pct --every-days 1 --symbols BTCUSDT,ETHUSDT
+```
+1. **Dry run**: the command as written. Prints what it would buy or sell; places nothing.
+2. **Testnet**: set `LIVE_TRADING=true` (keep `BINANCE_TESTNET=true`, testnet keys from
+   testnet.binance.vision) and add `--execute --i-understand-i-can-lose-money`.
+3. **Real money**: deposit 20 USDT, set `BINANCE_TESTNET=false`, same `--execute` command.
 
-## Weekly routine
-Run the `--execute` command **once a day** (it only trades every 7 days; the other days it just
-checks the loss limit). Windows Task Scheduler or Mac `cron` can do this automatically.
+## Run it every day at about 05:35 India time
+Daily candles close at 05:30 IST (00:00 UTC). Trading a day late cut the tested result from
++136% to +78% since 2022, so timing matters. Windows: Task Scheduler -> Create Basic Task ->
+Daily 05:35 -> program `python`, arguments `-m jevbot weekly-live ... --execute
+--i-understand-i-can-lose-money`, "Start in" = the Trading folder. The computer must be on.
 
 ## What protects you
-- It never spends more than WEEKLY_BUDGET_USDT, whatever is in your account.
-- It never sells coins you owned before.
-- If the bot's 20 USDT falls to 15 (WEEKLY_MAX_LOSS_USDT=5), it sells and stops until you delete
-  `state/WEEKLY_KILL_SWITCH`. Note: this can lock in a loss during a normal dip; the worst
-  drop in testing was -36%, so a 5 USDT (25%) limit may trigger in a bad year.
-- It does not race other bots: it trades once a week on slow trends, so speed does not matter.
+- Never spends more than WEEKLY_BUDGET_USDT, whatever is in your account.
+- Never sells coins you owned before.
+- Loss limit sells and stops until you delete `state/WEEKLY_KILL_SWITCH`.
+- Trades on slow 200-day trends, so it is not racing faster bots.
