@@ -117,3 +117,12 @@ def test_chart_description_reads_trend():
     up = synthetic(400, seed=1, drift=0.002)
     text = describe(up)
     assert "above the 200-bar average" in text and "Price" in text
+
+
+def test_robustness_grid_shape_and_noise_has_no_edge():
+    from jevbot.__main__ import chart_vote_variants
+    dfs = {f"N{i}": synthetic(3000, seed=20 + i) for i in range(3)}
+    r = backtest.robustness(dfs, chart_vote_variants(), Policy(min_hold=1), 0.0012, "1m", n_windows=3)
+    assert len(r) == 3 * 5 * 3
+    summ = backtest.robustness_summary(r)
+    assert (summ.mean_ret < 0.5).all()

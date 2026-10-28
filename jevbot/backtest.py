@@ -170,3 +170,48 @@ def plot(df: pd.DataFrame, signal: Signal, policy: Policy, cost_per_side: float,
     fig.tight_layout()
     fig.savefig(path, dpi=90)
     plt.close(fig)
+
+
+def robustness(dfs: dict[str, pd.DataFrame], variants: dict[str, Signal], policy: Policy,
+               cost_per_side: float, interval: str, n_windows: int = 6) -> pd.DataFrame:
+    """Each variant on each coin, scored separately in each of `n_windows` consecutive periods.
+
+    Positions are computed over the full history (so indicators are warmed up), then P&L is
+    sliced per window. A real edge should hold across coins, periods and nearby settings.
+    """
+    rows = []
+    for sym, df in dfs.items():
+        hold_ret = df["close"].pct_change().fillna(0.0)
+        bounds = np.linspace(0, len(df), n_windows + 1).astype(int)
+        for vname, sig in variants.items():
+            _, d = run(df, sig, policy, cost_per_side, interval, warmup=0)
+            for w in range(n_windows):
+                lo, hi = bounds[w], bounds[w + 1]
+                net, hr = d.net_ret.iloc[lo:hi], hold_ret.iloc[lo:hi]
+                eq, heq = (1 + net).cumprod(), (1 + hr).cumprod()
+                pos = d.position.iloc[lo:hi]
+                rows.append({
+                    "variant": vname, "symbol": sym, "window": w,
+                    "start": f"{df.index[lo]:%Y-%m}",
+                    "ret_pct": round((eq.iloc[-1] - 1) * 100, 2),
+                    "hold_pct": round((heq.iloc[-1] - 1) * 100, 2),
+                    "dd_pct": round(float((eq / eq.cummax() - 1).min()) * 100, 2),
+                    "hold_dd_pct": round(float((heq / heq.cummax() - 1).min()) * 100, 2),
+                    "trades": int(((pos != 0) & (pos.shift().fillna(0) == 0)).sum()),
+                })
+    return pd.DataFrame(rows)
+
+
+def robustness_summary(r: pd.DataFrame) -> pd.DataFrame:
+    g = r.groupby("variant")
+    return pd.DataFrame({
+        "cells": g.size(),
+        "profitable_pct": g.ret_pct.apply(lambda x: round((x > 0).mean() * 100, 1)),
+        "median_ret": g.ret_pct.median(),
+        "mean_ret": g.ret_pct.mean().round(2),
+        "worst_ret": g.ret_pct.min(),
+        "median_dd": g.dd_pct.median(),
+        "hold_median_dd": g.hold_dd_pct.median(),
+        "beat_hold_in_down_periods_pct": r[r.hold_pct < 0].groupby("variant").apply(
+            lambda x: round((x.ret_pct > x.hold_pct).mean() * 100, 1), include_groups=False),
+    })

@@ -62,6 +62,43 @@ def cmd_backtest(s: Settings, a) -> None:
                 print("chart", path)
 
 
+def chart_vote_variants() -> dict:
+    """chart_vote with every lookback scaled up/down: a real edge survives nearby settings."""
+    from .signals import Donchian, Ensemble, Structure, Trend
+    out = {}
+    for f in (0.6, 0.8, 1.0, 1.25, 1.5):
+        sig = Ensemble([Trend(round(50 * f), round(200 * f)), Donchian(round(55 * f), round(20 * f)),
+                        Structure(max(2, round(5 * f)))])
+        sig.name = f"chart_vote_x{f}"
+        out[sig.name] = sig
+    return out
+
+
+def cmd_robust(s: Settings, a) -> None:
+    from .data import load_or_fetch
+    dfs = {}
+    for sym in [x.strip().upper() for x in a.symbols.split(",") if x.strip()]:
+        try:
+            dfs[sym] = load_or_fetch(sym, s.interval, a.days)
+            print(f"{sym}: {len(dfs[sym])} bars from {dfs[sym].index[0]:%Y-%m-%d}")
+        except Exception as e:
+            print(f"{sym}: skipped ({e})")
+    variants = chart_vote_variants()
+    if a.with_baselines:
+        base = default_signals()
+        variants |= {k: base[k] for k in ("trend", "breakout", "structure", "sr_volume", "coinflip")}
+    r = backtest.robustness(dfs, variants, _policy(a), s.cost_per_side, s.interval, a.windows)
+    Path("reports").mkdir(exist_ok=True)
+    r.to_csv(f"reports/robust_{s.interval}.csv", index=False)
+    with pd.option_context("display.width", 220, "display.max_columns", 20, "display.max_rows", 1000):
+        print("\nPer coin x period (chart_vote_x1.0):")
+        print(r[r.variant == "chart_vote_x1.0"].pivot(index="symbol", columns="start", values="ret_pct").to_string())
+        print("\nHolding, same cells:")
+        print(r[r.variant == "chart_vote_x1.0"].pivot(index="symbol", columns="start", values="hold_pct").to_string())
+        print("\nSummary over all coin x period cells:")
+        print(backtest.robustness_summary(r).to_string())
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -148,6 +185,12 @@ def main(argv=None) -> None:
         sp.add_argument("--signal", default="ensemble", choices=list(default_signals()))
         sp.add_argument("--llm", action="store_true", help="blend in the LLM judge from .env")
         common(sp)
+    rb = sub.add_parser("robust", help="stress-test chart_vote across coins, periods, settings")
+    rb.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
+    rb.add_argument("--days", type=float, default=1095)
+    rb.add_argument("--windows", type=int, default=6)
+    rb.add_argument("--with-baselines", action="store_true")
+    common(rb)
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -157,7 +200,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":

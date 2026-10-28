@@ -28,6 +28,8 @@ jobs:
         run: INTERVAL=4h python -m jevbot backtest --days 1095 --symbols BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT --plot 2 | tee reports/bt_4h.txt
       - name: Backtest daily candles, 7 years, 4 coins
         run: INTERVAL=1d python -m jevbot backtest --days 2555 --symbols BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT --plot 3 | tee reports/bt_1d.txt
+      - name: Stress test chart_vote, 10 coins x 6 periods x 5 settings, 1h, 3 years
+        run: INTERVAL=1h python -m jevbot robust --with-baselines | tee reports/robust_1h.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
