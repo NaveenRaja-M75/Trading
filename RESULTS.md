@@ -79,3 +79,26 @@ is losing far less in crashes and catching big up-trends, not winning most weeks
 
 Now paper-traded daily (rebalanced weekly) by `.github/workflows/weekly.yml`; see
 `WEEKLY.md` on the `paper-state` branch.
+
+## 7. Weekly strategy, walk-forward 2022-2026 (each year picked only from earlier years)
+Stitched out-of-sample track record, after fees:
+
+| | 10 survivor coins | 30 coins incl. crashed/delisted | BTC hold | hold all 30 |
+|---|---|---|---|---|
+| total 2022 -> 2026-10 | +76% | +74% | +75% | -67% |
+| per year | +12.5% | +12.2% | +12.3% | -20.5% |
+| worst drop | -41% | -40% | -67% | -79% |
+| losing years | 2 of 5 | 2 of 5 | 3 of 5 | |
+
+- Same long-run return as holding Bitcoin with ~40% smaller worst drop; far better than
+  holding a basket of coins, most of which faded.
+- Adding 20 failed/faded coins changed almost nothing: the result is not survivor bias.
+- The yearly pick moves between trend-filter and momentum variants; the family (stay in
+  coins that are trending up, cash otherwise) is what works, not one exact setting.
+- It still loses in some years (2022 -27%, 2025 -15% to -20%), just much less than holding.
+
+## Real money
+`python -m jevbot weekly-live` runs this on Binance: dry run by default, budget cap
+(WEEKLY_BUDGET_USDT), total-loss kill switch (WEEKLY_MAX_LOSS_USDT) that sells and latches,
+never touches coins the user already owns, skips orders under Binance's 5 USDT minimum
+(so a position that crashes below 5 USDT cannot be sold by any bot).
