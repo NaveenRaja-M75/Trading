@@ -102,3 +102,14 @@ Stitched out-of-sample track record, after fees:
 (WEEKLY_BUDGET_USDT), total-loss kill switch (WEEKLY_MAX_LOSS_USDT) that sells and latches,
 never touches coins the user already owns, skips orders under Binance's 5 USDT minimum
 (so a position that crashes below 5 USDT cannot be sold by any bot).
+
+## 8. Small budget (10-20 USDT): BTC + ETH, walk-forward 2022-2026
+| | trend filter, BTC + ETH | BTC only (rule's picks) | hold BTC |
+|---|---|---|---|
+| total | **+199%** (+25%/yr) | +65% | +75% |
+| worst drop | **-36%** | -36% | -67% |
+| losing years | 1 of 5 (2022 -22%) | 2 of 5 | 3 of 5 |
+
+Caveat: BTC + ETH was chosen after also testing 1, 10 and 30 coins; all four were positive
+with roughly half the drawdown of holding, so the conclusion does not hinge on that choice.
+Live setup and steps: `docs/GO_LIVE.md`. The paper portfolio now runs this exact setup.
