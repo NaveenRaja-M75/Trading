@@ -77,6 +77,36 @@ def cmd_paper(s: Settings, a) -> None:
     loop(s, default_signals()[a.signal], _policy(a), broker, _llm(s, a))
 
 
+def cmd_paper_once(s: Settings, a) -> None:
+    """One decision per coin, then exit. Meant to be run on a schedule (see .github/workflows/paper.yml)."""
+    import time
+    from .broker import PaperBroker
+    from .data import INTERVAL_MS
+    from .policy import RiskGate
+    from .runner import log, status_report, step
+    sig, pol = default_signals()[a.signal], _policy(a)
+    books = {}
+    for sym in [x.strip().upper() for x in a.symbols.split(",") if x.strip()]:
+        broker = PaperBroker(s.paper_start_usdt, s.fee_bps, s.slippage_bps, Path(f"state/paper_{sym}.json"))
+        gate = RiskGate(s.max_position_usdt, s.daily_loss_limit_usdt,
+                        max_data_age_s=INTERVAL_MS[s.interval] / 1000)  # scheduled runs can start late
+        try:
+            log(f"{sym} {sig.name}: " + step(s, sig, pol, broker, gate, symbol=sym))
+        except Exception as e:
+            log(f"{sym} error: {e!r}")
+        price = broker.book.fills[-1]["price"] if broker.book.fills else 0.0
+        try:
+            from .data import fetch_recent
+            price = float(fetch_recent(sym, s.interval, 2)["close"].iloc[-1])
+        except Exception:
+            pass
+        books[sym] = (broker.book, price)
+    report = status_report(books, s.paper_start_usdt)
+    stamp = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())
+    Path("state/STATUS.md").write_text(f"# Paper trading: {sig.name} on {s.interval}\n\nUpdated {stamp}\n\n{report}\n")
+    print(report)
+
+
 def cmd_live(s: Settings, a) -> None:
     from .broker import BinanceBroker
     from .runner import loop
@@ -118,11 +148,16 @@ def main(argv=None) -> None:
         sp.add_argument("--signal", default="ensemble", choices=list(default_signals()))
         sp.add_argument("--llm", action="store_true", help="blend in the LLM judge from .env")
         common(sp)
+    po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
+    po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
+    po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
+    common(po)
     sub.choices["live"].add_argument("--i-understand-i-can-lose-money", action="store_true")
 
     a = p.parse_args(argv)
     s = Settings.from_env()
-    {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper, "live": cmd_live}[a.cmd](s, a)
+    {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
+     "paper-once": cmd_paper_once, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":

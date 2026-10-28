@@ -35,8 +35,8 @@ def decide(df: pd.DataFrame, signal: Signal, policy: Policy, llm: LLMJudge | Non
 
 
 def step(settings: Settings, signal: Signal, policy: Policy, broker, gate: RiskGate,
-         llm: LLMJudge | None = None) -> str:
-    df = fetch_recent(settings.symbol, settings.interval, limit=1000)
+         llm: LLMJudge | None = None, symbol: str | None = None) -> str:
+    df = fetch_recent(symbol or settings.symbol, settings.interval, limit=1000)
     price = float(df["close"].iloc[-1])
     bar_close = df.index[-1] + pd.Timedelta(milliseconds=INTERVAL_MS[settings.interval])
     age = (pd.Timestamp.now(tz="UTC") - bar_close).total_seconds()
@@ -75,3 +75,17 @@ def loop(settings: Settings, signal: Signal, policy: Policy, broker, llm: LLMJud
             log("risk gate tripped; stopping. Review state/trades.log before restarting.")
             return
         time.sleep(period - (time.time() % period) + 2)  # wake just after the next bar closes
+
+
+def status_report(books: dict[str, tuple], start_usdt: float) -> str:
+    """Markdown summary of paper accounts: {symbol: (book, last_price)}."""
+    lines = ["| coin | holding | open P&L | realized P&L | total P&L | round trips |", "|---|---|---|---|---|---|"]
+    total = 0.0
+    for sym, (book, price) in books.items():
+        open_pnl = book.qty * price - book.cost_usdt
+        trips = sum(1 for f in book.fills if f["side"] == "SELL")
+        total += open_pnl + book.realized_usdt
+        lines.append(f"| {sym} | {'yes' if book.qty > 0 else 'no'} | {open_pnl:+.2f} | {book.realized_usdt:+.2f} "
+                     f"| {open_pnl + book.realized_usdt:+.2f} | {trips} |")
+    lines.append(f"\n**Total paper P&L: {total:+.2f} USDT** (each coin starts with {start_usdt:.0f} paper USDT)")
+    return "\n".join(lines)

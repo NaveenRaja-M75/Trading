@@ -146,3 +146,15 @@ def test_live_command_refuses_without_both_switches(monkeypatch):
     monkeypatch.setenv("LIVE_TRADING", "true")
     with pytest.raises(SystemExit, match="i-understand"):
         main(["live"])
+
+
+def test_paper_once_runs_each_coin_and_writes_status(tmp_path, monkeypatch):
+    from jevbot import __main__ as cli
+    monkeypatch.chdir(tmp_path)
+    bars = fresh_bars()
+    monkeypatch.setattr(runner, "fetch_recent", lambda *a, **k: bars)
+    monkeypatch.setattr("jevbot.data.fetch_recent", lambda *a, **k: bars)
+    cli.main(["paper-once", "--symbols", "AAAUSDT,BBBUSDT", "--signal", "trend"])
+    text = (tmp_path / "state" / "STATUS.md").read_text()
+    assert "AAAUSDT" in text and "BBBUSDT" in text and "Total paper P&L" in text
+    assert (tmp_path / "state" / "paper_AAAUSDT.json").exists()
