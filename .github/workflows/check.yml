@@ -44,7 +44,7 @@ jobs:
         run: python -m jevbot weekly --walk-forward --symbols BTCUSDT | tee reports/weekly_wf_btc.txt
       - name: Small budget walk-forward, BTC + ETH
         run: python -m jevbot weekly --walk-forward --symbols BTCUSDT,ETHUSDT | tee reports/weekly_wf_btceth.txt
-      - name: A-Z analysis of the live setup (trend_filter_ma100, BTC + ETH, 20 USDT)
+      - name: A-Z analysis of the live setup (trend_band_ma200_2pct, BTC + ETH, 20 USDT, daily)
         run: python -m jevbot analyze | tee reports/analyze_live_setup.txt
       - name: Weekday luck vs daily check with buffer band; loss-limit sizes
         run: PYTHONPATH=. python research/band_test.py | tee reports/band_test.txt

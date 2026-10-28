@@ -52,6 +52,29 @@ def rotation(px: pd.DataFrame, lookback: int = 28, top: int = 3, ma: int = 100) 
     return (pick / top).fillna(0.0)
 
 
+def trend_band(px: pd.DataFrame, ma: int = 200, band: float = 0.02) -> pd.DataFrame:
+    """Per coin: buy when price is `band` above its `ma`-day average, sell when `band` below.
+
+    The buffer stops flip-flopping around the average; checked daily, so no weekday luck.
+    """
+    from .chart import latch
+    n = px.notna().sum(axis=1)
+    w = {}
+    for s in px.columns:
+        avg = px[s].rolling(ma).mean()
+        w[s] = latch(px[s] > avg * (1 + band), px[s] < avg * (1 - band)).clip(lower=0)
+    return pd.DataFrame(w, index=px.index).div(n, axis=0).fillna(0.0)
+
+
+def live_strategies() -> dict:
+    """Everything weekly-live / weekly-paper / analyze can run, by name."""
+    out = {name: f for name, (_, f) in candidates().items()}
+    for ma in (100, 200):
+        for band in (0.02, 0.03):
+            out[f"trend_band_ma{ma}_{band * 100:.0f}pct"] = lambda px, ma=ma, band=band: trend_band(px, ma, band)
+    return out
+
+
 def vol_target(w: pd.DataFrame, px: pd.DataFrame, target: float = 0.4, lookback: int = 30) -> pd.DataFrame:
     """Scale exposure down when the held basket is volatile (annualised `target` vol, never > 1x)."""
     rets = px.pct_change(fill_method=None).fillna(0.0)

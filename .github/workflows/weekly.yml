@@ -1,5 +1,5 @@
 name: weekly-paper
-# Paper portfolio for the weekly strategy that passed the locked-year test (trend_filter_ma100 on BTC + ETH, 20 USDT: the exact live setup).
+# Paper portfolio for the weekly strategy that passed the locked-year test (trend_band_ma200_2pct on BTC + ETH, 20 USDT, checked daily: the exact live setup).
 # Checked daily, rebalanced every 7 days. Shares the paper-state branch with the hourly job,
 # so both use the same concurrency group and never overwrite each other.
 on:
@@ -31,11 +31,11 @@ jobs:
             mkdir -p state && git --work-tree=state checkout origin/paper-state -- . && git reset -q
           fi
       - name: Daily check / weekly rebalance
-        run: python -m jevbot weekly-paper --strategy trend_filter_ma100 --symbols BTCUSDT,ETHUSDT --start-usdt 20
+        run: python -m jevbot weekly-paper --strategy trend_band_ma200_2pct --every-days 1 --symbols BTCUSDT,ETHUSDT --start-usdt 20
       - name: Rehearse the real-money program (dry run, live prices, no orders)
         run: |
           WEEKLY_BUDGET_USDT=20 WEEKLY_MAX_LOSS_USDT=5 python -m jevbot weekly-live \
-            --strategy trend_filter_ma100 --symbols BTCUSDT,ETHUSDT --force | tee state/REHEARSAL.txt
+            --strategy trend_band_ma200_2pct --every-days 1 --symbols BTCUSDT,ETHUSDT --force | tee state/REHEARSAL.txt
       - name: Save paper accounts
         run: |
           cd state

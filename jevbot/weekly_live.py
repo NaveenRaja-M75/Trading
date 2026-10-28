@@ -18,7 +18,7 @@ import pandas as pd
 from . import portfolio
 from .data import fetch_recent
 
-STRATEGIES = {name: f for name, (_, f) in portfolio.candidates().items()}
+STRATEGIES = portfolio.live_strategies()
 
 
 MIN_SLOT_USDT = 8.0  # >= 5 USDT exchange minimum plus room for a ~35% drop before a sell is impossible

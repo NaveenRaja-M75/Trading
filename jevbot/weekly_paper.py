@@ -10,7 +10,7 @@ import pandas as pd
 from . import portfolio
 from .data import fetch_recent
 
-STRATEGIES = {name: f for name, (_, f) in portfolio.candidates().items()}
+STRATEGIES = portfolio.live_strategies()
 
 
 def load(path: Path, start_usdt: float) -> dict:

@@ -188,7 +188,8 @@ def cmd_weekly_paper(s: Settings, a) -> None:
     from . import weekly_paper
     path = Path(f"state/weekly_{a.strategy}.json")
     syms = [x.strip().upper() for x in a.symbols.split(",") if x.strip()]
-    print(weekly_paper.run_once(syms, a.strategy, path, a.start_usdt, s.fee_bps, s.slippage_bps))
+    print(weekly_paper.run_once(syms, a.strategy, path, a.start_usdt, s.fee_bps, s.slippage_bps,
+                                every_days=a.every_days))
     rep = weekly_paper.report(path, a.strategy)
     Path("state/WEEKLY.md").write_text(rep)
     print(rep)
@@ -214,7 +215,8 @@ def cmd_weekly_live(s: Settings, a) -> None:
     syms = [x.strip().upper() for x in a.symbols.split(",") if x.strip()]
     print(f"{'*** EXECUTING on ' + ('TESTNET' if s.binance_testnet else 'REAL MONEY') + ' ***' if execute else 'DRY RUN (no orders)'}"
           f"  budget {budget} USDT, loss limit {max_loss} USDT, {len(syms)} coins")
-    for line in WeeklyLive(syms, a.strategy, budget, max_loss, make).run(execute, force=a.force):
+    for line in WeeklyLive(syms, a.strategy, budget, max_loss, make).run(execute, every_days=a.every_days,
+                                                                         force=a.force):
         print(line)
 
 
@@ -224,13 +226,13 @@ def cmd_analyze(s: Settings, a) -> None:
     from .data import load_or_fetch
     syms = [x.strip().upper() for x in a.symbols.split(",") if x.strip()]
     px = portfolio.closes({sym: load_or_fetch(sym, "1d", a.days) for sym in syms})
-    f = portfolio.candidates()[a.strategy][1]
+    f = portfolio.live_strategies()[a.strategy]
     since = pd.Timestamp(a.since, tz=px.index.tz)
     w = f(px)
-    held = portfolio.held_weights(w)
-    net = portfolio.simulate(px, w, s.cost_per_side)
+    held = portfolio.held_weights(w, every=a.every)
+    net = portfolio.simulate(px, w, s.cost_per_side, every=a.every)
     with pd.option_context("display.width", 200, "display.max_columns", 20, "display.max_rows", 200):
-        print(f"{a.strategy} on {', '.join(syms)}, weekly, cost {s.cost_per_side * 1e4:.0f} bps/side, "
+        print(f"{a.strategy} on {', '.join(syms)}, checked every {a.every} day(s), cost {s.cost_per_side * 1e4:.0f} bps/side, "
               f"from {a.since} to {px.index[-1]:%Y-%m-%d}")
         print("NOTE: this strategy was chosen by a rule that saw all history, so these stats are partly in-sample.\n")
         t = analysis.trades(px, held, s.cost_per_side)
@@ -245,17 +247,21 @@ def cmd_analyze(s: Settings, a) -> None:
         print(t.assign(entry=t.entry.dt.strftime("%Y-%m-%d"), exit=t.exit.dt.strftime("%Y-%m-%d"),
                        return_pct=t.return_pct.round(1)).to_string(index=False))
         print("\nSTRESS TESTS (same period)")
-        print(analysis.stress(px, f, s.cost_per_side, since).to_string())
+        print(analysis.stress(px, f, s.cost_per_side, since, every=a.every).to_string())
         print(f"\nNEXT 12 MONTHS, {a.budget:.0f} USDT, loss limit {a.max_loss:.0f} USDT "
               f"(10,000 futures stitched from real 8-week stretches since {a.since})")
         for k, v in analysis.scenarios(net[net.index >= since], a.budget, a.max_loss).items():
             print(f"  {k:26s} {v}")
+        print("\n  other loss limits:")
+        for ml in (4, 5, 6, 7, 10):
+            r = analysis.scenarios(net[net.index >= since], a.budget, ml)
+            print(f"    {ml:>2} USDT: chance up {r['chance_up_after_1y_pct']:5.1f}%  median {r['median']:6.2f}  "
+                  f"bad 5% {r['bad_5pct']:6.2f}  limit hit {r['chance_kill_switch_pct']:5.1f}%")
         print("\nWHAT IT IS DOING NOW")
         for sym in syms:
             c = px[sym].dropna()
-            ma = c.rolling(100).mean().iloc[-1]
-            print(f"  {sym}: price {c.iloc[-1]:.2f}, 100-day average {ma:.2f} -> "
-                  f"{'HOLD' if c.iloc[-1] > ma else 'CASH'} ({(c.iloc[-1] / ma - 1) * 100:+.1f}% from the average)")
+            print(f"  {sym}: price {c.iloc[-1]:.2f}, 100-day avg {c.rolling(100).mean().iloc[-1]:.2f}, "
+                  f"200-day avg {c.rolling(200).mean().iloc[-1]:.2f}, target weight {w[sym].iloc[-1] * 100:.0f}%")
 
 
 def _llm(s: Settings, a):
@@ -370,17 +376,20 @@ def main(argv=None) -> None:
     wk.add_argument("--days", type=float, default=2555)
     wk.add_argument("--vault-days", type=int, default=365)
     wp = sub.add_parser("weekly-paper", help="daily mark-to-market, weekly rebalance of the paper portfolio")
-    wp.add_argument("--strategy", default="ts_momentum_14d")
+    wp.add_argument("--strategy", default="trend_band_ma200_2pct")
+    wp.add_argument("--every-days", type=int, default=1)
     wp.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
     wp.add_argument("--start-usdt", type=float, default=1000.0)
     wl = sub.add_parser("weekly-live", help="weekly strategy on Binance (dry run unless --execute)")
-    wl.add_argument("--strategy", default="ts_momentum_14d")
+    wl.add_argument("--strategy", default="trend_band_ma200_2pct")
+    wl.add_argument("--every-days", type=int, default=1, help="1 = act on any day the trend flips")
     wl.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
     wl.add_argument("--execute", action="store_true")
     wl.add_argument("--force", action="store_true", help="rebalance now even if 7 days have not passed")
     wl.add_argument("--i-understand-i-can-lose-money", action="store_true")
     an = sub.add_parser("analyze", help="A-Z report on one weekly setup")
-    an.add_argument("--strategy", default="trend_filter_ma100")
+    an.add_argument("--strategy", default="trend_band_ma200_2pct")
+    an.add_argument("--every", type=int, default=1, help="check every N days (1 = daily)")
     an.add_argument("--symbols", default="BTCUSDT,ETHUSDT")
     an.add_argument("--days", type=float, default=2555)
     an.add_argument("--since", default="2022-01-01")

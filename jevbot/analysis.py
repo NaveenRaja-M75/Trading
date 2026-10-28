@@ -60,7 +60,7 @@ def period_win_rates(net: pd.Series) -> dict:
     return out
 
 
-def stress(px: pd.DataFrame, f, cost_per_side: float, since) -> pd.DataFrame:
+def stress(px: pd.DataFrame, f, cost_per_side: float, since, every: int = 7) -> pd.DataFrame:
     """Does it survive worse conditions than the backtest assumes?"""
     w = f(px)
     rows = []
@@ -69,10 +69,10 @@ def stress(px: pd.DataFrame, f, cost_per_side: float, since) -> pd.DataFrame:
              "trade 2 days late": (w.shift(2).fillna(0.0), cost_per_side, 0),
              "double fees+slippage": (w, cost_per_side * 2, 0),
              "4x fees+slippage": (w, cost_per_side * 4, 0)}
-    for off in range(1, 7):
-        cases[f"rebalance weekday +{off}"] = (w, cost_per_side, off)
+    for off in range(1, every):
+        cases[f"rebalance day +{off}"] = (w, cost_per_side, off)
     for name, (ww, c, off) in cases.items():
-        net = portfolio.simulate(px, ww, c, offset=off)
+        net = portfolio.simulate(px, ww, c, every=every, offset=off)
         rows.append(portfolio.perf(name, net[net.index >= since], 0.0).__dict__)
     return pd.DataFrame(rows).set_index("name").drop(columns="exposure_pct")
 

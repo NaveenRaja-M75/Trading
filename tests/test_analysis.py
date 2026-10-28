@@ -34,5 +34,15 @@ def test_offset_rebalance_and_delay_run():
     rng = np.random.default_rng(1)
     px = px_from(100 * np.exp(np.cumsum(rng.normal(0, 0.02, 600))))
     f = portfolio.candidates()["trend_filter_ma100"][1]
-    table = analysis.stress(px, f, 0.0012, px.index[300])
+    table = analysis.stress(px, f, 0.0012, px.index[300], every=7)
     assert "trade 1 day late" in table.index and len(table) == 11
+
+
+def test_trend_band_is_causal_and_buffers():
+    rng = np.random.default_rng(2)
+    px = px_from(100 * np.exp(np.cumsum(rng.normal(0, 0.02, 700))))
+    full = portfolio.trend_band(px, 200, 0.02).iloc[:500]
+    cut = portfolio.trend_band(px.iloc[:500], 200, 0.02)
+    pd.testing.assert_frame_equal(full, cut, check_freq=False)
+    flips = lambda w: int((w.diff().abs() > 0).sum().sum())
+    assert flips(portfolio.trend_band(px, 200, 0.03)) <= flips(portfolio.trend_band(px, 200, 0.0))
