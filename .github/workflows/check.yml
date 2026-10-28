@@ -1,0 +1,29 @@
+name: check
+# Runs every safety test, then backtests every signal on REAL Binance data.
+on:
+  push:
+  workflow_dispatch:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pandas pytest
+      - name: Safety and correctness tests
+        run: python -m pytest -v
+      - name: Backtest 1m candles, 30 days
+        run: INTERVAL=1m python -m jevbot backtest --days 30 && cp reports/backtest.csv reports/bt_1m.csv
+      - name: Backtest 15m candles, 180 days
+        run: INTERVAL=15m python -m jevbot backtest --days 180 && cp reports/backtest.csv reports/bt_15m.csv
+      - name: Backtest 1h candles, 365 days
+        run: INTERVAL=1h python -m jevbot backtest --days 365 && cp reports/backtest.csv reports/bt_1h.csv
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: backtest-reports
+          path: reports/

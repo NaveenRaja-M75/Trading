@@ -39,7 +39,44 @@ def fetch_recent(symbol: str, interval: str, limit: int = 500) -> pd.DataFrame:
     return df
 
 
+BULK_URL = "https://data.binance.vision/data/spot/daily/klines/{s}/{i}/{s}-{i}-{d}.zip"
+
+
+def fetch_bulk(symbol: str, interval: str, days: float) -> pd.DataFrame:
+    """Binance's public daily archive files; works where the REST API is geo-blocked."""
+    import io
+    import zipfile
+    frames = []
+    today = pd.Timestamp.now(tz="UTC").normalize()
+    for k in range(int(days) + 1, 0, -1):
+        d = (today - pd.Timedelta(days=k)).strftime("%Y-%m-%d")
+        try:
+            with urllib.request.urlopen(BULK_URL.format(s=symbol, i=interval, d=d), timeout=30) as r:
+                z = zipfile.ZipFile(io.BytesIO(r.read()))
+        except Exception:
+            continue  # the newest day may not be published yet
+        raw = pd.read_csv(z.open(z.namelist()[0]), header=None)
+        if not str(raw.iloc[0, 0]).isdigit():
+            raw = raw.iloc[1:]
+        ts = raw[0].astype("int64")
+        ts = ts.where(ts < 10**14, ts // 1000)  # archives switched to microseconds in 2025
+        raw[0] = ts
+        frames.append(_to_frame(raw.values.tolist()))
+    if not frames:
+        raise RuntimeError("no Binance archive data could be downloaded")
+    df = pd.concat(frames)
+    return df[~df.index.duplicated()].sort_index()
+
+
 def fetch_history(symbol: str, interval: str, days: float) -> pd.DataFrame:
+    try:
+        return _fetch_history_api(symbol, interval, days)
+    except Exception as e:
+        print(f"REST API unavailable ({e}); using Binance daily archives")
+        return fetch_bulk(symbol, interval, days)
+
+
+def _fetch_history_api(symbol: str, interval: str, days: float) -> pd.DataFrame:
     """Page backwards through Binance klines to collect `days` of history."""
     step = INTERVAL_MS[interval]
     end = int(time.time() * 1000)
