@@ -69,8 +69,13 @@ def describe(df: pd.DataFrame, k: int = 5) -> str:
     trend = {1: "uptrend (higher highs and higher lows)", -1: "downtrend (lower highs and lower lows)",
              0: "range / no clear structure"}[int(st)]
     parts = [f"Price {c.iloc[-1]:.2f}.", f"Structure: {trend}."]
+    price = c.iloc[-1]
     if np.isfinite(s.last_sh):
-        parts.append(f"Nearest resistance (last swing high) {s.last_sh:.2f}, support (last swing low) {s.last_sl:.2f}.")
+        hi = (f"broke above the last swing high {s.last_sh:.2f}" if price > s.last_sh
+              else f"resistance at the last swing high {s.last_sh:.2f}")
+        lo = (f"broke below the last swing low {s.last_sl:.2f}" if price < s.last_sl
+              else f"support at the last swing low {s.last_sl:.2f}")
+        parts.append(f"Price {hi}; {lo}.")
     if np.isfinite(ma200):
         parts.append(f"Price is {'above' if c.iloc[-1] > ma200 else 'below'} the 200-bar average "
                      f"({ma200:.2f}); 50-bar average is {'above' if ma50 > ma200 else 'below'} it.")

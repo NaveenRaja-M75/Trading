@@ -42,3 +42,20 @@ round-trip cost.
   backtests lie.
 - Keep the hourly paper account and live prediction journal running as an independent check.
 - No real money unless the live paper account is clearly positive after fees.
+
+## 5. Laya (open-source Jev alternative) as a direction predictor
+Laya is a text decision model (reads text, answers typed questions in one pass). We showed it
+the bot's plain-English chart read at 800 random past moments (10 coins, 1h) and asked
+"will the price be higher 4 hours from now?" (`research/laya_test.py`, raw output on the
+`laya-results` branch).
+
+| | correct | note |
+|---|---|---|
+| always "up" | 50.0% | |
+| Laya | 49.8% | says "up" 57.5% of the time; very overconfident (Brier skill -32%) |
+| Laya, chart texts shuffled to the wrong moments | 50.0% | same as real: the chart told it nothing |
+| our learner | 51.1% | honest confidence (Brier skill ~0%) |
+
+When Laya was most bullish the price went up only 46.6% of the time. Laya is fast and
+useful for classifying text (e.g. tagging news), but it has no market knowledge, and price
+charts contain no 4h direction signal for it to find. It does not improve our results.

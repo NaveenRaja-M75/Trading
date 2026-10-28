@@ -126,3 +126,12 @@ def test_robustness_grid_shape_and_noise_has_no_edge():
     assert len(r) == 3 * 5 * 3
     summ = backtest.robustness_summary(r)
     assert (summ.mean_ret < 0.5).all()
+
+
+def test_chart_description_says_broken_support():
+    from jevbot.chart import describe
+    close = np.r_[np.linspace(100, 120, 40), np.linspace(120, 105, 15), np.linspace(105, 115, 15),
+                  np.linspace(115, 90, 20)]
+    df = pd.DataFrame({"open": close, "high": close, "low": close, "close": close, "volume": 1.0},
+                      index=pd.date_range("2024", periods=len(close), freq="h"))
+    assert "broke below the last swing low" in describe(df)
