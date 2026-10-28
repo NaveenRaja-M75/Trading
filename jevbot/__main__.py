@@ -99,6 +99,47 @@ def cmd_robust(s: Settings, a) -> None:
         print(backtest.robustness_summary(r).to_string())
 
 
+def cmd_learn(s: Settings, a) -> None:
+    """Replay predict -> check -> learn over history on many coins, then trade what it learned."""
+    from . import journal
+    from .data import load_or_fetch
+    dfs = {}
+    for sym in [x.strip().upper() for x in a.symbols.split(",") if x.strip()]:
+        try:
+            dfs[sym] = load_or_fetch(sym, s.interval, a.days)
+        except Exception as e:
+            print(f"{sym}: skipped ({e})")
+    Path("reports").mkdir(exist_ok=True)
+    for h in [int(x) for x in a.horizons.split(",")]:
+        cards, ledgers = [], []
+        for sym, df in dfs.items():
+            led = journal.replay(df, horizon=h)
+            led = led.iloc[500:]  # let the learner see some history before it is graded
+            cards.append({"symbol": sym, **journal.scorecard(led)})
+            ledgers.append(led)
+        cards = pd.DataFrame(cards).set_index("symbol")
+        pooled = pd.concat(ledgers)
+        with pd.option_context("display.width", 250, "display.max_columns", 40, "display.max_rows", 200):
+            print(f"\n=============== horizon {h} bars ({s.interval}) ===============")
+            print("Forecast scorecard per coin:")
+            print(cards[["forecasts", "base_rate_up_pct", "hit_rate_pct", "best_dumb_rule_pct",
+                         "confident_share_pct", "confident_hit_rate_pct", "brier_skill_pct"]].to_string())
+            print("\nAll coins pooled:")
+            for k, v in journal.scorecard(pooled).items():
+                print(f"  {k:32s} {v}")
+            print("\nWhere it is right / wrong (pooled, by market situation):")
+            print(journal.by_situation(pooled).to_string())
+        variants = {f"learner_h{h}": journal.Learner(h)}
+        variants[f"learner_h{h}"].name = f"learner_h{h}"
+        variants["chart_vote"] = default_signals()["chart_vote"]
+        r = backtest.robustness(dfs, variants, _policy(a), s.cost_per_side, s.interval, a.windows)
+        r.to_csv(f"reports/learn_h{h}_{s.interval}.csv", index=False)
+        print("\nTrading what it learned (10 coins x periods, after costs):")
+        with pd.option_context("display.width", 250, "display.max_columns", 20):
+            print(backtest.robustness_summary(r).to_string())
+            print(r[r.variant == f"learner_h{h}"].pivot(index="symbol", columns="start", values="ret_pct").to_string())
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -122,7 +163,7 @@ def cmd_paper_once(s: Settings, a) -> None:
     from .policy import RiskGate
     from .runner import log, status_report, step
     sig, pol = default_signals()[a.signal], _policy(a)
-    books = {}
+    books, journals = {}, []
     for sym in [x.strip().upper() for x in a.symbols.split(",") if x.strip()]:
         broker = PaperBroker(s.paper_start_usdt, s.fee_bps, s.slippage_bps, Path(f"state/paper_{sym}.json"))
         gate = RiskGate(s.max_position_usdt, s.daily_loss_limit_usdt,
@@ -133,12 +174,18 @@ def cmd_paper_once(s: Settings, a) -> None:
             log(f"{sym} error: {e!r}")
         price = broker.book.fills[-1]["price"] if broker.book.fills else 0.0
         try:
+            from . import journal
             from .data import fetch_recent
-            price = float(fetch_recent(sym, s.interval, 2)["close"].iloc[-1])
-        except Exception:
-            pass
+            df = fetch_recent(sym, s.interval, 1000)
+            price = float(df["close"].iloc[-1])
+            journals.append(journal.live_update(sym, df, Path("state/journal.csv"), a.horizon))
+        except Exception as e:
+            log(f"{sym} journal error: {e!r}")
         books[sym] = (broker.book, price)
     report = status_report(books, s.paper_start_usdt)
+    if journals:
+        from .journal import journal_report
+        report += "\n\n" + journal_report(journals[-1])
     stamp = time.strftime("%Y-%m-%d %H:%M UTC", time.gmtime())
     Path("state/STATUS.md").write_text(f"# Paper trading: {sig.name} on {s.interval}\n\nUpdated {stamp}\n\n{report}\n")
     print(report)
@@ -191,16 +238,23 @@ def main(argv=None) -> None:
     rb.add_argument("--windows", type=int, default=6)
     rb.add_argument("--with-baselines", action="store_true")
     common(rb)
+    ln = sub.add_parser("learn", help="replay predict/check/learn over history")
+    ln.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
+    ln.add_argument("--days", type=float, default=1095)
+    ln.add_argument("--horizons", default="4,24")
+    ln.add_argument("--windows", type=int, default=6)
+    common(ln)
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
+    po.add_argument("--horizon", type=int, default=4, help="bars ahead the journal predicts")
     common(po)
     sub.choices["live"].add_argument("--i-understand-i-can-lose-money", action="store_true")
 
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":
