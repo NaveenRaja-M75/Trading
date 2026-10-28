@@ -39,33 +39,47 @@ def fetch_recent(symbol: str, interval: str, limit: int = 500) -> pd.DataFrame:
     return df
 
 
-BULK_URL = "https://data.binance.vision/data/spot/daily/klines/{s}/{i}/{s}-{i}-{d}.zip"
+ARCHIVE = "https://data.binance.vision/data/spot/{period}/klines/{s}/{i}/{s}-{i}-{d}.zip"
+
+
+def _archive_file(url: str) -> pd.DataFrame | None:
+    import io
+    import zipfile
+    try:
+        with urllib.request.urlopen(url, timeout=60) as r:
+            z = zipfile.ZipFile(io.BytesIO(r.read()))
+    except Exception:
+        return None  # not published (yet), or before the coin was listed
+    raw = pd.read_csv(z.open(z.namelist()[0]), header=None)
+    if not str(raw.iloc[0, 0]).isdigit():
+        raw = raw.iloc[1:].astype(float)
+    ts = raw[0].astype("int64")
+    raw[0] = ts.where(ts < 10**14, ts // 1000)  # archives switched to microseconds in 2025
+    return _to_frame(raw.values.tolist())
 
 
 def fetch_bulk(symbol: str, interval: str, days: float) -> pd.DataFrame:
-    """Binance's public daily archive files; works where the REST API is geo-blocked."""
-    import io
-    import zipfile
-    frames = []
+    """Binance's public archive files (monthly, then daily for the current month).
+
+    Works where the REST API is geo-blocked.
+    """
     today = pd.Timestamp.now(tz="UTC").normalize()
-    for k in range(int(days) + 1, 0, -1):
-        d = (today - pd.Timedelta(days=k)).strftime("%Y-%m-%d")
-        try:
-            with urllib.request.urlopen(BULK_URL.format(s=symbol, i=interval, d=d), timeout=30) as r:
-                z = zipfile.ZipFile(io.BytesIO(r.read()))
-        except Exception:
-            continue  # the newest day may not be published yet
-        raw = pd.read_csv(z.open(z.namelist()[0]), header=None)
-        if not str(raw.iloc[0, 0]).isdigit():
-            raw = raw.iloc[1:]
-        ts = raw[0].astype("int64")
-        ts = ts.where(ts < 10**14, ts // 1000)  # archives switched to microseconds in 2025
-        raw[0] = ts
-        frames.append(_to_frame(raw.values.tolist()))
+    start = today - pd.Timedelta(days=days)
+    this_month = today.replace(day=1)
+    frames = []
+    for m in pd.date_range(start.replace(day=1), this_month - pd.Timedelta(days=1), freq="MS"):
+        f = _archive_file(ARCHIVE.format(period="monthly", s=symbol, i=interval, d=m.strftime("%Y-%m")))
+        if f is not None:
+            frames.append(f)
+    for d in pd.date_range(max(this_month, start), today - pd.Timedelta(days=1), freq="D"):
+        f = _archive_file(ARCHIVE.format(period="daily", s=symbol, i=interval, d=d.strftime("%Y-%m-%d")))
+        if f is not None:
+            frames.append(f)
     if not frames:
         raise RuntimeError("no Binance archive data could be downloaded")
     df = pd.concat(frames)
-    return df[~df.index.duplicated()].sort_index()
+    df = df[~df.index.duplicated()].sort_index()
+    return df[df.index >= start]
 
 
 def fetch_history(symbol: str, interval: str, days: float) -> pd.DataFrame:

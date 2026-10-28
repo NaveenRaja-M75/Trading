@@ -11,7 +11,7 @@ signal can't beat that out-of-sample, it doesn't trade.
 ## Quick start
 
 ```bash
-pip install numpy pandas pytest
+pip install numpy pandas pytest matplotlib
 cp .env.example .env          # edit symbol, costs, limits
 python -m pytest -q           # run the safety/correctness tests
 

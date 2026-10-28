@@ -24,23 +24,42 @@ def cmd_fetch(s: Settings, a) -> None:
 
 
 def cmd_backtest(s: Settings, a) -> None:
+    symbols = [x.strip().upper() for x in (a.symbols or s.symbol).split(",") if x.strip()]
+    signals, pol = default_signals(), _policy(a)
+    tables, data = [], {}
+    for i, sym in enumerate(symbols):
+        if a.synthetic:
+            df = synthetic(n=a.bars, seed=a.seed + i)
+        elif a.csv:
+            df = load_csv(a.csv)
+        else:
+            df = load_or_fetch(sym, s.interval, a.days)
+        data[sym] = df
+        print(f"{sym} {s.interval}: {len(df)} bars {df.index[0]:%Y-%m-%d} -> {df.index[-1]:%Y-%m-%d}")
+        tables.append(backtest.compare(df, signals, pol, s.cost_per_side, s.interval, symbol=sym))
     if a.synthetic:
-        df = synthetic(n=a.bars, seed=a.seed)
-        print(f"SYNTHETIC random walk, {len(df)} bars (no real edge exists here)")
-    elif a.csv:
-        df = load_csv(a.csv)
-    else:
-        df = load_or_fetch(s.symbol, s.interval, a.days)
-    print(f"{s.symbol} {s.interval}: {len(df)} bars, cost per side {s.cost_per_side * 1e4:.1f} bps\n")
-    table = backtest.compare(df, default_signals(), _policy(a), s.cost_per_side, s.interval)
-    with pd.option_context("display.width", 200, "display.max_columns", 20):
-        print(table.to_string(index=False))
-    print("\nVerdict (out-of-sample only):")
+        print("SYNTHETIC random walks: no real edge exists, everything should FAIL")
+    table = pd.concat(tables, ignore_index=True)
+    print(f"cost per side {s.cost_per_side * 1e4:.1f} bps; parameters fixed in advance, not tuned\n")
+    with pd.option_context("display.width", 200, "display.max_columns", 20, "display.max_rows", 500):
+        print("Out-of-sample, per coin:")
+        print(table[table.period == "out_of_sample"].drop(columns="period").to_string(index=False))
+        print("\nOut-of-sample, averaged over coins:")
+        print(backtest.summarize(table).to_string())
+    print("\nVerdict:")
     for line in backtest.verdict(table):
         print("  " + line)
     Path("reports").mkdir(exist_ok=True)
-    table.to_csv("reports/backtest.csv", index=False)
-    print("\nsaved reports/backtest.csv")
+    table.to_csv(f"reports/backtest_{s.interval}.csv", index=False)
+    if a.plot:
+        best = [n for n in backtest.summarize(table).index if n not in {"coinflip", "buy_and_hold"}][:a.plot]
+        for sym, df in data.items():
+            oos = df.iloc[len(df) // 2:]
+            for name in best:
+                path = f"reports/{s.interval}_{sym}_{name}.png"
+                backtest.plot(oos, signals[name], pol, s.cost_per_side, s.interval, path,
+                              f"{sym} {s.interval} out-of-sample: {name}")
+                print("chart", path)
 
 
 def _llm(s: Settings, a):
@@ -79,7 +98,7 @@ def main(argv=None) -> None:
     def common(sp):
         sp.add_argument("--enter", type=float, default=0.5)
         sp.add_argument("--exit", type=float, default=0.0)
-        sp.add_argument("--min-hold", type=int, default=3)
+        sp.add_argument("--min-hold", type=int, default=1)
 
     f = sub.add_parser("fetch", help="download history from Binance")
     f.add_argument("--days", type=float, default=14)
@@ -90,6 +109,8 @@ def main(argv=None) -> None:
     b.add_argument("--synthetic", action="store_true")
     b.add_argument("--bars", type=int, default=20_000)
     b.add_argument("--seed", type=int, default=0)
+    b.add_argument("--symbols", help="comma list, e.g. BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
+    b.add_argument("--plot", type=int, default=0, help="draw charts for the N best signals")
     common(b)
 
     for name in ("paper", "live"):

@@ -17,17 +17,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy pandas pytest
+      - run: pip install numpy pandas pytest matplotlib
       - run: mkdir -p reports
       - name: Safety and correctness tests
         shell: bash
         run: python -m pytest -v 2>&1 | tee test-output.txt; exit ${PIPESTATUS[0]}
-      - name: Backtest 1m candles, 30 days
-        run: INTERVAL=1m python -m jevbot backtest --days 30 | tee reports/bt_1m.txt
-      - name: Backtest 15m candles, 180 days
-        run: INTERVAL=15m python -m jevbot backtest --days 180 | tee reports/bt_15m.txt
-      - name: Backtest 1h candles, 365 days
-        run: INTERVAL=1h python -m jevbot backtest --days 365 | tee reports/bt_1h.txt
+      - name: Backtest 1h candles, 1 year, 4 coins
+        run: INTERVAL=1h python -m jevbot backtest --days 365 --symbols BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT | tee reports/bt_1h.txt
+      - name: Backtest 4h candles, 3 years, 4 coins
+        run: INTERVAL=4h python -m jevbot backtest --days 1095 --symbols BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT --plot 2 | tee reports/bt_4h.txt
+      - name: Backtest daily candles, 7 years, 4 coins
+        run: INTERVAL=1d python -m jevbot backtest --days 2555 --symbols BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT --plot 3 | tee reports/bt_1d.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

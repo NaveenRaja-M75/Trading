@@ -10,7 +10,8 @@ import urllib.request
 import numpy as np
 import pandas as pd
 
-from .features import FEATURE_COLUMNS
+from . import chart
+from .features import FEATURE_COLUMNS, rsi
 
 
 class Signal:
@@ -88,6 +89,74 @@ class LocalModel(Signal):
         return pd.Series(out, index=feats.index)
 
 
+class Trend(Signal):
+    """Classic trend filter: long only while price > 200-bar average and 50 > 200 ("golden cross")."""
+    name = "trend"
+
+    def __init__(self, fast: int = 50, slow: int = 200):
+        self.fast, self.slow = fast, slow
+
+    def scores(self, feats):
+        c = feats["close"]
+        fast, slow = chart.sma(c, self.fast), chart.sma(c, self.slow)
+        return pd.Series(np.where((c > slow) & (fast > slow), 1.0, -1.0), index=feats.index)
+
+
+class Donchian(Signal):
+    """Turtle breakout: buy a close above the 55-bar high, sell a close below the 20-bar low."""
+    name = "breakout"
+
+    def __init__(self, entry: int = 55, exit: int = 20):
+        self.entry, self.exit = entry, exit
+
+    def scores(self, feats):
+        hh = feats["high"].rolling(self.entry).max().shift(1)
+        ll = feats["low"].rolling(self.exit).min().shift(1)
+        return chart.latch(feats["close"] > hh, feats["close"] < ll)
+
+
+class Structure(Signal):
+    """Chart structure: in while making higher highs + higher lows, out when a swing low breaks."""
+    name = "structure"
+
+    def __init__(self, k: int = 5):
+        self.k = k
+
+    def scores(self, feats):
+        s = chart.swings(feats, self.k)
+        st = chart.structure(feats, self.k)
+        enter = (st > 0) & (feats["close"] > s.last_sh)          # uptrend + new high confirms it
+        exit_ = (feats["close"] < s.last_sl) | (st < 0)          # support broke or trend flipped
+        return chart.latch(enter, exit_)
+
+
+class SRBreakout(Signal):
+    """Resistance breakout confirmed by volume, stop below the last support, trend-filtered."""
+    name = "sr_volume"
+
+    def __init__(self, k: int = 5, vol_mult: float = 1.5):
+        self.k, self.vol_mult = k, vol_mult
+
+    def scores(self, feats):
+        s = chart.swings(feats, self.k)
+        c = feats["close"]
+        loud = feats["volume"] > self.vol_mult * feats["volume"].rolling(20).mean()
+        enter = (c > s.last_sh) & (c.shift() <= s.last_sh) & loud & (c > chart.sma(c, 200))
+        return chart.latch(enter, c < s.last_sl)
+
+
+class PullbackRSI2(Signal):
+    """Buy sharp dips inside an uptrend (RSI(2) < 10 above the 200-bar average), exit on bounce."""
+    name = "pullback"
+
+    def scores(self, feats):
+        c = feats["close"]
+        r2 = rsi(c, 2)
+        enter = (c > chart.sma(c, 200)) & (r2 < 10)
+        exit_ = (c > chart.sma(c, 5)) | (c < chart.sma(c, 200))
+        return chart.latch(enter, exit_)
+
+
 class Ensemble(Signal):
     name = "ensemble"
 
@@ -135,10 +204,20 @@ class LLMJudge(Signal):
 
 
 def default_signals() -> dict[str, Signal]:
-    return {
+    sigs = {
         "coinflip": CoinFlip(),
         "momentum": Momentum(),
         "meanrev": MeanReversion(),
         "model": LocalModel(),
         "ensemble": Ensemble([Momentum(), MeanReversion(), LocalModel()]),
+        # slow, chart-reading signals: few trades, so fees matter far less
+        "trend": Trend(),
+        "breakout": Donchian(),
+        "structure": Structure(),
+        "sr_volume": SRBreakout(),
+        "pullback": PullbackRSI2(),
+        "chart_vote": Ensemble([Trend(), Donchian(), Structure()]),
     }
+    for key, sig in sigs.items():
+        sig.name = key  # results are reported under the dictionary key
+    return sigs

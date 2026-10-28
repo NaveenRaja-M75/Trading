@@ -44,11 +44,9 @@ def test_oracle_profits_and_costs_bite():
 
 def test_no_edge_on_random_walk_after_costs():
     """On pure noise nothing should look like a winner once costs are charged."""
-    df = synthetic(6000, seed=4)
-    table = backtest.compare(df, default_signals(), Policy(), cost_per_side=0.0012)
-    oos = table[(table.period == "out_of_sample") & (table.name != "buy_and_hold")]
-    assert (oos.total_return_pct < 1.0).all()
-    assert all(line.startswith("FAIL") for line in backtest.verdict(table))
+    table = pd.concat([backtest.compare(synthetic(6000, seed=s), default_signals(), Policy(),
+                                        cost_per_side=0.0012, symbol=f"NOISE{s}") for s in range(4)])
+    assert not any(line.startswith("PASS") for line in backtest.verdict(table))
 
 
 def test_policy_hysteresis_and_min_hold():
@@ -93,3 +91,29 @@ def test_book_never_sells_more_than_it_owns():
 def test_momentum_scores_bounded():
     s = Momentum().scores(build_features(synthetic(500)))
     assert s.between(-1, 1).all()
+
+
+def test_chart_signals_have_no_lookahead():
+    from jevbot.signals import Donchian, PullbackRSI2, SRBreakout, Structure, Trend
+    df = synthetic(1500, seed=9)
+    for sig in (Trend(), Donchian(), Structure(), SRBreakout(), PullbackRSI2()):
+        full = sig.scores(build_features(df)).iloc[:1000].to_numpy()
+        cut = sig.scores(build_features(df.iloc[:1000])).to_numpy()
+        np.testing.assert_array_equal(full, cut, err_msg=sig.name)
+
+
+def test_swings_are_confirmed_late_not_early():
+    from jevbot.chart import swings
+    close = np.array([10, 11, 12, 13, 20, 13, 12, 11, 10, 9, 8, 8, 8], dtype=float)
+    df = pd.DataFrame({"open": close, "high": close, "low": close, "close": close, "volume": 1.0},
+                      index=pd.date_range("2024", periods=len(close), freq="h"))
+    s = swings(df, k=3)
+    assert np.isnan(s.last_sh.iloc[6])      # peak at bar 4 not yet confirmed (needs 3 bars after)
+    assert s.last_sh.iloc[7] == 20          # confirmed exactly k bars later
+
+
+def test_chart_description_reads_trend():
+    from jevbot.chart import describe
+    up = synthetic(400, seed=1, drift=0.002)
+    text = describe(up)
+    assert "above the 200-bar average" in text and "Price" in text

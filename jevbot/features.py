@@ -18,7 +18,7 @@ def rsi(close: pd.Series, n: int = 14) -> pd.Series:
 def build_features(df: pd.DataFrame) -> pd.DataFrame:
     c = df["close"]
     logc = np.log(c)
-    f = pd.DataFrame(index=df.index)
+    f = df[["open", "high", "low", "close", "volume"]].copy()  # raw candles for chart-reading signals
     f["ret_1"] = logc.diff(1)
     f["ret_5"] = logc.diff(5)
     f["ret_15"] = logc.diff(15)
