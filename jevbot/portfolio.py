@@ -115,36 +115,73 @@ def candidates() -> dict:
     return c
 
 
-def evaluate(px: pd.DataFrame, cost_per_side: float, vault_days: int = 365) -> dict:
-    """Dev-period table, the pre-committed pick, and its single vault test."""
-    cut = px.index[-vault_days]
-    warm = 250  # indicators need history; score from here on
-    rows, nets = [], {}
-    cands = candidates()
-    base = {"equal_hold": ("benchmark", equal_hold), "btc_hold": ("benchmark", lambda p: equal_hold(p[["BTCUSDT"]]).reindex(columns=p.columns, fill_value=0.0))}
-    for name, (fam, f) in {**base, **cands}.items():
-        w = f(px)
-        net = simulate(px, w, cost_per_side)
-        nets[name] = (fam, net, w)
-        dev = net[(net.index < cut)].iloc[warm:]
-        expo = float(w[(w.index < cut)].iloc[warm:].sum(axis=1).mean())
-        rows.append({"family": fam, **perf(name, dev, expo).__dict__})
-    dev_table = pd.DataFrame(rows).set_index("name")
+WARM = 250  # indicators need history; score from here on
 
-    # pre-committed selection rule: family whose WORST neighbour Sharpe is highest, then its median member
+
+def all_nets(px: pd.DataFrame, cost_per_side: float) -> dict:
+    """{name: (family, daily net returns, weights)} for benchmarks and every candidate."""
+    base = {"equal_hold": ("benchmark", equal_hold),
+            "btc_hold": ("benchmark", lambda p: equal_hold(p[["BTCUSDT"]]).reindex(columns=p.columns, fill_value=0.0))}
+    out = {}
+    for name, (fam, f) in {**base, **candidates()}.items():
+        w = f(px)
+        out[name] = (fam, simulate(px, w, cost_per_side), w)
+    return out
+
+
+def table(nets: dict, lo, hi) -> pd.DataFrame:
+    rows = []
+    for name, (fam, net, w) in nets.items():
+        m = (net.index >= lo) & (net.index < hi)
+        if m.sum() < 30:
+            continue
+        rows.append({"family": fam, **perf(name, net[m], float(w[m].sum(axis=1).mean())).__dict__})
+    return pd.DataFrame(rows).set_index("name")
+
+
+def select(dev_table: pd.DataFrame) -> tuple[str, str, pd.DataFrame]:
+    """Pre-committed rule: family whose WORST nearby setting has the best Sharpe, then its median member."""
     fam_stats = dev_table[dev_table.family != "benchmark"].groupby("family").sharpe.agg(["min", "median"])
     best_fam = fam_stats.sort_values(["min", "median"], ascending=False).index[0]
     members = dev_table[dev_table.family == best_fam].sort_values("sharpe")
-    pick = members.index[len(members) // 2]
+    return members.index[len(members) // 2], best_fam, fam_stats
 
-    vault_rows = []
-    for name in ("equal_hold", "btc_hold", pick):
-        fam, net, w = nets[name]
-        v = net[net.index >= cut]
-        expo = float(w[w.index >= cut].sum(axis=1).mean())
-        vault_rows.append(perf(name, v, expo).__dict__)
+
+def evaluate(px: pd.DataFrame, cost_per_side: float, vault_days: int = 365) -> dict:
+    """Dev-period table, the pre-committed pick, and its single vault test."""
+    cut = px.index[-vault_days]
+    nets = all_nets(px, cost_per_side)
+    dev_table = table(nets, px.index[WARM], cut)
+    pick, best_fam, fam_stats = select(dev_table)
+    end = px.index[-1] + pd.Timedelta(days=1)
+    vault_all = table(nets, cut, end)
     return {"dev": dev_table, "family_stats": fam_stats, "pick": pick, "family": best_fam,
-            "vault": pd.DataFrame(vault_rows).set_index("name"), "cut": cut,
-            "all_vault": pd.DataFrame([perf(n, nets[n][1][nets[n][1].index >= cut],
-                                            float(nets[n][2][nets[n][2].index >= cut].sum(axis=1).mean())).__dict__
-                                       for n in nets]).set_index("name")}
+            "vault": vault_all.loc[["equal_hold", "btc_hold", pick]].drop(columns="family"), "cut": cut,
+            "all_vault": vault_all.drop(columns="family")}
+
+
+def walk_forward(px: pd.DataFrame, cost_per_side: float, first_test: str = "2022-01-01") -> dict:
+    """Repeat the locked-year test every year: pick using only earlier data, then trade the next year.
+
+    Stitching the picked strategy's test years together gives an honest out-of-sample track record.
+    """
+    nets = all_nets(px, cost_per_side)
+    tz = px.index.tz
+    cuts = pd.date_range(pd.Timestamp(first_test, tz=tz), px.index[-1], freq="YS")
+    rows, stitched, hold, btc = [], [], [], []
+    for i, cut in enumerate(cuts):
+        end = cuts[i + 1] if i + 1 < len(cuts) else px.index[-1] + pd.Timedelta(days=1)
+        pick, fam, _ = select(table(nets, px.index[WARM], cut))
+        test = table(nets, cut, end)
+        rows.append({"year": f"{cut:%Y}" + ("" if i + 1 < len(cuts) else " (to date)"), "pick": pick,
+                     "pick_pct": test.loc[pick, "total_pct"], "pick_dd_pct": test.loc[pick, "max_dd_pct"],
+                     "hold_all_pct": test.loc["equal_hold", "total_pct"], "hold_all_dd_pct": test.loc["equal_hold", "max_dd_pct"],
+                     "btc_pct": test.loc["btc_hold", "total_pct"], "btc_dd_pct": test.loc["btc_hold", "max_dd_pct"]})
+        m = (px.index >= cut) & (px.index < end)
+        stitched.append(nets[pick][1][m])
+        hold.append(nets["equal_hold"][1][m])
+        btc.append(nets["btc_hold"][1][m])
+    summary = pd.DataFrame([perf("walk_forward_picks", pd.concat(stitched), 0.0).__dict__,
+                            perf("equal_hold", pd.concat(hold), 1.0).__dict__,
+                            perf("btc_hold", pd.concat(btc), 1.0).__dict__]).set_index("name").drop(columns="exposure_pct")
+    return {"years": pd.DataFrame(rows).set_index("year"), "summary": summary}

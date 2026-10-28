@@ -140,17 +140,34 @@ def cmd_learn(s: Settings, a) -> None:
             print(r[r.variant == f"learner_h{h}"].pivot(index="symbol", columns="start", values="ret_pct").to_string())
 
 
+SURVIVORS = "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT"
+# Coins that were big at some point but crashed, faded or were delisted: removes survivor bias.
+FADED = ("EOSUSDT,XLMUSDT,TRXUSDT,ETCUSDT,BCHUSDT,DOTUSDT,MATICUSDT,UNIUSDT,ATOMUSDT,FILUSDT,"
+         "ICPUSDT,ALGOUSDT,VETUSDT,THETAUSDT,AXSUSDT,SANDUSDT,MANAUSDT,NEARUSDT,FTMUSDT,FTTUSDT")
+
+
 def cmd_weekly(s: Settings, a) -> None:
     """Weekly momentum / rotation / trend-filter strategies with a locked final-test year."""
     from . import portfolio
     from .data import load_or_fetch
+    syms = a.symbols or (SURVIVORS + "," + FADED if a.universe == "wide" else SURVIVORS)
     dfs = {}
-    for sym in [x.strip().upper() for x in a.symbols.split(",") if x.strip()]:
+    for sym in [x.strip().upper() for x in syms.split(",") if x.strip()]:
         try:
             dfs[sym] = load_or_fetch(sym, "1d", a.days)
+            print(f"{sym}: {dfs[sym].index[0]:%Y-%m-%d} -> {dfs[sym].index[-1]:%Y-%m-%d}")
         except Exception as e:
             print(f"{sym}: skipped ({e})")
     px = portfolio.closes(dfs)
+    if a.walk_forward:
+        wf = portfolio.walk_forward(px, s.cost_per_side, a.first_test)
+        with pd.option_context("display.width", 220, "display.max_columns", 20):
+            print(f"\nWALK-FORWARD on {len(dfs)} coins ({a.universe}): each year's strategy was picked using only "
+                  f"earlier years, then traded that year.\n")
+            print(wf["years"].to_string())
+            print("\nAll test years stitched together (honest out-of-sample track record):")
+            print(wf["summary"].to_string())
+        return
     r = portfolio.evaluate(px, s.cost_per_side, a.vault_days)
     with pd.option_context("display.width", 220, "display.max_columns", 20, "display.max_rows", 100):
         print(f"{len(dfs)} coins, daily, {px.index[0]:%Y-%m-%d} -> {px.index[-1]:%Y-%m-%d}; "
@@ -281,7 +298,10 @@ def main(argv=None) -> None:
     ln.add_argument("--windows", type=int, default=6)
     common(ln)
     wk = sub.add_parser("weekly", help="weekly momentum/rotation with a locked final-test year")
-    wk.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
+    wk.add_argument("--symbols", help="overrides --universe")
+    wk.add_argument("--universe", choices=["survivors", "wide"], default="survivors")
+    wk.add_argument("--walk-forward", action="store_true")
+    wk.add_argument("--first-test", default="2022-01-01")
     wk.add_argument("--days", type=float, default=2555)
     wk.add_argument("--vault-days", type=int, default=365)
     wp = sub.add_parser("weekly-paper", help="daily mark-to-market, weekly rebalance of the paper portfolio")

@@ -34,6 +34,12 @@ jobs:
         run: INTERVAL=1h python -m jevbot learn | tee reports/learn_1h.txt
       - name: Weekly momentum / rotation, 10 coins, 7 years, locked final year
         run: python -m jevbot weekly | tee reports/weekly.txt
+      - name: Weekly walk-forward, 10 survivor coins, every year 2022-2026
+        run: python -m jevbot weekly --walk-forward | tee reports/weekly_wf_survivors.txt
+      - name: Weekly walk-forward, 30 coins incl. crashed/delisted, every year 2022-2026
+        run: python -m jevbot weekly --walk-forward --universe wide | tee reports/weekly_wf_wide.txt
+      - name: Weekly locked year, 30 coins incl. crashed/delisted
+        run: python -m jevbot weekly --universe wide | tee reports/weekly_wide.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

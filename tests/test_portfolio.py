@@ -60,3 +60,14 @@ def test_weekly_paper_rebalances_weekly_and_keeps_value(tmp_path):
     st = weekly_paper.load(path, 1000)
     assert st["cash"] >= -1e-9 and len(st["history"]) == 16
     assert "Weekly portfolio" in weekly_paper.report(path, "ts_momentum_14d")
+
+
+def test_walk_forward_picks_never_see_their_test_year():
+    px = panel(1600, coins=5, seed=70)
+    wf = portfolio.walk_forward(px, 0.0012, first_test="2022-01-01")
+    for year, row in wf["years"].iterrows():
+        cut = pd.Timestamp(f"{year[:4]}-01-01", tz="UTC")
+        only_past = portfolio.walk_forward(px[px.index < cut + pd.Timedelta(days=40)], 0.0012,
+                                           first_test=f"{year[:4]}-01-01")
+        assert only_past["years"].iloc[0]["pick"] == row["pick"]
+    assert set(wf["summary"].index) == {"walk_forward_picks", "equal_hold", "btc_hold"}
