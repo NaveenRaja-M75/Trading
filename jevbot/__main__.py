@@ -193,6 +193,30 @@ def cmd_weekly_paper(s: Settings, a) -> None:
     print(rep)
 
 
+def cmd_weekly_live(s: Settings, a) -> None:
+    import os
+    from .broker import BinanceBroker, PaperBroker
+    from .weekly_live import WeeklyLive
+    execute = a.execute
+    if execute and not s.live_trading:
+        sys.exit("Refusing: set LIVE_TRADING=true in .env to place real orders (or drop --execute for a dry run).")
+    if execute and not a.i_understand_i_can_lose_money:
+        sys.exit("Refusing: pass --i-understand-i-can-lose-money with --execute.")
+    budget = float(os.environ.get("WEEKLY_BUDGET_USDT", "50"))
+    max_loss = float(os.environ.get("WEEKLY_MAX_LOSS_USDT", "10"))
+    net = "testnet" if s.binance_testnet else "main"
+    if execute:
+        make = lambda sym: BinanceBroker(sym, s.binance_api_key, s.binance_api_secret, s.binance_testnet,
+                                         Path(f"state/live_weekly_{net}_{sym}.json"))
+    else:  # dry run: read-only books, no keys needed
+        make = lambda sym: PaperBroker(0, s.fee_bps, s.slippage_bps, Path(f"state/live_weekly_{net}_{sym}.json"))
+    syms = [x.strip().upper() for x in a.symbols.split(",") if x.strip()]
+    print(f"{'*** EXECUTING on ' + ('TESTNET' if s.binance_testnet else 'REAL MONEY') + ' ***' if execute else 'DRY RUN (no orders)'}"
+          f"  budget {budget} USDT, loss limit {max_loss} USDT, {len(syms)} coins")
+    for line in WeeklyLive(syms, a.strategy, budget, max_loss, make).run(execute, force=a.force):
+        print(line)
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -308,6 +332,12 @@ def main(argv=None) -> None:
     wp.add_argument("--strategy", default="ts_momentum_14d")
     wp.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
     wp.add_argument("--start-usdt", type=float, default=1000.0)
+    wl = sub.add_parser("weekly-live", help="weekly strategy on Binance (dry run unless --execute)")
+    wl.add_argument("--strategy", default="ts_momentum_14d")
+    wl.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
+    wl.add_argument("--execute", action="store_true")
+    wl.add_argument("--force", action="store_true", help="rebalance now even if 7 days have not passed")
+    wl.add_argument("--i-understand-i-can-lose-money", action="store_true")
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -318,7 +348,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":
