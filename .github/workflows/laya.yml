@@ -1,0 +1,35 @@
+name: laya
+# One-off experiment: does the Laya decision model predict 4h crypto direction? (CPU, ~20 min)
+on:
+  workflow_dispatch:
+    inputs:
+      per_coin:
+        description: moments per coin
+        default: "300"
+
+permissions:
+  contents: write
+
+jobs:
+  laya:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: pip install laya numpy pandas
+      - run: mkdir -p reports
+      - name: Laya vs coin flip vs our learner
+        run: PYTHONPATH=. python research/laya_test.py ${{ inputs.per_coin }} 2>&1 | grep -v Warning | tee reports/laya_test.txt
+      - name: Save results to the laya-results branch
+        if: always()
+        run: |
+          cd reports
+          git init -q -b laya-results
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "laya results ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" laya-results
