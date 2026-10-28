@@ -40,6 +40,10 @@ jobs:
         run: python -m jevbot weekly --walk-forward --universe wide | tee reports/weekly_wf_wide.txt
       - name: Weekly locked year, 30 coins incl. crashed/delisted
         run: python -m jevbot weekly --universe wide | tee reports/weekly_wide.txt
+      - name: Small budget walk-forward, BTC only
+        run: python -m jevbot weekly --walk-forward --symbols BTCUSDT | tee reports/weekly_wf_btc.txt
+      - name: Small budget walk-forward, BTC + ETH
+        run: python -m jevbot weekly --walk-forward --symbols BTCUSDT,ETHUSDT | tee reports/weekly_wf_btceth.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:

@@ -10,7 +10,7 @@ import pandas as pd
 from . import portfolio
 from .data import fetch_recent
 
-STRATEGIES = {"ts_momentum_14d": lambda px: portfolio.ts_momentum(px, 14)}
+STRATEGIES = {name: f for name, (_, f) in portfolio.candidates().items()}
 
 
 def load(path: Path, start_usdt: float) -> dict:

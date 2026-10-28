@@ -167,6 +167,7 @@ def cmd_weekly(s: Settings, a) -> None:
             print(wf["years"].to_string())
             print("\nAll test years stitched together (honest out-of-sample track record):")
             print(wf["summary"].to_string())
+            print(f"\nStrategy the rule picks today from all history (use this live): {wf['next_pick']}")
         return
     r = portfolio.evaluate(px, s.cost_per_side, a.vault_days)
     with pd.option_context("display.width", 220, "display.max_columns", 20, "display.max_rows", 100):

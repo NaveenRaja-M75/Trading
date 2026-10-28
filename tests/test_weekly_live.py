@@ -112,3 +112,9 @@ def test_weekly_live_cli_refuses_without_switches(monkeypatch):
     monkeypatch.setenv("LIVE_TRADING", "true")
     with pytest.raises(SystemExit, match="i-understand"):
         main(["weekly-live", "--execute"])
+
+
+def test_refuses_budget_too_thin_for_coin_count(setup):
+    bot, ex = setup(market(0, {"BTCUSDT", "ETHUSDT"}), usdt=1000, budget=20)  # 4 coins x 5 USDT
+    lines = bot.run(execute=True)
+    assert "REFUSED" in lines[-1] and ex.orders == []

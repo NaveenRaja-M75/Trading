@@ -18,7 +18,10 @@ import pandas as pd
 from . import portfolio
 from .data import fetch_recent
 
-STRATEGIES = {"ts_momentum_14d": lambda px: portfolio.ts_momentum(px, 14)}
+STRATEGIES = {name: f for name, (_, f) in portfolio.candidates().items()}
+
+
+MIN_SLOT_USDT = 8.0  # >= 5 USDT exchange minimum plus room for a ~35% drop before a sell is impossible
 
 
 def plan_orders(weights: dict[str, float], prices: dict[str, float], held_usdt: dict[str, float],
@@ -83,9 +86,10 @@ class WeeklyLive:
 
         w = STRATEGIES[self.strategy](px).iloc[-1].fillna(0.0).to_dict()
         slot = equity / max(len(prices), 1)
-        if slot < 6:
-            out.append(f"warning: {slot:.2f} USDT per coin is near Binance's 5 USDT minimum; "
-                       f"small positions will be skipped (use a bigger budget or fewer coins)")
+        if slot < MIN_SLOT_USDT:
+            return out + [f"REFUSED: {slot:.2f} USDT per coin is too close to Binance's 5 USDT minimum order; "
+                          f"positions could not be sold after a dip. Use at most "
+                          f"{max(1, int(equity // MIN_SLOT_USDT))} coin(s) for this budget, or a bigger budget."]
         orders = plan_orders(w, prices, held, equity)
         targets = ", ".join(f"{s[:-4]} {v * 100:.0f}%" for s, v in w.items() if v > 0) or "all cash"
         out.append(f"targets: {targets}")

@@ -184,4 +184,6 @@ def walk_forward(px: pd.DataFrame, cost_per_side: float, first_test: str = "2022
     summary = pd.DataFrame([perf("walk_forward_picks", pd.concat(stitched), 0.0).__dict__,
                             perf("equal_hold", pd.concat(hold), 1.0).__dict__,
                             perf("btc_hold", pd.concat(btc), 1.0).__dict__]).set_index("name").drop(columns="exposure_pct")
-    return {"years": pd.DataFrame(rows).set_index("year"), "summary": summary}
+    # what the same rule picks today, from ALL history: the strategy to trade going forward
+    next_pick, _, _ = select(table(nets, px.index[WARM], px.index[-1] + pd.Timedelta(days=1)))
+    return {"years": pd.DataFrame(rows).set_index("year"), "summary": summary, "next_pick": next_pick}
