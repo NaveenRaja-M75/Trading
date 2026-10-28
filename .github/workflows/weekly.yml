@@ -1,0 +1,42 @@
+name: weekly-paper
+# Paper portfolio for the weekly strategy that passed the locked-year test (ts_momentum_14d).
+# Checked daily, rebalanced every 7 days. Shares the paper-state branch with the hourly job,
+# so both use the same concurrency group and never overwrite each other.
+on:
+  schedule:
+    - cron: "23 0 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: paper
+  cancel-in-progress: false
+
+jobs:
+  weekly:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pandas
+      - name: Restore paper accounts
+        run: |
+          if git ls-remote --exit-code origin paper-state >/dev/null; then
+            git fetch -q origin paper-state
+            mkdir -p state && git --work-tree=state checkout origin/paper-state -- . && git reset -q
+          fi
+      - name: Daily check / weekly rebalance
+        run: python -m jevbot weekly-paper
+      - name: Save paper accounts
+        run: |
+          cd state
+          git init -q -b paper-state
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "weekly paper $(date -u +%FT%TZ)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" paper-state

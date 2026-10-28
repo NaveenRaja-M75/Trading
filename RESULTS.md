@@ -59,3 +59,23 @@ the bot's plain-English chart read at 800 random past moments (10 coins, 1h) and
 When Laya was most bullish the price went up only 46.6% of the time. Laya is fast and
 useful for classifying text (e.g. tagging news), but it has no market knowledge, and price
 charts contain no 4h direction signal for it to find. It does not improve our results.
+
+## 6. Weekly momentum / rotation (10 coins, daily candles, 2019-2026), locked final year
+Rebalanced once a week, so fees barely matter. The last 365 days (2025-10-28 -> 2026-10-27)
+were locked; 36 strategy variants were compared on the older data and the winner was picked
+by a rule fixed in code (family with the best *worst-neighbour* Sharpe, median member).
+
+- Dev period: every momentum/trend family beat holding on risk (Sharpe 1.3-1.7 vs 1.31;
+  worst drop -35% to -75% vs -79%). Caveat: the 10 coins were chosen because they are big
+  today (survivorship), which flatters every long strategy in the old data.
+- Pick: **ts_momentum_14d** (hold each coin only if it rose over the last 14 days).
+- Locked year, opened once: **+1.4%**, worst drop -15.9%. Holding the same coins: -46.3%
+  (worst drop -60.7%); holding BTC: -29.1%.
+- Some other variants did better on the locked year (rotation_14d_top3 +24%), but switching
+  to them now would be picking with hindsight, so we don't.
+
+"Weeks positive" is low (32%) because the strategy sits in cash in bad markets: its value
+is losing far less in crashes and catching big up-trends, not winning most weeks.
+
+Now paper-traded daily (rebalanced weekly) by `.github/workflows/weekly.yml`; see
+`WEEKLY.md` on the `paper-state` branch.

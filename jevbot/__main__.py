@@ -166,6 +166,16 @@ def cmd_weekly(s: Settings, a) -> None:
         print(r["all_vault"].sort_values("sharpe", ascending=False).to_string())
 
 
+def cmd_weekly_paper(s: Settings, a) -> None:
+    from . import weekly_paper
+    path = Path(f"state/weekly_{a.strategy}.json")
+    syms = [x.strip().upper() for x in a.symbols.split(",") if x.strip()]
+    print(weekly_paper.run_once(syms, a.strategy, path, a.start_usdt, s.fee_bps, s.slippage_bps))
+    rep = weekly_paper.report(path, a.strategy)
+    Path("state/WEEKLY.md").write_text(rep)
+    print(rep)
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -274,6 +284,10 @@ def main(argv=None) -> None:
     wk.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
     wk.add_argument("--days", type=float, default=2555)
     wk.add_argument("--vault-days", type=int, default=365)
+    wp = sub.add_parser("weekly-paper", help="daily mark-to-market, weekly rebalance of the paper portfolio")
+    wp.add_argument("--strategy", default="ts_momentum_14d")
+    wp.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
+    wp.add_argument("--start-usdt", type=float, default=1000.0)
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -284,7 +298,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":

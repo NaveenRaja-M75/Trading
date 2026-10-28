@@ -42,3 +42,21 @@ def test_noise_picks_nothing_impressive():
     r = portfolio.evaluate(px, 0.0012, vault_days=365)
     assert r["vault"].loc[r["pick"], "sharpe"] < 1.5
     assert r["pick"] in r["dev"].index
+
+
+def test_weekly_paper_rebalances_weekly_and_keeps_value(tmp_path):
+    from jevbot import weekly_paper
+    full = {}
+    for i, sym in enumerate(["BTCUSDT", "ETHUSDT", "SOLUSDT"]):
+        d = synthetic(500, seed=60 + i, drift=0.002, vol=0.02)
+        d.index = pd.date_range("2025-01-01", periods=500, freq="D", tz="UTC")
+        full[sym] = d
+    path = tmp_path / "w.json"
+    msgs = []
+    for day in range(420, 436):
+        fetch = lambda s, i, n, day=day: full[s].iloc[:day]
+        msgs.append(weekly_paper.run_once(list(full), "ts_momentum_14d", path, 1000, 10, 2, fetch=fetch))
+    assert sum("rebalanced" in m for m in msgs) == 3  # day 0, 7, 14
+    st = weekly_paper.load(path, 1000)
+    assert st["cash"] >= -1e-9 and len(st["history"]) == 16
+    assert "Weekly portfolio" in weekly_paper.report(path, "ts_momentum_14d")

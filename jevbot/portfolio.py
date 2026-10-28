@@ -145,5 +145,6 @@ def evaluate(px: pd.DataFrame, cost_per_side: float, vault_days: int = 365) -> d
         vault_rows.append(perf(name, v, expo).__dict__)
     return {"dev": dev_table, "family_stats": fam_stats, "pick": pick, "family": best_fam,
             "vault": pd.DataFrame(vault_rows).set_index("name"), "cut": cut,
-            "all_vault": pd.DataFrame([perf(n, nets[n][1][nets[n][1].index >= cut], 0).__dict__
+            "all_vault": pd.DataFrame([perf(n, nets[n][1][nets[n][1].index >= cut],
+                                            float(nets[n][2][nets[n][2].index >= cut].sum(axis=1).mean())).__dict__
                                        for n in nets]).set_index("name")}
