@@ -2,7 +2,11 @@ name: check
 # Runs every safety test, then backtests every signal on REAL Binance data.
 on:
   push:
+    branches-ignore: [backtest-results]
   workflow_dispatch:
+
+permissions:
+  contents: write
 
 jobs:
   check:
@@ -14,16 +18,29 @@ jobs:
         with:
           python-version: "3.12"
       - run: pip install numpy pandas pytest
+      - run: mkdir -p reports
       - name: Safety and correctness tests
-        run: python -m pytest -v
+        shell: bash
+        run: python -m pytest -v 2>&1 | tee test-output.txt; exit ${PIPESTATUS[0]}
       - name: Backtest 1m candles, 30 days
-        run: INTERVAL=1m python -m jevbot backtest --days 30 && cp reports/backtest.csv reports/bt_1m.csv
+        run: INTERVAL=1m python -m jevbot backtest --days 30 | tee reports/bt_1m.txt
       - name: Backtest 15m candles, 180 days
-        run: INTERVAL=15m python -m jevbot backtest --days 180 && cp reports/backtest.csv reports/bt_15m.csv
+        run: INTERVAL=15m python -m jevbot backtest --days 180 | tee reports/bt_15m.txt
       - name: Backtest 1h candles, 365 days
-        run: INTERVAL=1h python -m jevbot backtest --days 365 && cp reports/backtest.csv reports/bt_1h.csv
+        run: INTERVAL=1h python -m jevbot backtest --days 365 | tee reports/bt_1h.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
           name: backtest-reports
           path: reports/
+      - name: Save results to the backtest-results branch
+        if: always() && github.ref == 'refs/heads/main'
+        run: |
+          mv test-output.txt reports/ 2>/dev/null || true
+          cd reports
+          git init -q -b backtest-results
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          echo "commit ${GITHUB_SHA}  run ${GITHUB_RUN_ID}" > RUN.txt
+          git add -A && git commit -qm "results for ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" backtest-results
