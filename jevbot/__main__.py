@@ -218,6 +218,46 @@ def cmd_weekly_live(s: Settings, a) -> None:
         print(line)
 
 
+def cmd_analyze(s: Settings, a) -> None:
+    """A-Z report on one weekly setup: trades, win rates, stress tests, next-year scenarios."""
+    from . import analysis, portfolio
+    from .data import load_or_fetch
+    syms = [x.strip().upper() for x in a.symbols.split(",") if x.strip()]
+    px = portfolio.closes({sym: load_or_fetch(sym, "1d", a.days) for sym in syms})
+    f = portfolio.candidates()[a.strategy][1]
+    since = pd.Timestamp(a.since, tz=px.index.tz)
+    w = f(px)
+    held = portfolio.held_weights(w)
+    net = portfolio.simulate(px, w, s.cost_per_side)
+    with pd.option_context("display.width", 200, "display.max_columns", 20, "display.max_rows", 200):
+        print(f"{a.strategy} on {', '.join(syms)}, weekly, cost {s.cost_per_side * 1e4:.0f} bps/side, "
+              f"from {a.since} to {px.index[-1]:%Y-%m-%d}")
+        print("NOTE: this strategy was chosen by a rule that saw all history, so these stats are partly in-sample.\n")
+        t = analysis.trades(px, held, s.cost_per_side)
+        t = t[t.entry >= since]
+        print("TRADES (each = buy a coin, later sell it)")
+        for k, v in analysis.trade_stats(t).items():
+            print(f"  {k:24s} {v}")
+        print("\nHOW OFTEN THE ACCOUNT WAS UP")
+        for k, v in analysis.period_win_rates(net[net.index >= since]).items():
+            print(f"  {k:30s} {v}")
+        print("\nEVERY TRADE")
+        print(t.assign(entry=t.entry.dt.strftime("%Y-%m-%d"), exit=t.exit.dt.strftime("%Y-%m-%d"),
+                       return_pct=t.return_pct.round(1)).to_string(index=False))
+        print("\nSTRESS TESTS (same period)")
+        print(analysis.stress(px, f, s.cost_per_side, since).to_string())
+        print(f"\nNEXT 12 MONTHS, {a.budget:.0f} USDT, loss limit {a.max_loss:.0f} USDT "
+              f"(10,000 futures stitched from real 8-week stretches since {a.since})")
+        for k, v in analysis.scenarios(net[net.index >= since], a.budget, a.max_loss).items():
+            print(f"  {k:26s} {v}")
+        print("\nWHAT IT IS DOING NOW")
+        for sym in syms:
+            c = px[sym].dropna()
+            ma = c.rolling(100).mean().iloc[-1]
+            print(f"  {sym}: price {c.iloc[-1]:.2f}, 100-day average {ma:.2f} -> "
+                  f"{'HOLD' if c.iloc[-1] > ma else 'CASH'} ({(c.iloc[-1] / ma - 1) * 100:+.1f}% from the average)")
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -339,6 +379,13 @@ def main(argv=None) -> None:
     wl.add_argument("--execute", action="store_true")
     wl.add_argument("--force", action="store_true", help="rebalance now even if 7 days have not passed")
     wl.add_argument("--i-understand-i-can-lose-money", action="store_true")
+    an = sub.add_parser("analyze", help="A-Z report on one weekly setup")
+    an.add_argument("--strategy", default="trend_filter_ma100")
+    an.add_argument("--symbols", default="BTCUSDT,ETHUSDT")
+    an.add_argument("--days", type=float, default=2555)
+    an.add_argument("--since", default="2022-01-01")
+    an.add_argument("--budget", type=float, default=20)
+    an.add_argument("--max-loss", type=float, default=5)
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -349,7 +396,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "analyze": cmd_analyze, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":

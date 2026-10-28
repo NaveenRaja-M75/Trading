@@ -32,6 +32,10 @@ jobs:
           fi
       - name: Daily check / weekly rebalance
         run: python -m jevbot weekly-paper --strategy trend_filter_ma100 --symbols BTCUSDT,ETHUSDT --start-usdt 20
+      - name: Rehearse the real-money program (dry run, live prices, no orders)
+        run: |
+          WEEKLY_BUDGET_USDT=20 WEEKLY_MAX_LOSS_USDT=5 python -m jevbot weekly-live \
+            --strategy trend_filter_ma100 --symbols BTCUSDT,ETHUSDT --force | tee state/REHEARSAL.txt
       - name: Save paper accounts
         run: |
           cd state

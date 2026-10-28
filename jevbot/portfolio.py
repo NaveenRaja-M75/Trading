@@ -76,11 +76,19 @@ class Perf:
     exposure_pct: float
 
 
-def simulate(px: pd.DataFrame, w: pd.DataFrame, cost_per_side: float, every: int = 7) -> pd.Series:
+def held_weights(w: pd.DataFrame, every: int = 7, offset: int = 0) -> pd.DataFrame:
+    """Weights actually held: only updated on rebalance days (every `every` days, shifted by `offset`)."""
+    held = w.copy()
+    held.iloc[(np.arange(len(w)) - offset) % every != 0] = np.nan
+    return held.ffill().fillna(0.0)
+
+
+def simulate(px: pd.DataFrame, w: pd.DataFrame, cost_per_side: float, every: int = 7,
+             offset: int = 0) -> pd.Series:
     """Daily net returns. Weights only change on rebalance days (every `every` days)."""
     rets = px.pct_change(fill_method=None).fillna(0.0)
     held = w.copy()
-    mask = np.arange(len(w)) % every != 0
+    mask = (np.arange(len(w)) - offset) % every != 0
     held.iloc[mask] = np.nan
     held = held.ffill().fillna(0.0)
     # between rebalances, weights drift with prices; approximate cost on the rebalance trades
