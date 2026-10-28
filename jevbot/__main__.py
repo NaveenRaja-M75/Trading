@@ -140,6 +140,32 @@ def cmd_learn(s: Settings, a) -> None:
             print(r[r.variant == f"learner_h{h}"].pivot(index="symbol", columns="start", values="ret_pct").to_string())
 
 
+def cmd_weekly(s: Settings, a) -> None:
+    """Weekly momentum / rotation / trend-filter strategies with a locked final-test year."""
+    from . import portfolio
+    from .data import load_or_fetch
+    dfs = {}
+    for sym in [x.strip().upper() for x in a.symbols.split(",") if x.strip()]:
+        try:
+            dfs[sym] = load_or_fetch(sym, "1d", a.days)
+        except Exception as e:
+            print(f"{sym}: skipped ({e})")
+    px = portfolio.closes(dfs)
+    r = portfolio.evaluate(px, s.cost_per_side, a.vault_days)
+    with pd.option_context("display.width", 220, "display.max_columns", 20, "display.max_rows", 100):
+        print(f"{len(dfs)} coins, daily, {px.index[0]:%Y-%m-%d} -> {px.index[-1]:%Y-%m-%d}; "
+              f"weekly rebalance; cost {s.cost_per_side * 1e4:.0f} bps per side")
+        print(f"DEV period: up to {r['cut']:%Y-%m-%d}. The final {a.vault_days} days are LOCKED until the pick is made.\n")
+        print(r["dev"].sort_values("sharpe", ascending=False).to_string())
+        print("\nFamilies (worst and median Sharpe across nearby settings):")
+        print(r["family_stats"].sort_values("min", ascending=False).to_string())
+        print(f"\nPRE-COMMITTED PICK (rule: best worst-neighbour Sharpe, median member): {r['pick']}")
+        print(f"\n=== LOCKED YEAR, opened once: {r['cut']:%Y-%m-%d} -> {px.index[-1]:%Y-%m-%d} ===")
+        print(r["vault"].to_string())
+        print("\n(for transparency: every candidate on the locked year; NOT used for picking)")
+        print(r["all_vault"].sort_values("sharpe", ascending=False).to_string())
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -244,6 +270,10 @@ def main(argv=None) -> None:
     ln.add_argument("--horizons", default="4,24")
     ln.add_argument("--windows", type=int, default=6)
     common(ln)
+    wk = sub.add_parser("weekly", help="weekly momentum/rotation with a locked final-test year")
+    wk.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
+    wk.add_argument("--days", type=float, default=2555)
+    wk.add_argument("--vault-days", type=int, default=365)
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -254,7 +284,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":

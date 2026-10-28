@@ -32,6 +32,8 @@ jobs:
         run: INTERVAL=1h python -m jevbot robust --with-baselines | tee reports/robust_1h.txt
       - name: Predict, check, learn replay (10 coins, 3 years of 1h)
         run: INTERVAL=1h python -m jevbot learn | tee reports/learn_1h.txt
+      - name: Weekly momentum / rotation, 10 coins, 7 years, locked final year
+        run: python -m jevbot weekly | tee reports/weekly.txt
       - uses: actions/upload-artifact@v4
         if: always()
         with:
