@@ -1,0 +1,40 @@
+BTCUSDT: 80 moments prepared
+ETHUSDT: 80 moments prepared
+SOLUSDT: 80 moments prepared
+BNBUSDT: 80 moments prepared
+XRPUSDT: 80 moments prepared
+ADAUSDT: 80 moments prepared
+DOGEUSDT: 80 moments prepared
+LINKUSDT: 80 moments prepared
+AVAXUSDT: 80 moments prepared
+LTCUSDT: 80 moments prepared
+Fetching 5 files:  80%|████████  | 4/5 [00:00<00:00, 36.76it/s]Fetching 5 files: 100%|██████████| 5/5 [00:06<00:00,  1.22s/it]
+  return Agent(repo, **kwargs)
+
+Laya answered 1600 questions in 1363s
+
+800 moments, 10 coins, price went up 50.0% of the time
+
+  always 'up'          correct  50.0%
+  Laya                 correct  49.8%   calls up  57.5%   avg p 0.548   spread 0.266   brier skill -31.74%
+  Laya, shuffled text  correct  50.0%   calls up  57.5%   avg p 0.548   spread 0.266   brier skill -31.15%
+  our learner          correct  51.1%   calls up  48.6%   avg p 0.500   spread 0.028   brier skill  -0.14%
+
+  when Laya was most bullish (top 20%):  went up 46.6%
+  when Laya was most bearish (bottom 20%): went up 48.8%
+
+Per coin, Laya correct %:
+symbol
+ADAUSDT     52.5
+AVAXUSDT    51.2
+BNBUSDT     53.8
+BTCUSDT     52.5
+DOGEUSDT    43.8
+ETHUSDT     56.2
+LINKUSDT    46.2
+LTCUSDT     46.2
+SOLUSDT     42.5
+XRPUSDT     52.5
+
+Example state shown to Laya:
+  BTCUSDT hourly chart. Price 37341.10. Structure: range / no clear structure. Nearest resistance (last swing high) 37814.63, support (last swing low) 37662.18. Price is above the 200-bar average (37184.02); 50-bar average is above it. Typical bar range (ATR) 115.36 = 0.31% of price. Volume is 3.0x its 20-bar average. Recent moves: -0.46% over 1h, -0.94% over 4h, -0.89% over 24h, +2.42% over 168h.
