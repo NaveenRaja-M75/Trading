@@ -25,7 +25,7 @@ jobs:
       - name: Laya vs coin flip vs our learner
         run: PYTHONPATH=. python research/laya_test.py ${{ inputs.per_coin }} 2>&1 | grep -v Warning | tee reports/laya_test.txt
       - name: Save results to the laya-results branch
-        if: always()
+        if: success()  # a cancelled or failed run must not overwrite finished results
         run: |
           cd reports
           git init -q -b laya-results
