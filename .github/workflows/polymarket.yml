@@ -1,5 +1,5 @@
-name: polymarket-research
-# Read-only research on Polymarket's 15-minute "Bitcoin Up or Down" markets. Places no bets.
+name: research
+# Runs one read-only research script. Places no orders or bets.
 on:
   workflow_dispatch:
     inputs:
@@ -22,16 +22,17 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy pandas scipy
+      - run: pip install numpy pandas scipy matplotlib
       - run: mkdir -p reports
       - name: Run
-        run: PYTHONPATH=. python ${{ inputs.script }} ${{ inputs.args }} 2>&1 | tee reports/polymarket_out.txt
-      - name: Save results to the polymarket-results branch
+        run: PYTHONPATH=. python ${{ inputs.script }} ${{ inputs.args }} 2>&1 | tee reports/out.txt
+      - name: Save results to a results-<script> branch
         if: success()
         run: |
+          branch="results-$(basename ${{ inputs.script }} .py)"
           cd reports
-          git init -q -b polymarket-results
+          git init -q -b "$branch"
           git config user.name "github-actions"
           git config user.email "github-actions@users.noreply.github.com"
-          git add -A && git commit -qm "polymarket research ${GITHUB_SHA}"
-          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" polymarket-results
+          git add -A && git commit -qm "research ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" "$branch"
