@@ -1,0 +1,48 @@
+/home/runner/work/Trading/Trading/research/funding_carry_test.py:88: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  monthly = r.groupby(r.index.to_period("M")).sum() * 100
+/home/runner/work/Trading/Trading/research/funding_carry_test.py:88: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  monthly = r.groupby(r.index.to_period("M")).sum() * 100
+/home/runner/work/Trading/Trading/research/funding_carry_test.py:88: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  monthly = r.groupby(r.index.to_period("M")).sum() * 100
+/home/runner/work/Trading/Trading/research/funding_carry_test.py:88: UserWarning: Converting to PeriodArray/Index representation will drop timezone information.
+  monthly = r.groupby(r.index.to_period("M")).sum() * 100
+BTCUSDT: API unavailable (<HTTPError 451: ''>); using Binance monthly archives
+BTCUSDT: 7395 funding prints from archives
+
+######## BTCUSDT funding carry, 2020-01-01 -> 2026-09-30
+  funding prints negative (shorts PAY): 14% of the time; average 11.7%/yr
+                per_year_avg_pct  worst_month_pct  losing_months_pct  2020  2021  2022  2023  2024  2025  2026
+strategy                                                                                                      
+always_on                   11.7            -0.53                  7  17.1  30.6   4.2   7.9  12.0   5.1   2.0
+only_when_paid               8.2            -0.58                 36  15.2  29.8  -1.2   2.9   9.0   0.3  -0.2
+
+  INDIA, per financial year (hedge closed each 31 March), per 100 of notional:
+   FY2019-20: BTC/ETH move  -11.0%  funding  +5.8  before tax  +5.5  tax   -5.2  after tax   +0.3
+   FY2020-21: BTC/ETH move +784.3%  funding +27.7  before tax +27.4  tax -244.7  after tax -217.2
+   FY2021-22: BTC/ETH move  -22.5%  funding +15.5  before tax +15.2  tax  -11.9  after tax   +3.4
+   FY2022-23: BTC/ETH move  -38.5%  funding  +4.9  before tax  +4.6  tax  -13.6  after tax   -8.9
+   FY2023-24: BTC/ETH move +150.5%  funding +11.4  before tax +11.1  tax  -47.0  after tax  -35.9
+   FY2024-25: BTC/ETH move  +18.5%  funding  +7.7  before tax  +7.4  tax   -5.8  after tax   +1.6
+   FY2025-26: BTC/ETH move  -19.8%  funding  +4.1  before tax  +3.8  tax   -7.5  after tax   -3.6
+   FY2026-27: BTC/ETH move  +22.8%  funding  +1.9  before tax  +1.6  tax   -7.1  after tax   -5.5
+ETHUSDT: API unavailable (<HTTPError 451: ''>); using Binance monthly archives
+ETHUSDT: 7395 funding prints from archives
+
+######## ETHUSDT funding carry, 2020-01-01 -> 2026-09-30
+  funding prints negative (shorts PAY): 14% of the time; average 13.8%/yr
+                per_year_avg_pct  worst_month_pct  losing_months_pct  2020  2021  2022  2023  2024  2025  2026
+strategy                                                                                                      
+always_on                   13.8            -1.56                  7  27.3  37.5   0.8   8.3  13.0   4.9   1.3
+only_when_paid              10.7            -0.99                 36  26.3  35.6  -1.9   3.6  11.7  -2.0  -1.0
+
+  INDIA, per financial year (hedge closed each 31 March), per 100 of notional:
+   FY2019-20: BTC/ETH move   +1.5%  funding  +9.2  before tax  +8.9  tax   -2.9  after tax   +6.1
+   FY2020-21: BTC/ETH move +1314.5%  funding +39.4  before tax +39.1  tax -410.1  after tax -371.0
+   FY2021-22: BTC/ETH move  +66.7%  funding +17.5  before tax +17.2  tax  -20.8  after tax   -3.6
+   FY2022-23: BTC/ETH move  -47.3%  funding  +1.9  before tax  +1.6  tax  -15.3  after tax  -13.8
+   FY2023-24: BTC/ETH move +100.2%  funding +11.7  before tax +11.4  tax  -31.3  after tax  -19.8
+   FY2024-25: BTC/ETH move  -48.0%  funding  +8.6  before tax  +8.3  tax  -17.6  after tax   -9.4
+   FY2025-26: BTC/ETH move  +10.5%  funding  +3.7  before tax  +3.4  tax   -3.3  after tax   +0.1
+   FY2026-27: BTC/ETH move  +25.5%  funding  +1.4  before tax  +1.1  tax   -8.0  after tax   -6.8
+
+Minimum order: Binance's BTCUSDT perpetual needs about 100 USDT of notional per order, so a 20 USDT account cannot hold this hedge.
