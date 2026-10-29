@@ -158,6 +158,10 @@ def main():
         "hold BTC (INR)": rets.BTC_INR,
         "hold Nifty": rets.NIFTY,
     }
+    crypto = panel[["BTC_INR", "ETH_INR"]]
+    crypto_trend = portfolio.simulate(crypto, portfolio.trend_band(crypto, 200, 0.02), CRYPTO_COST, every=1)
+    combos["core-satellite: 40% Nifty + 40% gold held, 20% BTC/ETH on the 200-day rule"] = (
+        0.4 * rets.NIFTY + 0.4 * rets.GOLD + 0.2 * crypto_trend)
     ng = panel[["NIFTY", "GOLD"]]
     w_ng = portfolio.trend_band(ng, 200, 0.02)
     combos["200-day rule, Nifty + gold only (50/50)"] = portfolio.simulate(ng, w_ng, ETF_COST, every=1)
@@ -184,10 +188,12 @@ def main():
                                               values=["cagr_pct", "max_dd_pct"]).to_string())
         print(f"\nCOMBINED PORTFOLIO IN RUPEES, since {start:%Y-%m-%d}")
         print(pd.DataFrame(combo_rows).to_string(index=False))
-        print("\nYEAR BY YEAR, combined 200-day rule vs hold all 4 (%)")
+        print("\nYEAR BY YEAR (%)")
         yr = pd.DataFrame({k: ((1 + combos[k][combos[k].index >= start]).groupby(lambda d: d.year).prod() - 1) * 100
-                           for k in ("200-day rule on all 4 (25% each)", "hold all 4 (25% each, rebalanced daily)",
+                           for k in ("core-satellite: 40% Nifty + 40% gold held, 20% BTC/ETH on the 200-day rule",
+                                     "200-day rule on all 4 (25% each)", "hold all 4 (25% each, rebalanced daily)",
                                      "hold Nifty")}).round(1)
+        yr.columns = ["core-satellite", "rule on all 4", "hold all 4", "hold Nifty"]
         print(yr.to_string())
         print("\nTODAY: % above/below the 200-day average, and what the rule says")
         for k, (pct, act) in now.items():
