@@ -140,7 +140,7 @@ def main():
 
     btc_eth = pd.DataFrame({s[:3]: load_or_fetch(s, "1d", 3300).close for s in ("BTCUSDT", "ETHUSDT")}).dropna()
     nets = study("BTC + ETH (your bot)", btc_eth, "2020-01-01")
-    btc_long = yahoo("BTC-USD").to_frame("BTC")
+    btc_long = yahoo("BTC-USD", max_move=0.45).to_frame("BTC")   # BTC really fell 37% on 2020-03-12
     study("BTC only, longer history", btc_long, "2017-01-01")
 
     fig, ax = plt.subplots(figsize=(11, 5))

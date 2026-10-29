@@ -25,7 +25,7 @@ YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{}?period1=0&period2=
 ETF_COST, CRYPTO_COST = 0.0015, 0.0012
 
 
-def yahoo(sym: str) -> pd.Series:
+def yahoo(sym: str, max_move: float = 0.20) -> pd.Series:
     for host in ("query1", "query2"):
         try:
             req = urllib.request.Request(YAHOO.format(sym).replace("query1", host),
@@ -44,7 +44,7 @@ def yahoo(sym: str) -> pd.Series:
             r = s.pct_change().dropna()
             big = r.abs().sort_values(ascending=False).head(3)
             print(f"   largest daily moves: " + ", ".join(f"{d:%Y-%m-%d} {r[d] * 100:+.1f}%" for d in big.index))
-            if big.iloc[0] > 0.20:  # guard: a broad index or gold never moves 20% in a day -> bad data
+            if big.iloc[0] > max_move:  # guard: a broad index or gold never moves 20% in a day -> bad data
                 raise RuntimeError(f"{sym} has a {big.iloc[0] * 100:.0f}% one-day move: unadjusted split or bad tick")
             return s
         except Exception as e:
