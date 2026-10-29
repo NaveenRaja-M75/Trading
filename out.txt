@@ -1,0 +1,14 @@
+  WALCL: attempt 1 failed (TimeoutError('The read operation timed out')), retrying
+  WALCL: attempt 2 failed (TimeoutError('The read operation timed out')), retrying
+  WALCL: attempt 3 failed (TimeoutError('The read operation timed out')), retrying
+  WALCL: attempt 4 failed (TimeoutError('The read operation timed out')), retrying
+  WALCL: attempt 5 failed (TimeoutError('The read operation timed out')), retrying
+Traceback (most recent call last):
+  File "/home/runner/work/Trading/Trading/research/macro_dial_test.py", line 107, in <module>
+    main()
+  File "/home/runner/work/Trading/Trading/research/macro_dial_test.py", line 62, in main
+    raw = {k: daily(fred(k), idx) for k in LAG_DAYS}
+                    ^^^^^^^
+  File "/home/runner/work/Trading/Trading/research/macro_dial_test.py", line 42, in fred
+    raise RuntimeError(f"FRED unreachable for {series}")
+RuntimeError: FRED unreachable for WALCL
