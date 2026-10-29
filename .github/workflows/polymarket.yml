@@ -22,7 +22,7 @@ jobs:
       - uses: actions/setup-python@v5
         with:
           python-version: "3.12"
-      - run: pip install numpy pandas scipy matplotlib
+      - run: pip install numpy pandas scipy matplotlib scikit-learn
       - run: mkdir -p reports
       - name: Run
         run: PYTHONPATH=. python ${{ inputs.script }} ${{ inputs.args }} 2>&1 | tee reports/out.txt
