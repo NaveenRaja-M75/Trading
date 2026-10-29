@@ -1,0 +1,78 @@
+1345 windows, 14 days
+1344 resolved windows with data
+fee fields as published: {"feesEnabled": true, "feeType": "crypto_fees_v2", "feeSchedule": {"exponent": 1, "rate": 0.07, "takerOnly": true, "rebateRate": 0.2}, "takerBaseFee": 1000}
+6713 (window, minutes-left) rows
+
+STALENESS CHECK: price points near 50c while the model is confident
+  rows where model >=80% sure: 4249; of those, Polymarket price within 47-53c: 25
+  of those, price did not move in the previous 3 min: 0
+  median age of the price point used: 38s; exact 0.5/0.505/0.495 values: 49 of 6713
+  most common Polymarket prices used: {0.005: 214, 0.995: 212, 0.035: 134, 0.015: 134, 0.025: 134, 0.985: 120, 0.975: 116, 0.998: 112}
+  dropping the suspicious rows leaves 6688 rows
+
+WHO PREDICTS THE RESULT BEST (lower log-loss is better; accuracy of the favourite)
+  polymarket price     log-loss 0.3423   accuracy  84.1%
+  model: final price   log-loss 0.3216   accuracy  85.9%
+  model: twap          log-loss 1.0906   accuracy  80.3%
+   5 min left: polymarket 0.4347  final 0.4231  twap 0.8258
+   3 min left: polymarket 0.3635  final 0.3418  twap 1.0647
+   1 min left: polymarket 0.2174  final 0.1731  twap 1.4198
+  model: fair timing   log-loss 0.3831   accuracy  82.5%   <- only data as old as Polymarket's price
+
+using q_fair as the fair chance (no head start over Polymarket)
+
+IS POLYMARKET CALIBRATED? (leading side's price vs how often it actually won)
+                 n  avg_price  won_pct
+bucket                                
+(0.5, 0.6]     689      0.553    0.556
+(0.6, 0.7]     757      0.652    0.604
+(0.7, 0.8]     917      0.752    0.762
+(0.8, 0.9]    1030      0.854    0.865
+(0.9, 0.95]    797      0.927    0.920
+(0.95, 0.99]  1255      0.973    0.974
+(0.99, 1.0]   1266      0.996    0.996
+
+SIMULATED BETS ($1 per share, 1-cent haircut, fee = rate x p x (1-p) per share)
+ fee_rate  min_left  margin  bets  win_pct  avg_price  pnl_per_share  roi_pct green_days
+     0.00         5    0.00   433     68.8      0.697          -3.80    -1.26       6/15
+     0.00         5    0.03   260     59.2      0.611          -4.74    -2.98       7/15
+     0.00         5    0.08   134     50.7      0.525          -2.41    -3.42       6/15
+     0.00         4    0.00   400     67.5      0.679          -1.54    -0.57       8/15
+     0.00         4    0.03   260     58.1      0.593          -3.30    -2.14       7/15
+     0.00         4    0.08   144     54.9      0.518           4.39     5.88      10/15
+     0.00         3    0.00   341     65.7      0.665          -2.77    -1.22       8/15
+     0.00         3    0.03   245     59.2      0.599          -1.87    -1.28       8/15
+     0.00         3    0.08   152     53.3      0.542          -1.43    -1.73       9/15
+     0.00         2    0.00   308     62.3      0.633          -2.96    -1.52       8/15
+     0.00         2    0.03   225     56.4      0.561           0.77     0.61       8/15
+     0.00         2    0.08   155     50.3      0.493           1.57     2.05       9/15
+     0.00         1    0.00   244     56.1      0.582          -5.05    -3.56       5/15
+     0.00         1    0.03   200     49.0      0.525          -7.09    -6.75       5/15
+     0.00         1    0.08   151     41.7      0.461          -6.65    -9.54       6/15
+     0.07         5    0.00   384     69.0      0.692          -5.39    -1.99       7/15
+     0.07         5    0.03   223     57.4      0.602          -9.57    -6.96       7/15
+     0.07         5    0.08   108     50.9      0.498          -0.50    -0.90       6/15
+     0.07         4    0.00   357     66.7      0.670          -5.77    -2.37       8/15
+     0.07         4    0.03   227     57.3      0.585          -6.11    -4.49       7/15
+     0.07         4    0.08   121     53.7      0.496           3.02     4.87       9/15
+     0.07         3    0.00   315     64.4      0.659          -8.76    -4.14       7/15
+     0.07         3    0.03   224     58.0      0.590          -5.54    -4.09       8/15
+     0.07         3    0.08   128     52.3      0.531          -2.94    -4.20       8/15
+     0.07         2    0.00   282     62.4      0.624          -3.72    -2.07       7/15
+     0.07         2    0.03   200     56.5      0.545           0.96     0.86       9/15
+     0.07         2    0.08   144     48.6      0.485          -2.11    -2.92       7/15
+     0.07         1    0.00   233     54.9      0.574          -8.80    -6.44       5/15
+     0.07         1    0.03   188     47.9      0.514          -9.17    -9.25       5/15
+     0.07         1    0.08   134     38.8      0.431          -7.73   -12.94       5/15
+
+SAME BETS, SUSPICIOUS 47-53c ROWS REMOVED (fee 7%, margin 3c)
+  4 min left: 226 bets, won 57.1%, avg price 0.585, ROI -4.87%
+  3 min left: 222 bets, won 57.7%, avg price 0.591, ROI -4.79%
+  2 min left: 194 bets, won 57.2%, avg price 0.546, ROI +1.94%
+  1 min left: 181 bets, won 47.0%, avg price 0.514, ROI -10.99%
+
+THE INFLUENCER RULE: buy the leading side when it costs 75-92c, 1-4 min left (fee 7%)
+  4 min left: 419 bets, won 81.9%, avg price 0.838, P&L per $1 share -12.12, ROI -3.41%
+  3 min left: 359 bets, won 82.5%, avg price 0.843, P&L per $1 share -9.98, ROI -3.26%
+  2 min left: 285 bets, won 84.6%, avg price 0.843, P&L per $1 share -1.98, ROI -0.82%
+  1 min left: 226 bets, won 85.8%, avg price 0.846, P&L per $1 share +0.75, ROI +0.39%
