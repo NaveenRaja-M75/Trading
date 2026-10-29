@@ -20,7 +20,8 @@ import pandas as pd
 from jevbot import portfolio
 from jevbot.data import load_or_fetch
 
-YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{}?range=max&interval=1d&events=div%2Csplit"
+# explicit period1/period2: with range=max Yahoo silently switches to MONTHLY bars
+YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{}?period1=0&period2=9999999999&interval=1d&events=div%2Csplit"
 ETF_COST, CRYPTO_COST = 0.0015, 0.0012
 
 
@@ -35,7 +36,11 @@ def yahoo(sym: str) -> pd.Series:
             adj = res["indicators"].get("adjclose", [{}])[0].get("adjclose") or res["indicators"]["quote"][0]["close"]
             s = pd.Series(adj, index=idx, dtype=float).dropna()
             s = s[~s.index.duplicated(keep="last")]
-            print(f"{sym}: {len(s)} days {s.index[0]:%Y-%m-%d} -> {s.index[-1]:%Y-%m-%d}", flush=True)
+            gap = float(pd.Series(s.index).diff().dt.days.median())
+            print(f"{sym}: {len(s)} bars {s.index[0]:%Y-%m-%d} -> {s.index[-1]:%Y-%m-%d}, median gap {gap:.0f} day(s)",
+                  flush=True)
+            if gap > 3:  # guard: refuse anything that is not daily data
+                raise RuntimeError(f"{sym} is not daily data (median gap {gap} days)")
             return s
         except Exception as e:
             print(f"{sym} via {host}: {e!r}", flush=True)
