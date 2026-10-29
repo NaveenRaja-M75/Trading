@@ -64,8 +64,8 @@ def window(ts: int) -> dict | None:
 
 
 def price_at(hist, t):
-    before = [p for (s, p) in hist if s <= t]
-    return before[-1] if before else None
+    before = [(s, p) for (s, p) in hist if s <= t]
+    return before[-1] if before else (None, None)
 
 
 def phi(x):
@@ -108,13 +108,27 @@ def main():
             var = sig ** 2 * (m + 1) * (2 * m + 1) / (6 * m)
             need = (15 * p0 - known.sum() - m * pt) / (m * pt)  # future mean return needed for Up
             q_twap = 1 - phi(need / math.sqrt(var)) if k == 15 - m else np.nan
-            up_px = price_at(w["hist"], w["ts"] + 60 * (15 - m))
+            seen_at, up_px = price_at(w["hist"], w["ts"] + 60 * (15 - m))
             if up_px is None:
                 continue
+            recent = [p for (s_, p) in w["hist"] if w["ts"] + 60 * (15 - m) - 180 <= s_ <= w["ts"] + 60 * (15 - m)]
             rows.append({"ts": w["ts"], "m": m, "up_won": w["up_won"], "up_px": up_px,
-                         "q_final": q_final, "q_twap": q_twap, "volume": w["volume"]})
+                         "q_final": q_final, "q_twap": q_twap, "volume": w["volume"],
+                         "age_s": w["ts"] + 60 * (15 - m) - seen_at,
+                         "moved_3m": (max(recent) - min(recent)) if recent else 0.0})
     d = pd.DataFrame(rows).dropna()
     print(f"{len(d)} (window, minutes-left) rows\n")
+    print("STALENESS CHECK: price points near 50c while the model is confident")
+    conf = (d.q_final - .5).abs() >= .3
+    mid = (d.up_px - .5).abs() <= .03
+    print(f"  rows where model >=80% sure: {int(conf.sum())}; of those, Polymarket price within 47-53c: "
+          f"{int((conf & mid).sum())}")
+    print(f"  of those, price did not move in the previous 3 min: {int((conf & mid & (d.moved_3m == 0)).sum())}")
+    print(f"  median age of the price point used: {d.age_s.median():.0f}s; "
+          f"exact 0.5/0.505/0.495 values: {int(d.up_px.isin([.5, .505, .495]).sum())} of {len(d)}")
+    print("  most common Polymarket prices used:", d.up_px.round(3).value_counts().head(8).to_dict())
+    clean = d[~(conf & mid)]
+    print(f"  dropping the suspicious rows leaves {len(clean)} rows\n")
 
     def logloss(q, y):
         q = q.clip(1e-4, 1 - 1e-4)
@@ -168,6 +182,20 @@ def main():
                             "green_days": f"{int((daily > 0).sum())}/{len(daily)}"})
     with pd.option_context("display.width", 200, "display.max_rows", 100):
         print(pd.DataFrame(out).to_string(index=False))
+
+    print("\nSAME BETS, SUSPICIOUS 47-53c ROWS REMOVED (fee 7%, margin 3c)")
+    for m in (4, 3, 2, 1):
+        s_ = clean[clean.m == m]
+        q_up = s_[best]
+        side_up = q_up >= .5
+        q = np.where(side_up, q_up, 1 - q_up)
+        p = np.where(side_up, s_.up_px, 1 - s_.up_px) + HAIRCUT
+        won = np.where(side_up, s_.up_won, ~s_.up_won.astype(bool)).astype(float)
+        f = fee(p, .07)
+        take = (q - p - f >= .03) & (p < .99)
+        pnl = (won - p - f)[take]
+        print(f"  {m} min left: {int(take.sum())} bets, won {won[take].mean() * 100:.1f}%, avg price {p[take].mean():.3f}, "
+              f"ROI {pnl.sum() / (p + f)[take].sum() * 100:+.2f}%")
 
     print("\nTHE INFLUENCER RULE: buy the leading side when it costs 75-92c, 1-4 min left (fee 7%)")
     for m in (4, 3, 2, 1):
