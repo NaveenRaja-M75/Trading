@@ -47,3 +47,12 @@ Daily 05:35 -> program `python`, arguments `-m jevbot weekly-live ... --execute
 - Never sells coins you owned before.
 - Loss limit sells and stops until you delete `state/WEEKLY_KILL_SWITCH`.
 - Trades on slow 200-day trends, so it is not racing faster bots.
+
+## What to expect
+- About 3 orders a month with 20 USDT (never more than 1 a day); most days nothing happens.
+- Gains stay in the bot and compound; when you add money, raise `WEEKLY_BUDGET_USDT` by the same
+  amount and keep `WEEKLY_MAX_LOSS_USDT` near a quarter of it.
+- A stop order rests on Binance at your loss-limit price after every run, so the limit holds even
+  with the computer off. Do not cancel it by hand.
+- GitHub opens an issue (you get an email) when something needs attention: see `docs/RUNBOOK.md`.
+- Tax time: `python -m jevbot tax-report` lists every sale for the crypto (VDA) schedule.

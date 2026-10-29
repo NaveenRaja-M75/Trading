@@ -248,3 +248,25 @@ data only with a 7-day gap (leakage check passed).
 Across sections 2-15 the result is the same: nothing here can forecast short-term direction.
 What works is not forecasting but reacting: hold while the trend is up, hold less when the market
 is wild, step aside in downtrends. That is the live rule.
+
+## 16. Stress tests and crash guards
+**Every real crisis since 2018, whole plan (35/35/30) vs holding Bitcoin:** 2018 crypto winter
+-2.1% vs -47.3%; COVID crash -21.5% vs -32.6% (the plan's worst; new high 153 days later);
+May 2021 -5.6% vs -48.0%; LUNA -2.8% vs -51.0%; FTX -2.5% vs -26.4%; all of 2022 -3.9% vs -60.2%;
+Aug 2024 -2.0% vs -19.0%. Worst single day -6.5%, worst 30 days -21.4%.
+
+**Hourly crash guards** (`research/crash_guard_test.py`, BTC hourly 2018 -> now): the daily-only
+live rule made +46.3%/yr, Sharpe 1.24. Every guard did worse: sell on a 5/7/10/15% drop within the
+day +41.2/43.8/42.1/43.7%; trailing 5-15% +32.6 to 43.7%. They mostly sold panics that bounced
+(e.g. 26 Nov 2020: sold, +47.5% thirty days later). Kept: daily check only, plus a disaster stop at
+the loss-limit price resting on the exchange (works with the computer off).
+
+## 17. How often the live bot trades, and compounding (`research/trade_frequency.py`)
+Replay of the live logic from June 2018, gains reinvested. A flaw was found and fixed here: with
+only the 5 USDT minimum, a growing account placed ~21 orders a month for tiny volatility tweaks;
+orders now also need >= 5% of equity, as in every backtest.
+- $20, BTC only: **3.2 orders a month** on average, at most 1 a day, no order on 89% of days;
+  $20 -> $421 (x21), worst drop -46%.
+- $200, BTC + ETH: 6.5 orders a month; $200 -> $4,469 (x22), worst drop -41%.
+- $20 + $17 added every month: $1,720 put in -> $10,173 (x5.9), worst drop -39%.
+These years include one of crypto's biggest booms; plan for far less.
