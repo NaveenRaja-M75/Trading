@@ -1,0 +1,299 @@
+<title>Road to $10 a Day</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;700;800&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: one reading column; a two-pane "your numbers / where you stand" band, then plan, chart, evidence. */
+:root {
+  --bg: #f2f4f6; --surface: #ffffff; --ink: #14202b; --muted: #5b6875; --line: #dde3e9;
+  --accent: #0f7b5f; --accent-soft: #e2f2ec; --warn: #a8670f; --bad: #b42318; --good: #0f7b5f;
+  --s10: #8a97a3; --s15: #0f7b5f; --s20: #2f6db5; --goal: #a8670f;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "IBM Plex Sans", "Segoe UI", Roboto, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) {
+  --bg: #0d1318; --surface: #151e26; --ink: #e5ecf2; --muted: #93a2b0; --line: #26333e;
+  --accent: #3cc59b; --accent-soft: #143a30; --warn: #e3a447; --bad: #f0786b; --good: #3cc59b;
+  --s10: #7d8b97; --s15: #3cc59b; --s20: #6ea8f0; --goal: #e3a447; color-scheme: dark } }
+:root[data-theme="dark"] {
+  --bg: #0d1318; --surface: #151e26; --ink: #e5ecf2; --muted: #93a2b0; --line: #26333e;
+  --accent: #3cc59b; --accent-soft: #143a30; --warn: #e3a447; --bad: #f0786b; --good: #3cc59b;
+  --s10: #7d8b97; --s15: #3cc59b; --s20: #6ea8f0; --goal: #e3a447; color-scheme: dark }
+* { box-sizing: border-box }
+body { background: var(--bg); color: var(--ink); font: 15px/1.55 var(--body);
+  padding-block: 28px 56px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)) }
+main { max-width: 960px; margin: 0 auto; display: grid; gap: 28px }
+h1, h2 { font-family: var(--display); text-wrap: balance; margin: 0; letter-spacing: -0.01em }
+h1 { font-size: clamp(30px, 6vw, 48px); font-weight: 800; line-height: 1.05 }
+h2 { font-size: 20px; font-weight: 700 }
+p { margin: 0 }
+.lede { color: var(--muted); max-width: 62ch; margin-top: 8px }
+.num { font-family: var(--mono); font-variant-numeric: tabular-nums }
+.eyebrow { font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em; color: var(--muted); font-weight: 600 }
+.band { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr); gap: 20px }
+@media (max-width: 760px) { .band { grid-template-columns: minmax(0, 1fr) } }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 20px; min-width: 0 }
+form { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px 14px }
+label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); font-weight: 500 }
+input, select { font: 15px var(--mono); color: var(--ink); background: var(--bg); border: 1px solid var(--line);
+  border-radius: 6px; padding: 8px 10px; width: 100%; min-width: 0 }
+input:focus-visible, select:focus-visible, button:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px }
+.wide { grid-column: 1 / -1 }
+.stand { display: grid; gap: 16px }
+.big { font-family: var(--display); font-weight: 800; font-size: clamp(34px, 7vw, 52px); line-height: 1 }
+.row { display: flex; flex-wrap: wrap; gap: 8px 24px }
+.kv { display: grid; gap: 2px; min-width: 0 }
+.kv b { font-family: var(--mono); font-weight: 500; font-size: 17px }
+.bar { height: 10px; background: var(--line); border-radius: 99px; overflow: hidden }
+.bar > i { display: block; height: 100%; background: var(--accent); width: 0; border-radius: 99px; transition: width .4s }
+@media (prefers-reduced-motion: reduce) { .bar > i { transition: none } }
+table { border-collapse: collapse; width: 100% }
+th, td { text-align: left; padding: 8px 10px; border-bottom: 1px solid var(--line); vertical-align: top }
+th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600 }
+td.r, th.r { text-align: right }
+.tablewrap { overflow-x: auto }
+.pill { display: inline-block; padding: 2px 9px; border-radius: 99px; font-size: 12px; font-weight: 600 }
+.pill.good { background: var(--accent-soft); color: var(--good) }
+.pill.bad { background: color-mix(in srgb, var(--bad) 14%, transparent); color: var(--bad) }
+.pill.warn { background: color-mix(in srgb, var(--warn) 16%, transparent); color: var(--warn) }
+.note { font-size: 13px; color: var(--muted) }
+.legend { display: flex; flex-wrap: wrap; gap: 6px 16px; font-size: 13px; color: var(--muted) }
+.legend span::before { content: ""; display: inline-block; width: 14px; height: 3px; margin-right: 6px; vertical-align: middle; background: var(--c) }
+svg text { fill: var(--muted); font: 11px var(--mono) }
+.signal { display: grid; grid-template-columns: auto minmax(0, 1fr); gap: 16px; align-items: center }
+.dots { display: flex; gap: 6px }
+.dots i { width: 22px; height: 22px; border-radius: 50%; border: 2px solid var(--accent) }
+.dots i.on { background: var(--accent) }
+.grid2 { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 20px }
+@media (max-width: 760px) { .grid2 { grid-template-columns: minmax(0, 1fr) } }
+ul.flat { margin: 0; padding: 0; list-style: none; display: grid; gap: 8px }
+ul.flat li { display: flex; justify-content: space-between; gap: 12px; border-bottom: 1px dashed var(--line); padding-bottom: 6px }
+ul.flat li span:last-child { font-family: var(--mono); white-space: nowrap }
+</style>
+
+<main>
+  <header>
+    <p class="eyebrow">jevbot · personal plan</p>
+    <h1>Road to $10 a day</h1>
+    <p class="lede">$10 a day comes from the size of the money, not from a faster bot. This page shows how much you need,
+      how far along you are, and exactly where this month's money goes. Your numbers stay in this browser.</p>
+  </header>
+
+  <section class="band">
+    <div class="panel">
+      <h2>Your numbers</h2>
+      <p class="note" style="margin:4px 0 14px">Rupee value of what you hold today, and what you add each month.</p>
+      <form id="f" autocomplete="off">
+        <label for="nifty">Nifty 50 held (₹)<input id="nifty" type="number" min="0" step="100" inputmode="numeric"></label>
+        <label for="gold">Gold held (₹)<input id="gold" type="number" min="0" step="100" inputmode="numeric"></label>
+        <label for="crypto">Crypto bot (₹)<input id="crypto" type="number" min="0" step="100" inputmode="numeric"></label>
+        <label for="monthly">Add each month (₹)<input id="monthly" type="number" min="0" step="500" inputmode="numeric"></label>
+        <label for="ret">Yearly return to plan with<select id="ret">
+          <option value="0.10">10% (careful)</option><option value="0.15">15% (middle)</option><option value="0.20">20% (good years)</option>
+        </select></label>
+        <label for="fx">Rupees per dollar<input id="fx" type="number" min="1" step="0.5"></label>
+        <label for="goal" class="wide">Goal ($ a day)<input id="goal" type="number" min="1" step="1"></label>
+      </form>
+    </div>
+
+    <div class="panel stand" aria-live="polite">
+      <p class="eyebrow">Where you stand</p>
+      <div><div class="big num" id="yrs">—</div><p class="note" id="yrsNote"></p></div>
+      <div class="bar" role="progressbar" aria-label="Progress toward the goal" aria-valuemin="0" aria-valuemax="100" id="barWrap"><i id="bar"></i></div>
+      <div class="row">
+        <div class="kv"><span class="note">You have</span><b id="have">—</b></div>
+        <div class="kv"><span class="note">You need</span><b id="need">—</b></div>
+        <div class="kv"><span class="note">Progress</span><b id="pct">—</b></div>
+        <div class="kv"><span class="note">Goal per day</span><b id="perday">—</b></div>
+      </div>
+      <p class="note" id="lever"></p>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>This month's money</h2>
+    <p class="note" style="margin:4px 0 12px">Split so your holdings move toward 35% Nifty, 35% gold, 30% crypto. New money tops up
+      whatever is behind, so nothing is sold and no tax is triggered. <span id="april"></span></p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Put into</th><th class="r">Amount</th><th class="r">Share after</th><th class="r">Target</th></tr></thead>
+      <tbody id="split"></tbody>
+    </table></div>
+  </section>
+
+  <section class="panel">
+    <h2>How it grows</h2>
+    <p class="note" style="margin:4px 0 10px">Your money with monthly additions, compounded monthly, at three yearly returns. The dashed line is the goal at the return you picked.</p>
+    <div class="legend"><span style="--c:var(--s10)">10% a year</span><span style="--c:var(--s15)">15% a year</span><span style="--c:var(--s20)">20% a year</span><span style="--c:var(--goal)">goal</span></div>
+    <svg id="chart" viewBox="0 0 760 300" width="100%" role="img" aria-label="Projected portfolio value over the years"></svg>
+  </section>
+
+  <section class="grid2">
+    <div class="panel">
+      <p class="eyebrow">What the bot sees · 28 Oct 2026</p>
+      <div class="signal" style="margin-top:10px">
+        <div class="dots" aria-label="2 of 3 averages"><i class="on"></i><i class="on"></i><i></i></div>
+        <div><h2>Hold 67% in Bitcoin</h2>
+          <p class="note">BTC <span class="num">$81,344</span> is above its 100-day (<span class="num">$75,969</span>) and
+          200-day (<span class="num">$73,111</span>) averages but under its 50-day. With $20 it would buy <span class="num">$13.40</span>.</p></div>
+      </div>
+    </div>
+    <div class="panel">
+      <p class="eyebrow">Your $20 over the next 12 months</p>
+      <p class="note" style="margin:6px 0 10px">10,000 simulated years built from real Bitcoin history since 2022, $5 loss limit.</p>
+      <ul class="flat">
+        <li><span>Chance of ending up</span><span>71%</span></li>
+        <li><span>Typical result</span><span>$24.36</span></li>
+        <li><span>Bad year (1 in 20)</span><span>$14.82</span></li>
+        <li><span>Good year (1 in 20)</span><span>$48.09</span></li>
+      </ul>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2>Why this plan</h2>
+    <p class="note" style="margin:4px 0 12px">Results after trading costs, before tax. The plan was picked by a fixed rule on older data, then tested once on two locked years.</p>
+    <div class="tablewrap"><table>
+      <thead><tr><th>Test</th><th class="r">Per year</th><th class="r">Worst drop</th><th>Verdict</th></tr></thead>
+      <tbody>
+        <tr><td>Plan (35/35/30), locked years Oct 2024 to Oct 2026</td><td class="r num">+19.3%</td><td class="r num">−11.0%</td><td><span class="pill good">best tested</span></td></tr>
+        <tr><td>Plan, since 2018</td><td class="r num">+25.9%</td><td class="r num">−22.3%</td><td><span class="pill good">worst year −3.9%</span></td></tr>
+        <tr><td>Old plan (40/40/20, 200-day rule), locked years</td><td class="r num">+13.6%</td><td class="r num">−13.5%</td><td><span class="pill warn">replaced</span></td></tr>
+        <tr><td>Bot rule on Bitcoin, 2017 to now</td><td class="r num">+60.5%</td><td class="r num">−47.4%</td><td><span class="pill good">beat holding</span></td></tr>
+        <tr><td>Holding Bitcoin, 2017 to now</td><td class="r num">+56.8%</td><td class="r num">−83.4%</td><td><span class="pill warn">deep crashes</span></td></tr>
+      </tbody>
+    </table></div>
+    <p class="note" style="margin-top:12px">The bot wins only about 18% of its trades, but an average win is +32.5% and an average loss is −3.7%.
+      It loses small and often, and wins big and rarely.</p>
+  </section>
+
+  <section class="panel">
+    <h2>Tested and rejected</h2>
+    <p class="note" style="margin:4px 0 12px">Every idea below was run on real market data with fees. None beat the plan.</p>
+    <ul class="flat">
+      <li><span>Fast trading on 1 to 15 minute charts</span><span>−2% to −84%</span></li>
+      <li><span>"Medallion" stat-arb, ETH/SOL/BNB vs BTC</span><span>−37% to −84%</span></li>
+      <li><span>Polymarket 15-minute Bitcoin clock</span><span>−1% to −13%</span></li>
+      <li><span>Polymarket soccer favourites at 75 to 92¢</span><span>−2.2% to −2.8%</span></li>
+      <li><span>AI judge "over 90% sure" (Laya, like Jev)</span><span>47.6% right</span></li>
+      <li><span>Self-learning predictor, 515,000 calls</span><span>50.4% right</span></li>
+      <li><span>Kalman filter trend (rocket tracking)</span><span>−68% worst drop</span></li>
+      <li><span>Hurst exponent regime (fractal physics)</span><span>+8.7%/yr</span></li>
+    </ul>
+  </section>
+
+  <footer class="note">Past results, not a promise: plan with 10 to 15% a year. Crypto gains in India are taxed 31.2% per winning trade;
+    Nifty and gold held over 12 months pay 12.5%. Full results: RESULTS.md in the NaveenRaja-M75/Trading repository.</footer>
+</main>
+
+<script>
+(function () {
+  const TARGET = { nifty: 0.35, gold: 0.35, crypto: 0.30 };
+  const NAMES = { nifty: "Nifty 50 index fund / ETF", gold: "Gold ETF", crypto: "Crypto bot (BTC, Binance)" };
+  const DEF = { nifty: 0, gold: 0, crypto: 0, monthly: 5000, ret: "0.15", fx: 88, goal: 10 };
+  const ids = Object.keys(DEF);
+  const $ = (id) => document.getElementById(id);
+  let saved = {};
+  try { saved = JSON.parse(localStorage.getItem("road10") || "{}") || {}; } catch (e) { saved = {}; }
+  ids.forEach((k) => { $(k).value = saved[k] ?? DEF[k]; });
+
+  const inr = (x) => {
+    if (!isFinite(x)) return "—";
+    if (x >= 1e7) return "₹" + (x / 1e7).toFixed(2) + " crore";
+    if (x >= 1e5) return "₹" + (x / 1e5).toFixed(2) + " lakh";
+    return "₹" + Math.round(x).toLocaleString("en-IN");
+  };
+  const num = (id) => Math.max(0, parseFloat($(id).value) || 0);
+
+  function path(start, add, r, months) {
+    const m = Math.pow(1 + r, 1 / 12) - 1, out = [start];
+    let v = start;
+    for (let i = 1; i <= months; i++) { v = v * (1 + m) + add; out.push(v); }
+    return out;
+  }
+  function yearsTo(start, add, r, goal) {
+    if (start >= goal) return 0;
+    const m = Math.pow(1 + r, 1 / 12) - 1;
+    let v = start;
+    for (let i = 1; i <= 720; i++) { v = v * (1 + m) + add; if (v >= goal) return i / 12; }
+    return null;
+  }
+
+  function render() {
+    const v = Object.fromEntries(ids.map((k) => [k, k === "ret" ? $(k).value : num(k)]));
+    try { localStorage.setItem("road10", JSON.stringify(v)); } catch (e) {}
+    const r = parseFloat(v.ret), fx = v.fx || 88, perDay = v.goal * fx;
+    const have = v.nifty + v.gold + v.crypto;
+    const need = perDay * 365 / r;
+    const after = have + v.monthly;
+    const yrs = yearsTo(after, v.monthly, r, need);
+
+    $("have").textContent = inr(have);
+    $("need").textContent = inr(need);
+    $("perday").textContent = "₹" + Math.round(perDay).toLocaleString("en-IN");
+    const pct = Math.min(100, (have / need) * 100);
+    $("pct").textContent = pct.toFixed(pct < 1 ? 2 : 1) + "%";
+    $("bar").style.width = Math.max(pct, 0.5) + "%";
+    $("barWrap").setAttribute("aria-valuenow", pct.toFixed(1));
+    if (yrs === null) { $("yrs").textContent = "60+ years"; }
+    else { $("yrs").textContent = yrs < 1 ? "under 1 year" : yrs.toFixed(1) + " years"; }
+    $("yrsNote").textContent = "to $" + v.goal + " a day at " + Math.round(r * 100) + "% a year, adding " + inr(v.monthly) + " every month";
+    const faster = yearsTo(after + v.monthly, v.monthly * 2, r, need);
+    $("lever").textContent = (yrs !== null && faster !== null && v.monthly > 0)
+      ? "Doubling the monthly amount to " + inr(v.monthly * 2) + " gets you there in " + faster.toFixed(1) + " years."
+      : "Add a monthly amount to see how fast it can grow.";
+
+    // this month's split: buy-only toward targets
+    const cur = { nifty: v.nifty, gold: v.gold, crypto: v.crypto };
+    const total = have + v.monthly;
+    const gap = Object.fromEntries(Object.keys(TARGET).map((k) => [k, Math.max(0, TARGET[k] * total - cur[k])]));
+    const g = Object.values(gap).reduce((a, b) => a + b, 0);
+    const rows = Object.keys(TARGET).map((k) => {
+      const buy = g > 0 ? v.monthly * gap[k] / g : v.monthly * TARGET[k];
+      const share = total > 0 ? (cur[k] + buy) / total : 0;
+      return `<tr><td>${NAMES[k]}</td><td class="r num"><strong>${inr(buy)}</strong></td><td class="r num">${Math.round(share * 100)}%</td><td class="r num">${TARGET[k] * 100}%</td></tr>`;
+    });
+    $("split").innerHTML = rows.join("");
+    $("april").textContent = new Date().getMonth() === 3
+      ? "It is April: check whether any part is more than 5 points off target and rebalance once if so."
+      : "Every April, check once whether any part is more than 5 points off target.";
+
+    drawChart(after, v.monthly, r, need);
+  }
+
+  function drawChart(start, add, r, need) {
+    const W = 760, H = 300, L = 72, R = 16, T = 14, B = 34;
+    const yrsMax = Math.min(30, Math.max(10, Math.ceil((yearsTo(start, add, 0.10, need) || 30))));
+    const months = yrsMax * 12;
+    const series = [[0.10, "var(--s10)"], [0.15, "var(--s15)"], [0.20, "var(--s20)"]].map(([rr, c]) => [path(start, add, rr, months), c]);
+    const ymax = Math.max(need * 1.1, ...series.map(([p]) => p[p.length - 1])) || 1;
+    const x = (i) => L + (i / months) * (W - L - R);
+    const y = (val) => T + (1 - Math.min(val, ymax) / ymax) * (H - T - B);
+    let s = "";
+    for (let k = 0; k <= 4; k++) {
+      const val = ymax * k / 4, yy = y(val);
+      s += `<line x1="${L}" x2="${W - R}" y1="${yy}" y2="${yy}" stroke="var(--line)" stroke-width="1"/>`;
+      s += `<text x="${L - 8}" y="${yy + 4}" text-anchor="end">${inr(val).replace("₹", "")}</text>`;
+    }
+    const step = yrsMax <= 12 ? 2 : 5;
+    for (let yr = 0; yr <= yrsMax; yr += step) {
+      s += `<text x="${x(yr * 12)}" y="${H - 10}" text-anchor="middle">${yr}y</text>`;
+    }
+    const gy = y(need);
+    s += `<line x1="${L}" x2="${W - R}" y1="${gy}" y2="${gy}" stroke="var(--goal)" stroke-width="1.5" stroke-dasharray="6 5"/>`;
+    s += `<text x="${W - R}" y="${gy - 6}" text-anchor="end" style="fill:var(--goal)">goal ${inr(need)}</text>`;
+    series.forEach(([p, c]) => {
+      const d = p.map((val, i) => (i ? "L" : "M") + x(i).toFixed(1) + " " + y(val).toFixed(1)).join(" ");
+      s += `<path d="${d}" fill="none" stroke="${c}" stroke-width="2.2"/>`;
+      const last = p[p.length - 1];
+      s += `<circle cx="${x(months)}" cy="${y(last)}" r="3.5" fill="${c}"/>`;
+    });
+    $("chart").innerHTML = s;
+  }
+
+  $("f").addEventListener("input", render);
+  $("f").addEventListener("submit", (e) => e.preventDefault());
+  render();
+})();
+</script>
