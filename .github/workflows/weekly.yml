@@ -9,6 +9,7 @@ on:
 
 permissions:
   contents: write
+  issues: write
 
 concurrency:
   group: paper
@@ -36,6 +37,14 @@ jobs:
         run: |
           WEEKLY_BUDGET_USDT=20 WEEKLY_MAX_LOSS_USDT=5 python -m jevbot weekly-live \
             --strategy vote_voltgt --every-days 1 --symbols BTCUSDT --force | tee state/REHEARSAL.txt
+      - name: Alerts (opens a GitHub issue, which notifies you, only when something needs attention)
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          python -m jevbot alerts --out state/ALERTS.md
+          if [ -s state/ALERTS.md ]; then
+            gh issue create -R "$GITHUB_REPOSITORY" --title "jevbot alert $(date -u +%F)" --body-file state/ALERTS.md
+          fi
       - name: Save paper accounts
         run: |
           cd state

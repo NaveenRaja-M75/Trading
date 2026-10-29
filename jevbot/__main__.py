@@ -276,6 +276,29 @@ def cmd_plan(s: Settings, a) -> None:
         Path(a.out).write_text(text + "\n")
 
 
+def cmd_alerts(s: Settings, a) -> None:
+    import pandas as pd
+    from . import alerts
+    from .data import fetch_recent
+    closes = {}
+    for sym in [x.strip().upper() for x in a.symbols.split(",") if x.strip()]:
+        try:
+            closes[sym] = fetch_recent(sym, "1d", 400)
+        except Exception as e:
+            print(f"{sym}: could not fetch ({e})")
+    found = alerts.check(closes, Path(a.state), Path(a.paper) if a.paper else None, pd.Timestamp.now(tz="UTC"))
+    text = "\n".join(f"- {x}" for x in found)
+    print(text or "no alerts")
+    if a.out:
+        Path(a.out).write_text(text + "\n" if found else "")
+
+
+def cmd_tax(s: Settings, a) -> None:
+    from . import tax
+    n, total = tax.write([Path(p) for p in a.books], a.usd_inr, Path(a.out))
+    print(f"{n} sales written to {a.out}; tax on gains (30% + 4% cess): Rs {total:,.0f}")
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -414,6 +437,15 @@ def main(argv=None) -> None:
     pl.add_argument("--usd-inr", type=float, default=88.0)
     pl.add_argument("--goal", type=float, default=10.0, help="dollars per day")
     pl.add_argument("--out")
+    al = sub.add_parser("alerts", help="daily checks that deserve attention (used by GitHub to open issues)")
+    al.add_argument("--symbols", default="BTCUSDT")
+    al.add_argument("--state", default="state/alerts_state.json")
+    al.add_argument("--paper", default="state/weekly_vote_voltgt.json")
+    al.add_argument("--out")
+    tx = sub.add_parser("tax-report", help="CSV of every sale for the Schedule VDA tax return")
+    tx.add_argument("--books", nargs="+", default=["state/live_weekly_main_BTCUSDT.json", "state/live_weekly_main_ETHUSDT.json"])
+    tx.add_argument("--usd-inr", type=float, default=88.0)
+    tx.add_argument("--out", default="reports/schedule_vda.csv")
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -424,7 +456,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "analyze": cmd_analyze, "plan": cmd_plan, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "analyze": cmd_analyze, "plan": cmd_plan, "alerts": cmd_alerts, "tax-report": cmd_tax, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":
