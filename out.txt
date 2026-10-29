@@ -1,0 +1,33 @@
+BTC-USD: 4426 bars 2014-09-17 -> 2026-10-29, median gap 1 day(s)
+   largest daily moves: 2020-03-12 -37.2%, 2017-12-07 +25.2%, 2017-07-20 +23.9%
+gen 5 parents (best before 2017): ['mom[28]|vt40/60', 'mom[28]|vt60/30', 'mom[28]|vt40/60|ema5', 'ma[200]|vt40/60', 'mom[30,90,180]|vt40/60']
+
+######## BTC (searched): 2014-09-17 -> 2026-10-29, test years from 2017
+     pool  wf_best_cagr  wf_best_dd  wf_best_sharpe  wf_robust_cagr  wf_robust_dd  wf_robust_sharpe   PBO    DSR               full_best  full_best_sharpe
+gen                                                                                                                                                       
+0       3          56.9       -83.4            1.13            74.6         -61.8              1.30  0.30  1.000  ma[50,100,200]|vt60/60              1.48
+1      13          40.5       -83.4            0.93            58.1         -61.7              1.18  0.64  1.000  ma[50,100,200]|vt60/60              1.48
+2      56          35.0       -33.2            1.18            44.9         -31.8              1.41  0.46  1.000      ma[50,200]|vt40/60              1.60
+3      84          40.1       -33.2            1.27            41.2         -51.8              1.18  0.37  0.996   mom[28]|vt60/60|ma200              1.63
+4     134          39.8       -33.2            1.26            35.2         -41.6              1.10  0.41  0.999   mom[28]|vt60/60|ma200              1.63
+5     174          32.6       -32.3            1.32            38.4         -37.3              1.28  0.43  1.000      ma[42,225]|vt30/60              1.66
+  gen 0 yearly picks: 2017:hold0, 2018:hold0, 2019:ma[50,100,200]|vt60/60, 2020:ma[50,100,200]|vt60/60, 2021:ma[50,100,200]|vt60/60, 2022:ma[50,100,200]|vt60/60, 2023:ma[50,100,200]|vt60/60, 2024:ma[50,100,200]|vt60/60, 2025:ma[50,100,200]|vt60/60, 2026:ma[50,100,200]|vt60/60
+  gen 5 yearly picks: 2017:mom[28]|vt40/60, 2018:ma[42,225]|vt30/60, 2019:ma[42,225]|vt30/60, 2020:ma[42,225]|vt30/60, 2021:ma[42,225]|vt30/60, 2022:ma[42,225]|vt30/60, 2023:ma[42,225]|vt30/60, 2024:ma[42,225]|vt30/60, 2025:ma[42,225]|vt30/60, 2026:ma[42,225]|vt30/60
+
+######## ETH (never searched: same pools, same procedure): 2017-10-17 -> 2026-10-28, test years from 2019
+     pool  wf_best_cagr  wf_best_dd  wf_best_sharpe  wf_robust_cagr  wf_robust_dd  wf_robust_sharpe   PBO    DSR               full_best  full_best_sharpe
+gen                                                                                                                                                       
+0       3          42.0       -64.1            0.96            61.2         -67.6              1.03  0.21  0.998  ma[50,100,200]|vt60/60              1.12
+1      13          42.5       -49.0            1.04            40.9         -65.8              0.89  0.32  0.996  ma[50,100,200]|vt60/60              1.12
+2      56          32.5       -63.8            0.87            37.4         -59.0              0.97  0.35  0.996      ma[50,200]|vt60/60              1.20
+3      84          35.5       -58.2            0.90            18.1         -44.8              0.65  0.51  0.953      ma[50,200]|vt60/60              1.20
+4     134          34.6       -58.2            0.89            26.3         -44.0              0.83  0.59  0.969      ma[50,200]|vt60/60              1.20
+5     174          31.2       -58.2            0.85            25.8         -51.5              0.83  0.55  0.973      ma[50,200]|vt60/60              1.20
+  gen 0 yearly picks: 2019:hold0, 2020:ma[50,100,200]|vt60/60, 2021:ma[50,100,200]|vt60/60, 2022:ma[50,100,200]|vt60/60, 2023:ma[50,100,200]|vt60/60, 2024:ma[50,100,200]|vt60/60, 2025:ma[50,100,200]|vt60/60, 2026:ma[50,100,200]|vt60/60
+  gen 5 yearly picks: 2019:kalman0.01, 2020:mom[90]|vt60/30, 2021:kalman0.0001|vt60/60, 2022:ma[20,50,100]|vt60/30|ema5, 2023:ma[63,211]|vt34/30, 2024:ma[63,211]|vt34/30, 2025:ma[50,200]|vt60/60|ma200, 2026:mom[32]|vt38/60
+
+BTC same test years: current rule {'name': 'current', 'total_pct': np.float64(8467.8), 'cagr_pct': np.float64(57.3), 'max_dd_pct': -46.2, 'sharpe': 1.37, 'losing_years': '3/10', 'worst_year_pct': -25.6}
+BTC same test years: hold         {'name': 'hold', 'total_pct': np.float64(8206.7), 'cagr_pct': np.float64(56.8), 'max_dd_pct': -83.4, 'sharpe': 1.01, 'losing_years': '4/10', 'worst_year_pct': -73.6}
+
+ETH same test years: current rule {'name': 'current', 'total_pct': np.float64(1987.0), 'cagr_pct': np.float64(47.5), 'max_dd_pct': -43.2, 'sharpe': 1.14, 'losing_years': '1/8', 'worst_year_pct': -25.1}
+ETH same test years: hold         {'name': 'hold', 'total_pct': np.float64(1695.1), 'cagr_pct': np.float64(44.7), 'max_dd_pct': -79.3, 'sharpe': 0.87, 'losing_years': '4/8', 'worst_year_pct': -67.5}
