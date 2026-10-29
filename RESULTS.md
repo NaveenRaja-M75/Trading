@@ -171,3 +171,23 @@ attempt; `python research/macro_dial_test.py` runs it from a home connection.
 wins 55% with equal-size wins and losses makes +0.10% per trade before tax and loses -0.07%
 after it. High-velocity trading needs a far bigger edge in India than elsewhere; the live
 200-day setup (wins +38.6% vs losses -7.4%) stays clearly positive after tax.
+
+## 12. Nifty 50 and gold (India), and a rupee portfolio with crypto (`research/india_test.py`)
+Data: Nifty 50 index (^NSEI, price only: holding also earns ~1.3%/yr dividends not counted),
+gold = gold futures x USD/INR, crypto from Binance x USD/INR. Daily data, guarded against
+non-daily bars and bad ticks (two earlier runs were rejected: Yahoo's range=max returned monthly
+bars, and the NIFTYBEES/GOLDBEES series carried mis-adjusted 2019-20 unit splits).
+
+**The 200-day rule is a crypto tool, not a universal one.** Since 2008:
+- Nifty: rule 5.3%/yr, worst drop -31%; holding 7.3%/yr (+dividends), worst drop -60%.
+- Gold: rule 8.3%/yr, worst drop -42%; holding 14.0%/yr, worst drop -30%. Hold gold.
+
+**Best mix found, since May 2018 (one pre-set mix, not searched):**
+40% Nifty + 40% gold held, 20% BTC/ETH on the 200-day rule: **+21.3%/yr, worst drop -23.8%,
+Sharpe 1.42 (best of all tested), worst year -4.3%, 2 small losing years of 9.**
+Holding Nifty + gold 50/50: +15.0%/yr, worst drop -20%. Hold all four: +29.7%/yr but -52.8%.
+
+Caveats: 8.5 years only, with an exceptional gold run (+20%/yr since 2020) and a crypto bull
+market; expect less. The mix was chosen after seeing that holding suits Nifty/gold and the rule
+suits crypto. Tax is far kinder on the core: equity/gold ETFs held > 12 months pay 12.5% on
+gains (equity: first Rs 1.25 lakh/yr exempt), and losses offset gains; crypto pays 31.2%.
