@@ -30,7 +30,7 @@ def replay(px: pd.DataFrame, start_usdt: float, monthly_add: float = 0.0):
         equity = cash + sum(qty[c] * p[c] for c in px.columns)
         for c in sorted(px.columns, key=lambda c: w[c].iloc[t]):          # sells first
             delta = w[c].iloc[t] * equity - qty[c] * p[c]
-            if abs(delta) >= MIN_ORDER or (w[c].iloc[t] == 0 and qty[c] * p[c] >= MIN_ORDER):
+            if abs(delta) >= max(MIN_ORDER, 0.05 * equity) or (w[c].iloc[t] == 0 and qty[c] * p[c] >= MIN_ORDER):
                 if delta < 0:
                     sell = min(-delta, qty[c] * p[c])
                     qty[c] -= sell / p[c]
@@ -57,8 +57,9 @@ def main():
         eq, orders, dep = replay(px, start, add)
         days = len(eq)
         years = days / 365
-        per_month = orders.groupby(orders.day.dt.to_period("M")).size().reindex(
-            pd.period_range(eq.index[0], eq.index[-1], freq="M"), fill_value=0)
+        month = orders.day.dt.tz_localize(None).dt.to_period("M")
+        per_month = orders.groupby(month).size().reindex(
+            pd.period_range(eq.index[0].tz_localize(None), eq.index[-1].tz_localize(None), freq="M"), fill_value=0)
         dd = (eq / eq.cummax() - 1).min()
         print(f"\n######## {name}: {eq.index[0]:%Y-%m-%d} -> {eq.index[-1]:%Y-%m-%d}")
         print(f"  orders: {len(orders)} in {years:.1f} years = {len(orders) / years:.1f} a year, "

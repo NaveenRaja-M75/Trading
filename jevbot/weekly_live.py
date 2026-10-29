@@ -21,6 +21,7 @@ from .data import fetch_recent
 STRATEGIES = portfolio.live_strategies()
 
 
+TRADE_BAND = 0.05    # minimum change, as a share of the bot's equity, worth an order
 MIN_SLOT_USDT = 8.0  # >= 5 USDT exchange minimum plus room for a ~35% drop before a sell is impossible
 
 
@@ -128,7 +129,8 @@ class WeeklyLive:
             return out + [f"REFUSED: {slot:.2f} USDT per coin is too close to Binance's 5 USDT minimum order; "
                           f"positions could not be sold after a dip. Use at most "
                           f"{max(1, int(equity // MIN_SLOT_USDT))} coin(s) for this budget, or a bigger budget."]
-        orders = plan_orders(w, prices, held, equity)
+        # trade only when the target moves by >= 5% of the account (as in every backtest), never under 5 USDT
+        orders = plan_orders(w, prices, held, equity, min_trade=max(5.0, TRADE_BAND * equity))
         targets = ", ".join(f"{s[:-4]} {v * 100:.0f}%" for s, v in w.items() if v > 0) or "all cash"
         out.append(f"targets: {targets}")
         for s, side, usdt in orders:

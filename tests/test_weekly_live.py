@@ -201,3 +201,14 @@ def test_bad_or_stale_data_is_not_traded():
     spiky = d.copy()
     spiky.iloc[-1, spiky.columns.get_loc("close")] *= 3
     assert "bad data" in data_problem(spiky, now)
+
+
+def test_no_micro_trades_on_a_large_account(setup):
+    """A 1% drift on a big account must not trigger an order (band = 5% of equity)."""
+    from jevbot.weekly_live import TRADE_BAND, plan_orders
+    orders = plan_orders({"BTCUSDT": 0.5}, {"BTCUSDT": 100.0}, {"BTCUSDT": 1960.0}, 4000.0,
+                         min_trade=max(5.0, TRADE_BAND * 4000))
+    assert orders == []
+    orders = plan_orders({"BTCUSDT": 0.5}, {"BTCUSDT": 100.0}, {"BTCUSDT": 1600.0}, 4000.0,
+                         min_trade=max(5.0, TRADE_BAND * 4000))
+    assert orders == [("BTCUSDT", "BUY", 400.0)]
