@@ -142,3 +142,32 @@ side Bitcoin is already leading. Read-only research (`research/polymarket_clock.
 
 Verdict: NO EDGE. A one-line timing mistake is enough to produce screenshots like the ones in
 those posts.
+
+## 11. Testing a second AI's "v5.0 Claude + Jev + Medallion" plan
+The plan's own "verification" typed the Jev answers in by hand (0.68 / 0.92) and forced the
+spread on synthetic data; no market data and no Jev call were involved. Tested here instead:
+
+**"Medallion" OU stat-arb** (`research/stat_arb_test.py`, its exact entry rule, BTC vs ETH/SOL/BNB,
+3 years of 1h and 1 year of 15m, fees 0.12% per side per leg): all 24 variants lost,
+**-37% to -84%**, **-48% to -90% after Indian tax**, 90-420 trades a year, win rates 23-53%.
+The hedged pair version (needs shorting) lost the most, because it pays fees on four legs.
+Random entries did about as well (11-90th percentile): no consistent signal.
+
+**Jev ">90% confidence is reliable"**: Laya (open-source Jev alternative) on 800 graded BTC calls:
+when it said >90% it was right **47.6%**; 80-90% -> 47.9%. Confidence measured concentration,
+not correctness, as Jev's own guide warns.
+
+**Polymarket "late closer"** (`research/polymarket_sports.py`, 6,513 resolved soccer markets,
+last 60 days, prices in the 60th-85th minute): Polymarket is well calibrated. Buying the leader
+at 75-92c returned **-2.2% to -2.8%** after the fee and a 1c spread, in both halves of the period.
+92-99c favourites returned about +1% (both halves): the known favourite-longshot bias, but it
+risks ~$9.6 to make ~$0.10 per $10 bet, and real-money betting is restricted in India.
+50-60c looked like +7.7%, then +2.1% on the later half: shrinking, likely noise.
+
+**FRED macro dial**: not tested. fred.stlouisfed.org timed out from GitHub's servers on every
+attempt; `python research/macro_dial_test.py` runs it from a home connection.
+
+**Indian tax and trading speed**: 31.2% on every winning trade, no loss offset. A strategy that
+wins 55% with equal-size wins and losses makes +0.10% per trade before tax and loses -0.07%
+after it. High-velocity trading needs a far bigger edge in India than elsewhere; the live
+200-day setup (wins +38.6% vs losses -7.4%) stays clearly positive after tax.
