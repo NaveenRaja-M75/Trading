@@ -125,3 +125,20 @@ Since 2022 (partly in-sample: the setup was chosen after seeing these years):
 - Total +136%, worst drop -31%; with double fees +132%; **traded 1 day late +78%** (run at 05:35 IST).
 - Next 12 months for 20 USDT (10,000 resampled futures, 5 USDT loss limit): 70% chance of
   ending up, median 23.82, bad case (5%) 14.53, good case (5%) 44.53, loss limit hit 13%.
+
+## 10. Polymarket "crypto clock" (15-minute Bitcoin Up/Down), 1,345 windows, 14 days
+Tested the most concrete idea from popular "AI trading desk" posts: late in each window, buy the
+side Bitcoin is already leading. Read-only research (`research/polymarket_clock.py`).
+
+- First pass looked like a money machine: +10% to +54% ROI after fees, every day green.
+- Cause: the model used a Bitcoin price ~38 s newer than the Polymarket price it was compared
+  with. Given only data as old as Polymarket's price, the model is **less** accurate than
+  Polymarket (log-loss 0.383 vs 0.342) and betting on it **loses 1% to 13%** after fees.
+- Polymarket is well calibrated: its 85c side won 86.5%, its 92.7c side won 92.0%.
+- The posts' rule (buy the leader at 75-92c with 1-4 min left) lost about 3% after the 7% fee
+  curve; break-even only at 1 minute left.
+- Any real edge here is a speed race against professional market makers, and these markets are
+  marked restricted by Polymarket. Real-money betting is also restricted in India.
+
+Verdict: NO EDGE. A one-line timing mistake is enough to produce screenshots like the ones in
+those posts.
