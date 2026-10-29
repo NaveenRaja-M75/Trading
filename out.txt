@@ -1,0 +1,62 @@
+^NSEI: 4690 bars 2007-09-17 -> 2026-10-29, median gap 1 day(s)
+   largest daily moves: 2009-05-18 +17.7%, 2020-03-23 -13.0%, 2008-10-24 -12.2%
+INR=X: 5942 bars 2003-12-01 -> 2026-10-29, median gap 1 day(s)
+   largest daily moves: 2012-01-31 +6.3%, 2012-01-30 -5.9%, 2012-02-01 -5.7%
+GC=F: 6567 bars 2000-08-30 -> 2026-10-29, median gap 1 day(s)
+   largest daily moves: 2026-01-30 -10.8%, 2013-04-15 -9.4%, 2008-09-17 +9.0%
+
+EACH ASSET: 200-day rule vs holding (after costs; after_tax_x = final multiple of 1 after Indian tax)
+         asset      since         name  total_pct  cagr_pct  max_dd_pct  sharpe losing_years  worst_year_pct  after_tax_x  time_in_market_pct
+Nifty 50 index 2008-01-01         hold      273.9       7.3       -59.9    0.46         4/19           -51.8         3.40                 NaN
+Nifty 50 index 2008-01-01 200-day rule      166.0       5.3       -31.2    0.48         8/19           -16.1         2.32                67.0
+Nifty 50 index 2015-01-01         hold      177.1       9.0       -38.4    0.63         2/12           -12.2          NaN                 NaN
+Nifty 50 index 2015-01-01 200-day rule       57.9       3.9       -24.1    0.41         6/12           -11.7          NaN                70.0
+Nifty 50 index 2020-01-01         hold       88.6       9.7       -38.4    0.62          1/7           -12.2          NaN                 NaN
+Nifty 50 index 2020-01-01 200-day rule       56.9       6.8       -19.4    0.63          2/7            -7.6          NaN                73.0
+Gold in rupees 2008-01-01         hold     1074.4      14.0       -29.5    0.78         4/19           -19.0        10.40                 NaN
+Gold in rupees 2008-01-01 200-day rule      346.7       8.3       -42.4    0.55         7/19           -24.0         3.66                75.0
+Gold in rupees 2015-01-01         hold      412.8      14.8       -22.7    0.89         3/12            -6.1          NaN                 NaN
+Gold in rupees 2015-01-01 200-day rule      140.2       7.7       -28.0    0.56         5/12           -24.0          NaN                74.0
+Gold in rupees 2020-01-01         hold      255.1      20.4       -22.7    1.06          2/7            -1.8          NaN                 NaN
+Gold in rupees 2020-01-01 200-day rule      146.1      14.1       -28.0    0.83          3/7            -8.6          NaN                79.0
+
+NEARBY SETTINGS since 2008 (a real effect is a plateau, not one lucky number)
+                   cagr_pct           max_dd_pct            
+band                   0.00 0.02 0.03       0.00  0.02  0.03
+asset          ma                                           
+Gold in rupees 100      2.7  7.0  7.0      -60.2 -48.6 -51.5
+               150      6.2  7.8  8.7      -54.9 -42.3 -43.7
+               200      8.4  8.3  9.1      -37.5 -42.4 -39.9
+               250      8.9  9.2  9.5      -35.9 -38.9 -39.7
+Nifty 50 index 100      7.2  6.8  6.8      -23.3 -34.2 -33.2
+               150      7.0  6.9  6.3      -26.9 -22.3 -29.7
+               200      5.3  5.3  5.7      -27.0 -31.2 -32.3
+               250      6.4  5.8  5.2      -31.4 -27.5 -32.2
+
+COMBINED PORTFOLIO IN RUPEES, since 2018-05-05
+                                                                      name  total_pct  cagr_pct  max_dd_pct  sharpe losing_years  worst_year_pct
+                                          200-day rule on all 4 (25% each)      633.8      26.5       -36.0    1.09          3/9           -10.1
+                                   200-day rule, Nifty + gold only (50/50)      134.7      10.6       -14.2    1.05          2/9            -5.0
+                                   hold all 4 (25% each, rebalanced daily)      806.3      29.7       -52.8    0.91          3/9           -44.2
+                                                   hold Nifty + gold 50/50      227.8      15.0       -20.0    1.18          1/9            -6.4
+                                                            hold BTC (INR)     1095.6      34.0       -74.3    0.79          4/9           -60.2
+                                                                hold Nifty      113.8       9.4       -38.4    0.62          1/9           -13.1
+core-satellite: 40% Nifty + 40% gold held, 20% BTC/ETH on the 200-day rule      412.8      21.3       -23.8    1.42          2/9            -4.3
+
+YEAR BY YEAR (%)
+      core-satellite  rule on all 4  hold all 4  hold Nifty
+2018            -0.6           -7.5       -44.2         2.3
+2019            20.1           17.4        39.2        12.0
+2020            51.1           97.2       175.8        14.9
+2021            35.2           66.4       103.2        24.1
+2022             2.1          -10.1       -30.7         4.3
+2023            28.0           41.5        64.5        20.0
+2024            28.4           38.1        57.9         8.8
+2025            30.9           17.8        21.7        10.5
+2026            -4.3           -0.5        -4.8       -13.1
+
+TODAY: % above/below the 200-day average, and what the rule says
+  NIFTY      -4.4%  -> CASH
+  GOLD       -7.3%  -> CASH
+  BTC_INR   +11.1%  -> HOLD
+  ETH_INR    +9.1%  -> HOLD
