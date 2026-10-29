@@ -1,0 +1,36 @@
+name: yearly-research
+# Every January, re-run the strategy search loop and the ensemble test on fresh data.
+# A switch is only justified if a new rule beats the live one on BOTH BTC and ETH walk-forward
+# test years, with PBO under 0.30 and DSR over 0.95 (see RESULTS.md section 14).
+on:
+  schedule:
+    - cron: "41 4 2 1 *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pandas scipy matplotlib
+      - run: mkdir -p reports
+      - name: Search loop (PBO, deflated Sharpe, walk-forward, ETH replay)
+        run: cd research && PYTHONPATH=.. python search_loop.py 2>&1 | tee ../reports/search_loop.txt && mv reports/* ../reports/ 2>/dev/null || true
+      - name: Ensemble vs current rule
+        run: cd research && PYTHONPATH=.. python ensemble_test.py 2>&1 | tee ../reports/ensemble_test.txt
+      - name: Save to the results-yearly branch
+        if: success()
+        run: |
+          cd reports
+          git init -q -b results-yearly
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "yearly research $(date -u +%F)"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" results-yearly

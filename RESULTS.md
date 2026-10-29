@@ -214,3 +214,23 @@ locked years), trend votes on Nifty/gold too (worse than holding them), **Kalman
 regime filter** (fractal physics: Sharpe 0.35-0.64, kills most of the profit).
 These years had been seen in earlier research, so the walk-forward and the pre-set selection rule
 are the protection; future results will be weaker than these.
+
+## 14. The search loop: can more searching beat the live rule? (`research/search_loop.py`)
+Six generations widened the pool from 3 to 174 rules (trend and momentum votes, volatility targets,
+Hurst / Kalman / 200-day regime filters, smoothing, breakouts, a genetic mutation step ranked only
+on pre-test data). Each pool was scored by the walk-forward result of the search itself, the
+probability of backtest overfitting (PBO, CSCV with 16 blocks) and the deflated Sharpe ratio (DSR).
+Both detectors were validated first: pure noise -> PBO 0.70 / DSR 0.37; one planted edge among 59
+noise rules -> PBO 0.01 / DSR 0.999, and it was found.
+
+BTC test years 2017 -> now: the live rule (50/100/200 vote x 60% volatility target) made
+**+57.3%/yr, worst drop -46%, Sharpe 1.37**. The searched picks: gen 0 Sharpe 1.13, gen 2 1.18,
+gen 5 1.32 with only +32.6%/yr. ETH (never searched), test years 2019 -> now: live rule
+**+47.5%/yr, Sharpe 1.14**; searched picks fell from 1.03 to 0.83 as the pool grew, while PBO
+rose from 0.21 to 0.59. Averaging many rules (`research/ensemble_test.py`, 4 / 24 / 44 rules)
+also fell short on both coins (Sharpe 1.28-1.36 BTC, 1.04-1.12 ETH) and traded more.
+
+Conclusion: the trend + volatility family is real (DSR 0.95-1.00 after 174 tries); which exact
+setting is "best" is luck. The live rule sits on the plateau, and more searching on this data
+only adds overfitting. `.github/workflows/yearly-research.yml` re-runs both tests every January;
+switch only if a rule beats the live one on BOTH coins with PBO < 0.30 and DSR > 0.95.
