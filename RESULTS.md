@@ -234,3 +234,17 @@ Conclusion: the trend + volatility family is real (DSR 0.95-1.00 after 174 tries
 setting is "best" is luck. The live rule sits on the plateau, and more searching on this data
 only adds overfitting. `.github/workflows/yearly-research.yml` re-runs both tests every January;
 switch only if a rule beats the live one on BOTH coins with PBO < 0.30 and DSR > 0.95.
+
+## 15. A trained model predicting the next week (`research/ml_test.py`)
+Gradient-boosted trees, 16 causal features (trend distances, returns, volatility, drawdown, Hurst,
+Kalman slope, RSI, the trend vote), target "higher in 7 days", retrained every January on earlier
+data only with a 7-day gap (leakage check passed).
+- BTC 2018 -> now: accuracy **50.4%** vs 51.9% for always guessing up, **AUC 0.496** (coin flip).
+- ETH 2020 -> now: accuracy **50.9%** vs 52.6%, **AUC 0.495**.
+- Trading on its forecasts: -8% to +6%/yr with drops to -86%; as a filter on the live rule it
+  cut returns. The live rule over the same years: BTC +36.9%/yr (Sharpe 1.08, worst drop -46%),
+  ETH +49.9%/yr (Sharpe 1.17, worst drop -43%).
+
+Across sections 2-15 the result is the same: nothing here can forecast short-term direction.
+What works is not forecasting but reacting: hold while the trend is up, hold less when the market
+is wild, step aside in downtrends. That is the live rule.
