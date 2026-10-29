@@ -1,0 +1,41 @@
+BTC-USD: 4426 bars 2014-09-17 -> 2026-10-29, median gap 1 day(s)
+   largest daily moves: 2020-03-12 -37.2%, 2017-12-07 +25.2%, 2017-07-20 +23.9%
+
+######## BTC, test years 2017 -> now
+                             total_pct  cagr_pct  max_dd_pct  sharpe losing_years  worst_year_pct  avg_exposure_pct  trades_per_year
+name                                                                                                                                
+current rule                    8466.2      57.3       -46.2    1.37         3/10           -25.6              49.0             42.7
+ens_trendvol (44 rules)         5477.9      50.6       -44.2    1.33         3/10           -27.8              47.0             97.8
+ens_ma_vol (24 rules)           6054.1      52.1       -44.8    1.36         3/10           -24.5              47.0             73.2
+ens_core4 (4 classic rules)     6263.0      52.6       -52.6    1.28         3/10           -25.9              50.0             49.4
+hold                            8204.4      56.8       -83.4    1.01         4/10           -73.6               NaN              NaN
+      current rule  ens_trendvol (44 rules)  ens_ma_vol (24 rules)  ens_core4 (4 classic rules)    hold
+2017         434.6                    450.3                  436.4                        513.0  1368.9
+2018         -25.6                    -27.8                  -24.5                        -25.9   -73.6
+2019          95.4                     74.7                   74.7                         87.4    92.2
+2020         195.3                    159.1                  174.7                        148.4   303.2
+2021          22.7                     20.1                   12.6                          4.7    59.7
+2022         -22.7                    -21.5                  -16.5                        -20.3   -64.3
+2023         102.0                     81.5                   84.2                         90.4   155.4
+2024          76.7                     79.2                   75.0                         84.7   121.1
+2025          -2.4                     -2.9                   -6.4                         -4.3    -6.3
+2026          12.9                      4.2                   11.7                          7.2    -8.5
+
+######## ETH, test years 2019 -> now
+                             total_pct  cagr_pct  max_dd_pct  sharpe losing_years  worst_year_pct  avg_exposure_pct  trades_per_year
+name                                                                                                                                
+current rule                    1987.0      47.5       -43.2    1.14          1/8           -25.1              44.0             50.3
+ens_trendvol (44 rules)         1114.9      37.6       -37.1    1.04          1/8           -21.3              40.0            100.3
+ens_ma_vol (24 rules)           1310.3      40.3       -38.6    1.09          1/8           -20.9              40.0             73.8
+ens_core4 (4 classic rules)     1810.6      45.8       -41.4    1.12          1/8           -20.5              43.0             53.0
+hold                            1695.1      44.7       -79.3    0.87          4/8           -67.5               NaN              NaN
+           current rule  ens_trendvol (44 rules)  ens_ma_vol (24 rules)  ens_core4 (4 classic rules)   hold
+open_time                                                                                                  
+2019               32.0                     17.8                   22.2                         32.3   -1.7
+2020              189.5                    158.9                  164.9                        159.1  470.2
+2021              132.1                    147.1                  140.5                        144.7  399.2
+2022              -25.1                    -21.3                  -20.9                        -20.5  -67.5
+2023               50.8                     35.4                   39.1                         42.9   90.8
+2024               35.9                     31.4                   32.1                         55.2   46.3
+2025               36.7                     13.9                   18.4                         24.8  -11.0
+2026               12.0                      1.0                    5.3                          3.5  -20.6
