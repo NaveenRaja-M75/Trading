@@ -1,0 +1,24 @@
+sports endpoint: 494 entries; sample: [{"id": 630, "sport": "ufl", "name": "UFL", "image": "https://polymarket-upload.s3.us-east-2.amazonaws.com/league-icons/ufl.png", "resolution": "https://www.theufl.com/", "ordering": "away", "tags": "1,100639,1186,105925", "primaryTagId": 105925, "series": "12553", "createdAt": "2026-08-07T21:41:19.879539Z"}, {"id": 651, "sport": "cricadt10", "name": "Abu Dhabi T10 League", "image": "https://polym
+soccer-ish tag ids from /sports: ['100100', '100350', '100618', '100639', '100977', '101787', '101962', '102070', '1234', '1494', '306', '780', '82']
+7912 closed soccer events since 2026-08-30
+6616 match-result markets with a kick-off time
+example: {"question": "Will Seattle Sounders FC win on 2026-04-12?", "gameStartTime": "2026-09-24 01:30:00+00", "feesEnabled": true, "feeSchedule": {"exponent": 1, "rate": 0.03, "takerOnly": true, "rebateRate": 0.25}, "sportsMarketType": "moneyline"}
+6513 markets with in-game prices, fee rates seen: [np.float64(0.03), np.float64(0.05)]
+
+CALIBRATION: price of the leading side in the 60th-85th minute vs how often it won
+                 n  avg_price  won_pct  avg_fee
+bucket                                         
+(0.5, 0.6]    3100      0.548    0.596    0.012
+(0.6, 0.7]    1729      0.650    0.672    0.011
+(0.7, 0.75]   1016      0.727    0.717    0.010
+(0.75, 0.8]   1149      0.777    0.758    0.009
+(0.8, 0.85]   1168      0.826    0.819    0.007
+(0.85, 0.9]   1060      0.876    0.887    0.005
+(0.9, 0.92]    390      0.911    0.921    0.004
+(0.92, 0.95]   587      0.936    0.957    0.003
+(0.95, 0.99]  1564      0.974    0.985    0.001
+(0.99, 1.0]   3784      0.998    0.999    0.000
+  minute 60: 2 buys at 75-92c, won 100.0% vs avg price 82.8c -> ROI +18.66% after fee and 1c spread
+  minute 70: 1258 buys at 75-92c, won 82.5% vs avg price 83.1c -> ROI -2.76% after fee and 1c spread
+  minute 80: 1280 buys at 75-92c, won 82.7% vs avg price 83.2c -> ROI -2.58% after fee and 1c spread
+  minute 85: 1291 buys at 75-92c, won 83.3% vs avg price 83.4c -> ROI -2.18% after fee and 1c spread
