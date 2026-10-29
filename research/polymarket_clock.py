@@ -111,9 +111,17 @@ def main():
             seen_at, up_px = price_at(w["hist"], w["ts"] + 60 * (15 - m))
             if up_px is None:
                 continue
+            # FAIR TIMING: the model may only use Binance data that is no newer than the
+            # Polymarket price it is compared with (last full minute before seen_at)
+            fair_bar = pd.Timestamp(seen_at, unit="s", tz="UTC").floor("1min") - pd.Timedelta(minutes=1)
+            if fair_bar < t0 or fair_bar not in close.index:
+                continue
+            fair_left = (w["ts"] + 900 - (fair_bar.timestamp() + 60)) / 60
+            fair_sig = lr.loc[:fair_bar].tail(60).std()
+            q_fair = phi(math.log(close[fair_bar] / p0) / (fair_sig * math.sqrt(max(fair_left, 1 / 60))))
             recent = [p for (s_, p) in w["hist"] if w["ts"] + 60 * (15 - m) - 180 <= s_ <= w["ts"] + 60 * (15 - m)]
             rows.append({"ts": w["ts"], "m": m, "up_won": w["up_won"], "up_px": up_px,
-                         "q_final": q_final, "q_twap": q_twap, "volume": w["volume"],
+                         "q_final": q_final, "q_twap": q_twap, "q_fair": q_fair, "volume": w["volume"],
                          "age_s": w["ts"] + 60 * (15 - m) - seen_at,
                          "moved_3m": (max(recent) - min(recent)) if recent else 0.0})
     d = pd.DataFrame(rows).dropna()
@@ -144,8 +152,10 @@ def main():
         print(f"   {m} min left: polymarket {logloss(s.up_px, yy):.4f}  final {logloss(s.q_final, yy):.4f}  "
               f"twap {logloss(s.q_twap, yy):.4f}")
 
-    best = "q_twap" if logloss(d.q_twap, y) < logloss(d.q_final, y) else "q_final"
-    print(f"\nusing {best} as the fair chance\n")
+    print(f"  {'model: fair timing':20s} log-loss {logloss(d.q_fair, y):.4f}   "
+          f"accuracy {((d.q_fair > .5) == (y == 1)).mean() * 100:5.1f}%   <- only data as old as Polymarket's price")
+    best = "q_fair"
+    print(f"\nusing {best} as the fair chance (no head start over Polymarket)\n")
 
     print("IS POLYMARKET CALIBRATED? (leading side's price vs how often it actually won)")
     lead_px = np.where(d.up_px >= .5, d.up_px, 1 - d.up_px)
