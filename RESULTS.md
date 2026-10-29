@@ -270,3 +270,16 @@ orders now also need >= 5% of equity, as in every backtest.
 - $200, BTC + ETH: 6.5 orders a month; $200 -> $4,469 (x22), worst drop -41%.
 - $20 + $17 added every month: $1,720 put in -> $10,173 (x5.9), worst drop -39%.
 These years include one of crypto's biggest booms; plan for far less.
+
+## 18. Delta-neutral funding carry (`research/funding_carry_test.py`)
+Buy spot, short the same amount of the perpetual, collect funding: no prediction needed.
+Real Binance funding history, Jan 2020 -> Sep 2026:
+- Before tax it works: BTC **+11.7%/yr** on average (ETH +13.8%), losing months only 7%. But it is
+  shrinking: BTC 2020 +17.1%, 2021 +30.6%, 2024 +12.0%, 2025 +5.1%, 2026 so far +2.0%.
+  Holding it only when recent funding was high did worse (+8.2%/yr).
+- **In India it fails.** Each leg is taxed on its own and a loss on one leg cannot offset the
+  other (if perps count as VDA - not settled; confirm with a CA). One leg always gains, so tax hits
+  every year: per 100 of notional, BTC FY2020-21 funding +27.7 but tax -244.7 (BTC rose 784%);
+  FY2023-24 +11.4 vs -47.0. After tax it lost money in 5 of 8 financial years on BTC, 5 of 8 on ETH.
+- Binance's BTC perpetual needs ~100 USDT per order, so a 20 USDT account cannot hold the hedge.
+Verdict: a real strategy for other countries and bigger accounts; not usable here.
