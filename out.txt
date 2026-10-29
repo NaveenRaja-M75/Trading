@@ -1,0 +1,32 @@
+
+######## $20, BTC only: 2018-06-04 -> 2026-10-28
+  orders: 327 in 8.4 years = 38.9 a year, 3.2 a month on average
+  months with 0 orders: 20%   1-2 orders: 30%   3+: 50%   busiest month: 11 orders
+  days with any order: 10.7% of days (never more than 1 order(s) in a day)
+  average order size: $63.27; smallest $5.18
+  money put in: $20  ->  ended with $421  (x21.0); worst drop -46%
+  end of each year: 2018 $18, 2019 $37, 2020 $109, 2021 $139, 2022 $105, 2023 $215, 2024 $382, 2025 $371, 2026 $421
+
+######## $60, BTC + ETH: 2018-06-04 -> 2026-10-28
+  orders: 642 in 8.4 years = 76.4 a year, 6.4 a month on average
+  months with 0 orders: 13%   1-2 orders: 12%   3+: 75%   busiest month: 20 orders
+  days with any order: 18.6% of days (never more than 2 order(s) in a day)
+  average order size: $90.78; smallest $5.05
+  money put in: $60  ->  ended with $1,383  (x23.1); worst drop -41%
+  end of each year: 2018 $56, 2019 $94, 2020 $277, 2021 $501, 2022 $381, 2023 $676, 2024 $1,053, 2025 $1,229, 2026 $1,383
+
+######## $200, BTC + ETH: 2018-06-04 -> 2026-10-28
+  orders: 659 in 8.4 years = 78.4 a year, 6.5 a month on average
+  months with 0 orders: 12%   1-2 orders: 11%   3+: 77%   busiest month: 20 orders
+  days with any order: 19.0% of days (never more than 2 order(s) in a day)
+  average order size: $286.19; smallest $10.20
+  money put in: $200  ->  ended with $4,469  (x22.3); worst drop -41%
+  end of each year: 2018 $185, 2019 $308, 2020 $894, 2021 $1,619, 2022 $1,229, 2023 $2,183, 2024 $3,401, 2025 $3,970, 2026 $4,469
+
+######## $20 + $17 every month, BTC only: 2018-06-04 -> 2026-10-28
+  orders: 346 in 8.4 years = 41.2 a year, 3.4 a month on average
+  months with 0 orders: 19%   1-2 orders: 27%   3+: 54%   busiest month: 11 orders
+  days with any order: 11.3% of days (never more than 1 order(s) in a day)
+  average order size: $1331.12; smallest $5.79
+  money put in: $1,720  ->  ended with $10,173  (x5.9); worst drop -39%
+  end of each year: 2018 $113, 2019 $498, 2020 $1,966, 2021 $2,710, 2022 $2,227, 2023 $4,869, 2024 $8,866, 2025 $8,798, 2026 $10,173
