@@ -191,3 +191,26 @@ Caveats: 8.5 years only, with an exceptional gold run (+20%/yr since 2020) and a
 market; expect less. The mix was chosen after seeing that holding suits Nifty/gold and the rule
 suits crypto. Tax is far kinder on the core: equity/gold ETFs held > 12 months pay 12.5% on
 gains (equity: first Rs 1.25 lakh/yr exempt), and losses offset gains; crypto pays 31.2%.
+
+## 13. Beating the 200-day rule: six families, physics ideas, three independent checks
+Research: `research/better_than_200.py` (rupee portfolios, drift-aware simulation, last 2 years
+locked) and `research/physics_test.py` (crypto signals, yearly walk-forward).
+
+**Winner: vote x volatility target** (`portfolio.vote_voltgt`): a coin is held in thirds according
+to how many of its 50/100/200-day averages it is above, scaled down when it is wilder than 60%/yr.
+1. Portfolio, locked years Oct 2024 -> Oct 2026 (picked by rule before opening them):
+   35% Nifty + 35% gold + 30% crypto on vote_voltgt: **+19.3%/yr, worst drop -11.0%, Sharpe 1.31**;
+   old plan (40/40/20 on the 200-day rule) +13.6%, -13.5%, 0.97. Whole period since 2018:
+   +25.9%/yr, worst drop -22.3%, worst year -3.9%.
+2. BTC + ETH, 2020 -> now: +48.3%/yr, worst drop -42.8%, Sharpe 1.26 vs the 200-day rule
+   +48.3%, -47.6%, 1.06.
+3. BTC alone, 2017 -> now (Yahoo, from 2014): **+60.5%/yr, worst drop -47.4%, worst year -27.9%**
+   vs 200-day rule +57.8%, -67.2%, -54.8%, and holding +56.8%, -83.4%, -73.6%. From 2019 the
+   walk-forward rule itself picked vote_voltgt every year.
+
+Also tested and rejected: dual momentum (big drawdowns), risk parity with trend (weak on the
+locked years), trend votes on Nifty/gold too (worse than holding them), **Kalman-filter trend**
+(rocket-guidance tracking: no better than the 200-day rule, deeper drops) and **Hurst-exponent
+regime filter** (fractal physics: Sharpe 0.35-0.64, kills most of the profit).
+These years had been seen in earlier research, so the walk-forward and the pre-set selection rule
+are the protection; future results will be weaker than these.

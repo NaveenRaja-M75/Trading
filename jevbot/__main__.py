@@ -264,6 +264,18 @@ def cmd_analyze(s: Settings, a) -> None:
                   f"200-day avg {c.rolling(200).mean().iloc[-1]:.2f}, target weight {w[sym].iloc[-1] * 100:.0f}%")
 
 
+def cmd_plan(s: Settings, a) -> None:
+    import datetime as dt
+    from . import planner
+    h = planner.load_holdings(Path(a.holdings))
+    monthly = a.monthly if a.monthly is not None else float(h.get("monthly_add", 5000))
+    text = planner.report(h, monthly, a.month or dt.date.today().month, a.usd_inr, a.goal)
+    print(text)
+    if a.out:
+        Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+        Path(a.out).write_text(text + "\n")
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -376,25 +388,32 @@ def main(argv=None) -> None:
     wk.add_argument("--days", type=float, default=2555)
     wk.add_argument("--vault-days", type=int, default=365)
     wp = sub.add_parser("weekly-paper", help="daily mark-to-market, weekly rebalance of the paper portfolio")
-    wp.add_argument("--strategy", default="trend_band_ma200_2pct")
+    wp.add_argument("--strategy", default="vote_voltgt")
     wp.add_argument("--every-days", type=int, default=1)
     wp.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
     wp.add_argument("--start-usdt", type=float, default=1000.0)
     wl = sub.add_parser("weekly-live", help="weekly strategy on Binance (dry run unless --execute)")
-    wl.add_argument("--strategy", default="trend_band_ma200_2pct")
+    wl.add_argument("--strategy", default="vote_voltgt")
     wl.add_argument("--every-days", type=int, default=1, help="1 = act on any day the trend flips")
     wl.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT")
     wl.add_argument("--execute", action="store_true")
     wl.add_argument("--force", action="store_true", help="rebalance now even if 7 days have not passed")
     wl.add_argument("--i-understand-i-can-lose-money", action="store_true")
     an = sub.add_parser("analyze", help="A-Z report on one weekly setup")
-    an.add_argument("--strategy", default="trend_band_ma200_2pct")
+    an.add_argument("--strategy", default="vote_voltgt")
     an.add_argument("--every", type=int, default=1, help="check every N days (1 = daily)")
     an.add_argument("--symbols", default="BTCUSDT,ETHUSDT")
     an.add_argument("--days", type=float, default=2555)
     an.add_argument("--since", default="2022-01-01")
     an.add_argument("--budget", type=float, default=20)
     an.add_argument("--max-loss", type=float, default=5)
+    pl = sub.add_parser("plan", help="this month's split of new money + the $10/day goal maths")
+    pl.add_argument("--monthly", type=float, default=None, help="rupees you add this month (default: monthly_add in the holdings file)")
+    pl.add_argument("--holdings", default="my/holdings.json", help='{"nifty": 0, "gold": 0, "crypto": 0} in rupees')
+    pl.add_argument("--month", type=int, default=0, help="1-12, default this month (April = yearly check)")
+    pl.add_argument("--usd-inr", type=float, default=88.0)
+    pl.add_argument("--goal", type=float, default=10.0, help="dollars per day")
+    pl.add_argument("--out")
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -405,7 +424,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "analyze": cmd_analyze, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "analyze": cmd_analyze, "plan": cmd_plan, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":

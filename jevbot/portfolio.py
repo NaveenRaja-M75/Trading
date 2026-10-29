@@ -66,12 +66,27 @@ def trend_band(px: pd.DataFrame, ma: int = 200, band: float = 0.02) -> pd.DataFr
     return pd.DataFrame(w, index=px.index).div(n, axis=0).fillna(0.0)
 
 
+def vote_voltgt(px: pd.DataFrame, ns=(50, 100, 200), target_vol: float = 0.60, vol_days: int = 60) -> pd.DataFrame:
+    """Per coin: share of the 50/100/200-day averages price is above (0, 1/3, 2/3, 1), scaled down when
+    the coin is wilder than `target_vol` a year. Beat the 200-day rule in research/better_than_200.py
+    (locked years) and research/physics_test.py (walk-forward): same return, smaller crashes."""
+    n = px.notna().sum(axis=1)
+    w = {}
+    for s in px.columns:
+        c = px[s]
+        vote = sum((c > c.rolling(k).mean()).astype(float) for k in ns) / len(ns)
+        vol = c.pct_change(fill_method=None).rolling(vol_days).std() * np.sqrt(365)
+        w[s] = (vote * (target_vol / vol).clip(upper=1.0).fillna(0.0)).round(2)
+    return pd.DataFrame(w, index=px.index).div(n, axis=0).fillna(0.0)
+
+
 def live_strategies() -> dict:
     """Everything weekly-live / weekly-paper / analyze can run, by name."""
     out = {name: f for name, (_, f) in candidates().items()}
     for ma in (100, 200):
         for band in (0.02, 0.03):
             out[f"trend_band_ma{ma}_{band * 100:.0f}pct"] = lambda px, ma=ma, band=band: trend_band(px, ma, band)
+    out["vote_voltgt"] = vote_voltgt
     return out
 
 

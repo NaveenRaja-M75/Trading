@@ -46,3 +46,16 @@ def test_trend_band_is_causal_and_buffers():
     pd.testing.assert_frame_equal(full, cut, check_freq=False)
     flips = lambda w: int((w.diff().abs() > 0).sum().sum())
     assert flips(portfolio.trend_band(px, 200, 0.03)) <= flips(portfolio.trend_band(px, 200, 0.0))
+
+
+def test_vote_voltgt_is_causal_bounded_and_scales_down_wild_markets():
+    rng = np.random.default_rng(4)
+    calm = 100 * np.exp(np.cumsum(rng.normal(0.002, 0.01, 700)))
+    wild = 100 * np.exp(np.cumsum(rng.normal(0.002, 0.08, 700)))
+    idx = pd.date_range("2024-01-01", periods=700, freq="D", tz="UTC")
+    px = pd.DataFrame({"CALM": calm, "WILD": wild}, index=idx)
+    w = portfolio.vote_voltgt(px)
+    assert (w.sum(axis=1) <= 1 + 1e-9).all() and (w >= 0).all().all()
+    pd.testing.assert_frame_equal(w.iloc[:500], portfolio.vote_voltgt(px.iloc[:500]), check_freq=False)
+    assert w.CALM.iloc[300:].max() == 0.5            # calm coin (~19%/yr vol) gets its full half
+    assert w.WILD.iloc[300:].max() < 0.3             # wild coin (~150%/yr vol) is cut to well under that

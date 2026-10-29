@@ -4,10 +4,11 @@
 trades and lost money in some years. Only use money you can afford to lose completely.
 
 ## The setup (chosen by the tests)
-- Coins: **BTC and ETH** (20 USDT -> 10 each). With 10-15 USDT use BTC only (`--symbols BTCUSDT`):
-  Binance's minimum order is 5 USDT and the bot refuses positions under 8 USDT.
-- Strategy: **trend_band_ma200_2pct**, checked **daily**: buy a coin when its price is 2% above
-  its 200-day average, sell when it is 2% below; otherwise do nothing. Expect ~3-4 trades a year.
+- Coin: **BTC only** while the crypto budget is under ~60 USDT (the strategy buys in thirds and
+  Binance's minimum order is 5 USDT). From ~60 USDT use `--symbols BTCUSDT,ETHUSDT`.
+- Strategy: **vote_voltgt**, checked **daily**: hold 1/3, 2/3 or all of the budget according to how
+  many of the 50/100/200-day averages the price is above, and less when the market is very wild.
+  It beat the old 200-day rule in three separate tests (RESULTS.md §13).
 - Loss limit: `WEEKLY_MAX_LOSS_USDT=5` (sell everything and stop if 20 USDT becomes 15).
 
 ## One-time setup on your computer (Windows or Mac)
@@ -28,7 +29,7 @@ trades and lost money in some years. Only use money you can afford to lose compl
 
 ## The command
 ```
-python -m jevbot weekly-live --strategy trend_band_ma200_2pct --every-days 1 --symbols BTCUSDT,ETHUSDT
+python -m jevbot weekly-live --strategy vote_voltgt --every-days 1 --symbols BTCUSDT
 ```
 1. **Dry run**: the command as written. Prints what it would buy or sell; places nothing.
 2. **Testnet**: set `LIVE_TRADING=true` (keep `BINANCE_TESTNET=true`, testnet keys from
@@ -37,7 +38,7 @@ python -m jevbot weekly-live --strategy trend_band_ma200_2pct --every-days 1 --s
 
 ## Run it every day at about 05:35 India time
 Daily candles close at 05:30 IST (00:00 UTC). Trading a day late cut the tested result from
-+136% to +78% since 2022, so timing matters. Windows: Task Scheduler -> Create Basic Task ->
++136% to +78% since 2022 for the old rule, so timing matters. Windows: Task Scheduler -> Create Basic Task ->
 Daily 05:35 -> program `python`, arguments `-m jevbot weekly-live ... --execute
 --i-understand-i-can-lose-money`, "Start in" = the Trading folder. The computer must be on.
 

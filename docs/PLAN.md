@@ -1,15 +1,18 @@
 # The plan (what the tests support)
 
-1. **Core, 80%: hold Nifty 50 and gold, 40% each.** Buy through a demat account
-   (Zerodha, Groww, etc.): a Nifty 50 ETF or index fund, and a gold ETF. Add money every month
-   (a SIP). Once a year, move money between them so they are back to roughly 50/50.
-   No trading, so no fees or short-term tax.
-2. **Satellite, 20%: BTC + ETH with the 200-day rule** (the jevbot setup in `docs/GO_LIVE.md`).
-   It holds crypto only in uptrends and steps aside in crashes.
-3. **Grow it with deposits.** At small sizes, monthly additions add more than any strategy can.
+1. **35% Nifty 50** (index fund or ETF) **and 35% gold** (gold ETF): just hold them.
+   Buy through a demat account (Zerodha, Groww, etc.). Holding beat every trading rule on these.
+2. **30% crypto, run by the bot** on `vote_voltgt`: it holds BTC (and ETH once the crypto part is
+   above ~$60) in thirds, by how many of the 50/100/200-day averages price is above, and holds less
+   when the market is wild. Setup: `docs/GO_LIVE.md`.
+3. **Every month** run `python -m jevbot plan` (or read `MONTHLY_PLAN.md` on the paper-state branch,
+   written on the 1st by GitHub): it says exactly how many rupees go to each part. Keep
+   `my/holdings.json` up to date with what you hold and how much you add each month.
+4. **Every April** the plan checks whether a real rebalance is needed (more than 5 points off).
 
-Tested result of this mix since May 2018 (rupees, after costs, before tax): +21.3% a year,
-worst drop -23.8%, worst calendar year -4.3%. Past results, not a promise; see RESULTS.md §12.
+Tested result of this mix: locked years Oct 2024 -> Oct 2026 +19.3%/yr with a worst drop of -11%;
+since 2018 +25.9%/yr, worst drop -22%, worst year -3.9% (RESULTS.md §13). Past results, not a
+promise: plan with 10-15% a year.
 
-What every test says to avoid: fast trading (fees and the 31.2%-per-win crypto tax), leverage,
-meme coins, prediction-market betting, and anything promising a fixed daily profit.
+Avoid (every test lost money): fast trading, leverage, meme coins, prediction-market betting,
+stat-arb pair trading, and anything promising a fixed daily profit.
