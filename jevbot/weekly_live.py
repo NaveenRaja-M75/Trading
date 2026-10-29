@@ -37,11 +37,28 @@ def plan_orders(weights: dict[str, float], prices: dict[str, float], held_usdt: 
     return sells + buys
 
 
+def data_problem(df: pd.DataFrame, now: pd.Timestamp) -> str:
+    """Reasons not to trust today's candles; empty string means fine."""
+    if len(df) < 210:
+        return f"only {len(df)} days of data (need 210)"
+    close = df["close"]
+    if (close <= 0).any() or close.isna().any():
+        return "missing or non-positive prices"
+    age = now - (df.index[-1] + pd.Timedelta(days=1))
+    if age > pd.Timedelta(hours=36):
+        return f"last candle is {age.total_seconds() / 3600:.0f}h old"
+    jump = close.iloc[-1] / close.iloc[-2] - 1
+    if abs(jump) > 0.5:
+        return f"one-day move of {jump * 100:+.0f}% looks like bad data"
+    return ""
+
+
 class WeeklyLive:
     def __init__(self, symbols: list[str], strategy: str, budget: float, max_loss: float,
-                 make_broker, state_dir: Path = Path("state"), fetch=fetch_recent):
+                 make_broker, state_dir: Path = Path("state"), fetch=fetch_recent, clock=None):
         self.symbols, self.strategy, self.budget, self.max_loss = symbols, strategy, budget, max_loss
         self.make_broker, self.dir, self.fetch = make_broker, state_dir, fetch
+        self.clock = clock or (lambda: pd.Timestamp.now(tz="UTC"))
         self.meta_path = state_dir / "weekly_live.json"
         self.latch = state_dir / "WEEKLY_KILL_SWITCH"
 
@@ -55,13 +72,33 @@ class WeeklyLive:
         dfs = {}
         for s in self.symbols:
             try:
-                dfs[s] = self.fetch(s, "1d", 400)
+                df = self.fetch(s, "1d", 400)
             except Exception as e:
                 out.append(f"{s}: no data, not traded today ({e})")
+                continue
+            problem = data_problem(df, self.clock())
+            if problem:
+                out.append(f"{s}: not traded today: {problem}")
+                continue
+            dfs[s] = df
+        if not dfs:
+            return out + ["no trustworthy data for any coin: nothing done today"]
         px = portfolio.closes(dfs)
         day = px.index[-1]
         prices = {s: float(px[s].iloc[-1]) for s in px.columns if pd.notna(px[s].iloc[-1])}
         brokers = {s: self.make_broker(s) for s in prices}
+        if execute:  # a stop that fired while the bot was off means the loss limit was reached
+            fired = False
+            for s, b in brokers.items():
+                if hasattr(b, "sync_stop"):
+                    sold, msg = b.sync_stop()
+                    if msg:
+                        out.append(f"{s}: {msg}")
+                    fired = fired or sold > 0
+            if fired:
+                self.dir.mkdir(parents=True, exist_ok=True)
+                self.latch.write_text(f"exchange stop filled, seen {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())}")
+                return out + ["KILL SWITCH set: the protective stop sold while the bot was off."]
         held = {s: b.book.qty * prices[s] for s, b in brokers.items()}
         cost = sum(b.book.cost_usdt for b in brokers.values())
         realized = sum(b.book.realized_usdt for b in brokers.values())
@@ -82,7 +119,8 @@ class WeeklyLive:
         meta = self._meta()
         due = force or not meta["last_rebalance"] or (day - pd.Timestamp(meta["last_rebalance"])).days >= every_days
         if not due:
-            return out + [f"next rebalance after {pd.Timestamp(meta['last_rebalance']) + pd.Timedelta(days=every_days):%Y-%m-%d}"]
+            out.append(f"next rebalance after {pd.Timestamp(meta['last_rebalance']) + pd.Timedelta(days=every_days):%Y-%m-%d}")
+            return self._protect(out, execute, brokers, prices)
 
         w = STRATEGIES[self.strategy](px).iloc[-1].fillna(0.0).to_dict()
         slot = equity / max(len(prices), 1)
@@ -107,4 +145,22 @@ class WeeklyLive:
             meta["log"] = (meta["log"] + out)[-500:]
             self.dir.mkdir(parents=True, exist_ok=True)
             self.meta_path.write_text(json.dumps(meta, indent=1))
+        return self._protect(out, execute, brokers, prices)
+
+    def _protect(self, out, execute, brokers, prices):
+        """Leave stop orders on the exchange at the price where the loss limit would be reached,
+        so the limit holds even when this computer is off. Replaced on every run."""
+        if not execute:
+            return out
+        held = {s: b.book.qty * prices[s] for s, b in brokers.items()}
+        cost = sum(b.book.cost_usdt for b in brokers.values())
+        realized = sum(b.book.realized_usdt for b in brokers.values())
+        equity = self.budget + realized + sum(held.values()) - cost
+        room, total = equity - (self.budget - abs(self.max_loss)), sum(held.values())
+        if total <= 0 or room <= 0:
+            return out
+        drop = min(0.9, max(0.05, room / total))   # how far the coins can fall before the limit is hit
+        for s, b in brokers.items():
+            if b.book.qty > 0 and hasattr(b, "place_stop"):
+                out.append(f"  {s}: " + b.place_stop(prices[s] * (1 - drop)))
         return out

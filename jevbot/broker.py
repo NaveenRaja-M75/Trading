@@ -22,6 +22,7 @@ class BotBook:
     qty: float = 0.0           # base asset bought by the bot and not yet sold
     cost_usdt: float = 0.0     # USDT spent on the current qty (incl. fees)
     realized_usdt: float = 0.0
+    stop_order_id: int = 0     # protective stop resting on the exchange (0 = none)
     day: str = ""
     day_realized_usdt: float = 0.0
     fills: list = field(default_factory=list)
@@ -134,12 +135,34 @@ class BinanceBroker:
         self.min_qty = float(f["LOT_SIZE"]["minQty"])
         notional = f.get("NOTIONAL") or f.get("MIN_NOTIONAL") or {}
         self.min_notional = float(notional.get("minNotional", 0.0))
+        self.tick = float((f.get("PRICE_FILTER") or {}).get("tickSize", 0.01))
 
     def _floor_qty(self, qty: float) -> float:
         if self.step <= 0:
             return qty
         decimals = max(0, -int(math.floor(math.log10(self.step))))
         return round(math.floor(qty / self.step) * self.step, decimals)
+
+    def _floor_price(self, p: float) -> float:
+        decimals = max(0, -int(math.floor(math.log10(self.tick))))
+        return round(math.floor(p / self.tick) * self.tick, decimals)
+
+    def _order(self, params: dict) -> dict:
+        """Place an order exactly once. Every order carries its own client id, so after a network
+        error we ask Binance whether that order exists instead of blindly sending a second one."""
+        params = {**params, "newClientOrderId": params.get("newClientOrderId")
+                  or f"jev-{params['side'][0]}-{int(time.time() * 1000)}"}
+        try:
+            return self._request("POST", "/api/v3/order", params, signed=True)
+        except Exception as first:
+            try:
+                found = self._request("GET", "/api/v3/order", {"symbol": self.symbol,
+                                      "origClientOrderId": params["newClientOrderId"]}, signed=True)
+            except Exception:
+                raise first from None
+            if found.get("status") in {"FILLED", "PARTIALLY_FILLED", "NEW"}:
+                return found
+            raise first from None
 
     def free_balance(self, asset: str) -> float:
         acct = self._request("GET", "/api/v3/account", signed=True)
@@ -159,9 +182,8 @@ class BinanceBroker:
         usdt = min(usdt, self.free_balance(self.quote_asset))
         if usdt < max(self.min_notional, 1.0):
             return f"skip: {usdt:.2f} {self.quote_asset} below min notional {self.min_notional}"
-        resp = self._request("POST", "/api/v3/order", {
-            "symbol": self.symbol, "side": "BUY", "type": "MARKET",
-            "quoteOrderQty": f"{usdt:.2f}", "newOrderRespType": "FULL"}, signed=True)
+        resp = self._order({"symbol": self.symbol, "side": "BUY", "type": "MARKET",
+                            "quoteOrderQty": f"{usdt:.2f}", "newOrderRespType": "FULL"})
         qty, quote = self._fill_summary(resp)
         fee_base = sum(float(x["commission"]) for x in resp.get("fills", [])
                        if x.get("commissionAsset") == self.base_asset)
@@ -177,9 +199,8 @@ class BinanceBroker:
         qty = self._floor_qty(min(qty, self.book.qty, self.free_balance(self.base_asset)))
         if qty < self.min_qty or qty * price < self.min_notional:
             return f"skip: {qty} {self.base_asset} below exchange minimums"
-        resp = self._request("POST", "/api/v3/order", {
-            "symbol": self.symbol, "side": "SELL", "type": "MARKET",
-            "quantity": f"{qty}", "newOrderRespType": "FULL"}, signed=True)
+        resp = self._order({"symbol": self.symbol, "side": "SELL", "type": "MARKET",
+                            "quantity": f"{qty}", "newOrderRespType": "FULL"})
         sold, quote = self._fill_summary(resp)
         if sold <= 0:
             return f"sell returned no fill: {resp.get('status')}"
@@ -188,3 +209,36 @@ class BinanceBroker:
         self.book.on_sell(sold, quote - fee_quote, quote / sold)
         self.book.save(self.state)
         return f"LIVE SELL {sold:.8f} {self.base_asset} for {quote - fee_quote:.2f} {self.quote_asset}"
+
+    # -- protective stop resting on the exchange ---------------------------
+    def sync_stop(self) -> tuple[float, str]:
+        """Record a stop that fired while the bot was off, and cancel one still waiting.
+        Returns (base qty the stop sold, message)."""
+        if not self.book.stop_order_id:
+            return 0.0, ""
+        o = self._request("GET", "/api/v3/order", {"symbol": self.symbol, "orderId": self.book.stop_order_id},
+                          signed=True)
+        sold, quote = self._fill_summary(o)
+        msg = ""
+        if sold > 0:
+            self.book.on_sell(sold, quote * 0.999, quote / sold)   # stop fills pay the normal ~0.1% fee
+            msg = f"exchange stop SOLD {sold:.8f} {self.base_asset} for ~{quote:.2f} {self.quote_asset} while the bot was off"
+        if o.get("status") in {"NEW", "PARTIALLY_FILLED"}:
+            self._request("DELETE", "/api/v3/order", {"symbol": self.symbol, "orderId": self.book.stop_order_id},
+                          signed=True)
+        self.book.stop_order_id = 0
+        self.book.save(self.state)
+        return sold, msg
+
+    def place_stop(self, stop_price: float) -> str:
+        """Leave a stop-loss sell for the bot's coins on the exchange: it works with the computer off."""
+        qty = self._floor_qty(min(self.book.qty, self.free_balance(self.base_asset)))
+        stop = self._floor_price(stop_price)
+        limit = self._floor_price(stop * 0.98)          # fill even if price falls through the stop fast
+        if qty < self.min_qty or qty * limit < self.min_notional:
+            return f"no exchange stop: {qty} {self.base_asset} is below Binance's minimum order"
+        o = self._order({"symbol": self.symbol, "side": "SELL", "type": "STOP_LOSS_LIMIT", "timeInForce": "GTC",
+                         "quantity": f"{qty}", "stopPrice": f"{stop}", "price": f"{limit}"})
+        self.book.stop_order_id = int(o.get("orderId", 0))
+        self.book.save(self.state)
+        return f"exchange stop set: sell {qty} {self.base_asset} if price falls to {stop}"

@@ -12,6 +12,17 @@ class FakeExchange:
         self.prices = prices
         self.bal = {"USDT": usdt, **{s[:-4]: 0.0 for s in prices}, **(owned or {})}
         self.orders = []
+        self.book = {}          # orderId -> order, for stops and lookups
+        self.by_client = {}
+        self.next_id = 1
+        self.fail_next_post = False   # simulate "order placed, but the reply was lost"
+
+    def trigger_stops(self, sym, price):
+        """Price fell through the stop while the bot was off."""
+        for o in self.book.values():
+            if o["symbol"] == sym and o["type"] == "STOP_LOSS_LIMIT" and o["status"] == "NEW" and price <= o["stopPrice"]:
+                o.update(status="FILLED", executedQty=str(o["qty"]), cummulativeQuoteQty=str(o["qty"] * o["price"]))
+                self.bal["USDT"] += o["qty"] * o["price"]
 
     def handler(self, sym):
         base = sym[:-4]
@@ -24,7 +35,29 @@ class FakeExchange:
                     {"filterType": "NOTIONAL", "minNotional": "5.00"}]}]}
             if path == "/api/v3/account":
                 return {"balances": [{"asset": a, "free": str(v)} for a, v in self.bal.items()]}
+            if path == "/api/v3/order" and method == "GET":
+                o = self.book.get(params.get("orderId")) or self.by_client.get(params.get("origClientOrderId"))
+                if o is None:
+                    raise RuntimeError("Binance 400: Order does not exist.")
+                return o
+            if path == "/api/v3/order" and method == "DELETE":
+                o = self.book[params["orderId"]]
+                if o["status"] == "NEW":
+                    o["status"] = "CANCELED"
+                    self.bal[base] += o["qty"]          # unlock
+                return o
             price = self.prices[sym]
+            if params.get("type") == "STOP_LOSS_LIMIT":
+                qty = float(params["quantity"])
+                assert qty <= self.bal[base] + 1e-12
+                self.bal[base] -= qty                    # locked while the stop rests
+                o = {"symbol": sym, "orderId": self.next_id, "type": "STOP_LOSS_LIMIT", "status": "NEW", "qty": qty,
+                     "stopPrice": float(params["stopPrice"]), "price": float(params["price"]),
+                     "executedQty": "0", "cummulativeQuoteQty": "0"}
+                self.book[self.next_id] = o
+                self.next_id += 1
+                self.orders.append((sym, "STOP", params))
+                return o
             self.orders.append((sym, params["side"], params))
             if params["side"] == "BUY":
                 quote = float(params["quoteOrderQty"])
@@ -32,7 +65,12 @@ class FakeExchange:
                 qty = quote / price
                 self.bal["USDT"] -= quote
                 self.bal[base] += qty
-                return {"executedQty": str(qty), "cummulativeQuoteQty": str(quote), "fills": []}
+                resp = {"status": "FILLED", "executedQty": str(qty), "cummulativeQuoteQty": str(quote), "fills": []}
+                self.by_client[params.get("newClientOrderId")] = resp
+                if self.fail_next_post:
+                    self.fail_next_post = False
+                    raise TimeoutError("reply lost after the order was placed")
+                return resp
             qty = float(params["quantity"])
             assert qty <= self.bal[base] + 1e-12
             self.bal[base] -= qty
@@ -60,8 +98,9 @@ def setup(tmp_path, monkeypatch):
         def broker(sym):
             monkeypatch.setattr(BinanceBroker, "_request", lambda self, *a, **k: ex.handler(self.symbol)(*a, **k))
             return BinanceBroker(sym, "k", "s", True, tmp_path / f"b_{sym}.json")
+        last = max(d.index[-1] for d in data.values())
         bot = WeeklyLive(list(data), "ts_momentum_14d", budget, max_loss, broker, tmp_path,
-                         fetch=lambda s, i, n: data[s])
+                         fetch=lambda s, i, n: data[s], clock=lambda: last + pd.Timedelta(days=1, hours=1))
         return bot, ex
     return make
 
@@ -87,7 +126,9 @@ def test_execute_buys_uptrends_within_budget_and_ignores_user_coins(setup):
     spent = 1000 - ex.bal["USDT"]
     assert spent <= 50 + 1e-6  # budget, not the 1000 USDT on the account
     assert ex.bal["SOL"] == 5.0  # user's own coins untouched
-    assert "next rebalance" in bot.run(execute=True)[-1]  # same day: no second rebalance
+    again = bot.run(execute=True)                      # same day: no second rebalance
+    assert any("next rebalance" in line for line in again)
+    assert not any(line.strip().startswith(("BTCUSDT: LIVE", "ETHUSDT: LIVE")) for line in again)
 
 
 def test_kill_switch_sells_and_latches(setup, tmp_path):
@@ -118,3 +159,45 @@ def test_refuses_budget_too_thin_for_coin_count(setup):
     bot, ex = setup(market(0, {"BTCUSDT", "ETHUSDT"}), usdt=1000, budget=20)  # 4 coins x 5 USDT
     lines = bot.run(execute=True)
     assert "REFUSED" in lines[-1] and ex.orders == []
+
+
+
+def test_exchange_stop_is_set_after_buying_and_replaced_next_run(setup):
+    bot, ex = setup(market(0, {"BTCUSDT", "ETHUSDT"}), usdt=1000, budget=200, max_loss=20)
+    bot.run(execute=True)
+    stops = [o for o in ex.book.values() if o["status"] == "NEW"]
+    assert len(stops) == 2 and all(o["stopPrice"] < ex.prices[o["symbol"]] for o in stops)
+    bot.run(execute=True, force=True)
+    assert sum(o["status"] == "CANCELED" for o in ex.book.values()) == 2      # old stops cancelled
+    assert sum(o["status"] == "NEW" for o in ex.book.values()) == 2          # fresh ones set
+
+
+def test_stop_that_fired_while_offline_is_recorded_and_stops_the_bot(setup):
+    bot, ex = setup(market(0, {"BTCUSDT", "ETHUSDT"}), usdt=1000, budget=200, max_loss=20)
+    bot.run(execute=True)
+    for sym in list(ex.prices):
+        ex.trigger_stops(sym, 0.0)                       # crash while the computer is off
+    lines = bot.run(execute=True)
+    assert any("exchange stop SOLD" in line for line in lines)
+    assert "KILL SWITCH" in lines[-1] and "KILL SWITCH" in bot.run(execute=True)[0]
+
+
+def test_lost_reply_does_not_double_buy(setup):
+    bot, ex = setup(market(0, {"BTCUSDT"}), usdt=1000, budget=50)
+    ex.fail_next_post = True
+    bot.run(execute=True)
+    assert sum(1 for o in ex.orders if o[1] == "BUY") == 1      # placed once, recovered by client id
+    spent = 1000 - ex.bal["USDT"]
+    assert 0 < spent <= 50 + 1e-6
+
+
+def test_bad_or_stale_data_is_not_traded():
+    from jevbot.weekly_live import data_problem
+    d = market(0, {"BTCUSDT"})["BTCUSDT"]
+    now = d.index[-1] + pd.Timedelta(days=1, hours=1)
+    assert data_problem(d, now) == ""
+    assert "old" in data_problem(d, now + pd.Timedelta(days=3))
+    assert "days of data" in data_problem(d.iloc[-100:], now)
+    spiky = d.copy()
+    spiky.iloc[-1, spiky.columns.get_loc("close")] *= 3
+    assert "bad data" in data_problem(spiky, now)
