@@ -27,9 +27,19 @@ COST = 0.0012
 
 
 def fred(series: str) -> pd.Series:
-    req = urllib.request.Request(FRED.format(series), headers={"User-Agent": "Mozilla/5.0 research"})
-    with urllib.request.urlopen(req, timeout=60) as r:
-        df = pd.read_csv(io.BytesIO(r.read()))
+    import time
+    url = FRED.format(series) + "&cosd=2018-01-01"   # only the years we need: smaller, faster
+    for attempt in range(5):
+        try:
+            req = urllib.request.Request(url, headers={"User-Agent": "Mozilla/5.0 research"})
+            with urllib.request.urlopen(req, timeout=120) as r:
+                df = pd.read_csv(io.BytesIO(r.read()))
+            break
+        except Exception as e:
+            print(f"  {series}: attempt {attempt + 1} failed ({e!r}), retrying", flush=True)
+            time.sleep(10 * (attempt + 1))
+    else:
+        raise RuntimeError(f"FRED unreachable for {series}")
     date_col = df.columns[0]
     s = pd.to_numeric(df[df.columns[1]], errors="coerce")
     s.index = pd.to_datetime(df[date_col]).dt.tz_localize("UTC")
