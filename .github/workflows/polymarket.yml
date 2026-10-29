@@ -1,0 +1,37 @@
+name: polymarket-research
+# Read-only research on Polymarket's 15-minute "Bitcoin Up or Down" markets. Places no bets.
+on:
+  workflow_dispatch:
+    inputs:
+      script:
+        description: research script to run
+        default: research/polymarket_probe.py
+      args:
+        description: arguments
+        default: ""
+
+permissions:
+  contents: write
+
+jobs:
+  research:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install numpy pandas scipy
+      - run: mkdir -p reports
+      - name: Run
+        run: PYTHONPATH=. python ${{ inputs.script }} ${{ inputs.args }} 2>&1 | tee reports/polymarket_out.txt
+      - name: Save results to the polymarket-results branch
+        if: success()
+        run: |
+          cd reports
+          git init -q -b polymarket-results
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "polymarket research ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" polymarket-results
