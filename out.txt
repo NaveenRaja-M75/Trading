@@ -1,0 +1,50 @@
+BTC-USD: 4426 bars 2014-09-17 -> 2026-10-29, median gap 1 day(s)
+   largest daily moves: 2020-03-12 -37.2%, 2017-12-07 +25.2%, 2017-07-20 +23.9%
+
+######## BTC: model retrained each January, test years 2018 -> now
+PREDICTION QUALITY (accuracy of 'higher in 7 days'; AUC 0.5 = coin flip, 1.0 = perfect)
+      train_days  accuracy_pct  always_up_pct    auc
+year                                                
+2018         830          44.4           44.4  0.563
+2019        1195          54.8           50.1  0.516
+2020        1560          55.7           63.7  0.523
+2021        1926          48.5           52.1  0.500
+2022        2291          43.3           43.3  0.480
+2023        2656          55.6           56.7  0.548
+2024        3021          53.8           56.6  0.517
+2025        3387          51.2           52.1  0.520
+2026        3752          45.4           47.1  0.518
+  all test years: accuracy 50.4% vs always-up 51.9%, AUC 0.496
+
+TRADING ON IT (after costs)
+                               total_pct  cagr_pct  max_dd_pct  sharpe losing_years  worst_year_pct
+name                                                                                               
+live rule (vote x vol target)     1502.3      36.9       -46.2    1.08          3/9           -25.6
+ml_switch                           70.1       6.2       -81.5    0.38          4/9           -72.6
+ml_scaled                           38.3       3.7       -81.5    0.31          3/9           -74.7
+ml_x_voltgt                         71.5       6.3       -65.5    0.36          3/9           -58.3
+rule_ml_filter                     807.0      28.4       -31.9    1.03          4/9           -24.6
+hold                               465.3      21.7       -81.5    0.63          4/9           -73.6
+
+######## ETH: model retrained each January, test years 2020 -> now
+PREDICTION QUALITY (accuracy of 'higher in 7 days'; AUC 0.5 = coin flip, 1.0 = perfect)
+      train_days  accuracy_pct  always_up_pct    auc
+year                                                
+2020         434          45.9           62.6  0.561
+2021         800          46.8           58.1  0.497
+2022        1165          53.7           44.1  0.564
+2023        1530          53.4           53.4  0.440
+2024        1895          55.5           53.3  0.551
+2025        2261          54.2           49.3  0.561
+2026        2626          45.9           46.3  0.454
+  all test years: accuracy 50.9% vs always-up 52.6%, AUC 0.495
+
+TRADING ON IT (after costs)
+                               total_pct  cagr_pct  max_dd_pct  sharpe losing_years  worst_year_pct
+name                                                                                               
+live rule (vote x vol target)     1480.8      49.9       -43.2    1.17          1/7           -25.1
+ml_switch                          -45.0      -8.4       -85.5    0.06          3/7           -59.2
+ml_scaled                           35.3       4.5       -63.7    0.31          3/7           -42.6
+ml_x_voltgt                         16.9       2.3       -57.3    0.23          3/7           -33.7
+rule_ml_filter                       9.0       1.3       -32.8    0.18          5/7           -14.3
+hold                              1726.9      53.1       -79.3    0.94          3/7           -67.5
