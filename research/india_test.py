@@ -41,6 +41,11 @@ def yahoo(sym: str) -> pd.Series:
                   flush=True)
             if gap > 3:  # guard: refuse anything that is not daily data
                 raise RuntimeError(f"{sym} is not daily data (median gap {gap} days)")
+            r = s.pct_change().dropna()
+            big = r.abs().sort_values(ascending=False).head(3)
+            print(f"   largest daily moves: " + ", ".join(f"{d:%Y-%m-%d} {r[d] * 100:+.1f}%" for d in big.index))
+            if big.iloc[0] > 0.20:  # guard: a broad index or gold never moves 20% in a day -> bad data
+                raise RuntimeError(f"{sym} has a {big.iloc[0] * 100:.0f}% one-day move: unadjusted split or bad tick")
             return s
         except Exception as e:
             print(f"{sym} via {host}: {e!r}", flush=True)
@@ -93,12 +98,15 @@ def main():
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
 
-    nifty, gold = yahoo("NIFTYBEES.NS"), yahoo("GOLDBEES.NS")
+    # the index and gold itself: no ETF unit splits (Yahoo mis-adjusts the 2019-20 NIFTYBEES/GOLDBEES splits)
+    nifty = yahoo("^NSEI")                      # price index: excludes ~1.3%/yr dividends (conservative for holding)
     usdinr = yahoo("INR=X")
+    gold_usd = yahoo("GC=F")                    # front-month gold futures, USD/oz
+    gold = (gold_usd * usdinr.reindex(usdinr.index.union(gold_usd.index)).ffill().reindex(gold_usd.index)).dropna()
 
     rows, sweep = [], []
     fig, axes = plt.subplots(2, 1, figsize=(11, 8))
-    for ax, (name, s) in zip(axes, (("Nifty 50 (NIFTYBEES)", nifty), ("Gold (GOLDBEES)", gold))):
+    for ax, (name, s) in zip(axes, (("Nifty 50 index", nifty), ("Gold in rupees", gold))):
         px = s.to_frame("x")
         for since in ("2008-01-01", "2015-01-01", "2020-01-01"):
             m = px.index >= pd.Timestamp(since, tz="UTC")
