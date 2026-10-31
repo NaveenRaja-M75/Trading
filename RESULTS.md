@@ -301,3 +301,21 @@ no usable information about the next move. Intraday trading on it loses the fee 
 CTA backtester, GUI, Qlib-style Alpha158 + LightGBM/MLP stock-ranking module). Its broker gateways
 are Chinese futures/securities plus Interactive Brokers; none for Indian brokers or Binance spot.
 It is plumbing, not an edge, and our own bot already covers what the plan needs.
+
+## 20. Intraday, done properly (`research/intraday_search.py`, `intraday_india.py`, `vbo_check.py`)
+Five intraday families, ~190 rules per coin, BTC and ETH hourly 2017 -> 2026, walk-forward picks,
+PBO and deflated Sharpe, two fee levels, Indian tax.
+- **Time-of-day windows** (hold certain hours daily): -17% to -45%/yr. **Weekday** and **intraday
+  momentum**: weak, deep drops. **Dip buying**: tiny (4 trades/yr) and not repeatable on ETH.
+- **Volatility breakout** (buy at open + k x yesterday's range, sell at the close) is real before tax:
+  picked every year on both coins, PBO 0.00. On Binance data k = 0.7: **+27.1%/yr, Sharpe 1.02**
+  (Oct 2017 -> now). But the daily trend rule beat it (BTC +48%/yr, Sharpe 1.27 in the same test),
+  and after India's 31.2% tax on every winning trade the breakout averages **-0.04% to -0.11% per
+  trade**: -7% to +1%/yr.
+- **On Indian indices** (NIFTYBEES / BANKBEES, where intraday losses do offset gains): Nifty
+  -4.0% to -6.4%/yr, Bank Nifty -0.6% to -3.1%/yr walk-forward, vs holding +11.4% / +13.9%/yr.
+- **Data trap caught**: Yahoo's BTC-USD candles differ from Binance's traded prices by >1% on
+  hundreds of days and inflated the same breakout to a fake +62%/yr (2018: "+154%" vs real +64%).
+  Backtests here use exchange data only.
+Verdict: no intraday bot. The one real intraday edge is weaker than the daily rule before tax and
+negative after Indian crypto tax.
