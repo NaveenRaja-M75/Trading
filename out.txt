@@ -1,0 +1,120 @@
+/home/runner/work/Trading/Trading/research/intraday_search.py:71: Pandas4Warning: DatetimeIndex.weekday is deprecated and will be removed in a future version. Use DatetimeIndex.day_of_week instead.
+  wd = days.weekday
+/home/runner/work/Trading/Trading/research/intraday_search.py:71: Pandas4Warning: DatetimeIndex.weekday is deprecated and will be removed in a future version. Use DatetimeIndex.day_of_week instead.
+  wd = days.weekday
+/home/runner/work/Trading/Trading/research/intraday_search.py:71: Pandas4Warning: DatetimeIndex.weekday is deprecated and will be removed in a future version. Use DatetimeIndex.day_of_week instead.
+  wd = days.weekday
+
+######## BTCUSDT hourly, cost 0.12% per side, 2017-10-19 -> 2026-10-30, 188 intraday rules
+WALK-FORWARD (each year's rule picked only from earlier years), test years from 2019
+  best in-sample pick : {'name': 'wf_best', 'total_pct': np.float64(125.8), 'cagr_pct': np.float64(11.0), 'max_dd_pct': -31.2, 'sharpe': 0.57, 'losing_years': '1/8', 'worst_year_pct': -10.1}
+  3rd-best pick       : {'name': 'wf_robust', 'total_pct': np.float64(266.7), 'cagr_pct': np.float64(18.1), 'max_dd_pct': -38.9, 'sharpe': 0.81, 'losing_years': '4/8', 'worst_year_pct': -16.3}
+  daily trend rule    : {'name': 'daily_rule', 'total_pct': np.float64(2088.8), 'cagr_pct': np.float64(48.3), 'max_dd_pct': -43.1, 'sharpe': 1.27, 'losing_years': '2/8', 'worst_year_pct': -23.3}
+  hold                : {'name': 'hold', 'total_pct': np.float64(1989.4), 'cagr_pct': np.float64(47.4), 'max_dd_pct': -76.6, 'sharpe': 0.95, 'losing_years': '3/8', 'worst_year_pct': -64.2}
+  yearly picks: 2019:vbo_0.4_trend, 2020:vbo_0.6_trend, 2021:vbo_0.7_none, 2022:vbo_0.7_none, 2023:vbo_0.7_trend, 2024:dip_4_4_trend, 2025:dip_4_4_trend, 2026:dip_4_4_trend
+OVERFITTING: PBO 0.00 (above 0.5 = mostly luck); deflated Sharpe of the full-period best (dip_4_4_trend, Sharpe 0.97) = 0.000
+
+BEST 3 OF EACH FAMILY over the whole period (after costs; tax columns for India):
+              family  cagr_pct  max_dd_pct  sharpe  trades_per_year  win_pct  avg_win_pct  avg_loss_pct  per_trade_after_india_tax_pct  after_india_tax_cagr_pct
+name                                                                                                                                                            
+dip_4_4_trend    dip       5.4        -7.9    0.97                4     70.6         2.55         -1.60                          0.769                       3.1
+dip_4_4_none     dip       6.1       -23.4    0.73                8     56.1         2.81         -1.78                          0.304                       2.2
+dip_3_4_none     dip       5.7       -20.1    0.50               22     52.2         2.17         -1.76                         -0.062                      -1.9
+dow_2            dow       7.0       -41.5    0.40               51     49.3         2.63         -2.19                         -0.214                     -12.3
+dow_0            dow       5.0       -51.9    0.32               52     47.1         2.97         -2.34                         -0.272                     -15.4
+dow_4            dow      -5.4       -62.1   -0.11               52     47.9         2.33         -2.24                         -0.400                     -20.4
+imom_8_trend    imom       5.6       -56.9    0.34               97     48.7         1.92         -1.64                         -0.201                     -19.7
+imom_4_trend    imom       3.4       -54.3    0.26               95     47.2         2.09         -1.73                         -0.236                     -22.0
+imom_8_ma5      imom       0.7       -53.9    0.15               87     44.3         2.13         -1.62                         -0.252                     -21.5
+tod_11h_12       tod     -37.9       -98.8   -0.87              362     43.9         1.62         -1.45                         -0.326                     -71.5
+tod_10h_12       tod     -44.6       -99.3   -1.11              362     44.3         1.56         -1.48                         -0.351                     -74.0
+tod_12h_12       tod     -45.4       -99.4   -1.11              362     44.2         1.62         -1.53                         -0.361                     -75.1
+vbo_0.7_trend    vbo      14.5       -23.8    0.81               55     50.6         1.96         -1.45                         -0.033                      -2.9
+vbo_0.7_none     vbo      18.0       -35.7    0.76               99     47.8         2.08         -1.53                         -0.111                     -12.4
+vbo_0.6_trend    vbo      14.7       -23.4    0.76               65     49.8         2.02         -1.52                         -0.070                      -5.8
+
+######## ETHUSDT hourly, cost 0.12% per side, 2017-10-19 -> 2026-10-30, 188 intraday rules
+WALK-FORWARD (each year's rule picked only from earlier years), test years from 2019
+  best in-sample pick : {'name': 'wf_best', 'total_pct': np.float64(419.3), 'cagr_pct': np.float64(23.4), 'max_dd_pct': -58.4, 'sharpe': 0.76, 'losing_years': '3/8', 'worst_year_pct': -35.1}
+  3rd-best pick       : {'name': 'wf_robust', 'total_pct': np.float64(49.7), 'cagr_pct': np.float64(5.3), 'max_dd_pct': -69.6, 'sharpe': 0.32, 'losing_years': '4/8', 'worst_year_pct': -49.5}
+  daily trend rule    : {'name': 'daily_rule', 'total_pct': np.float64(1786.8), 'cagr_pct': np.float64(45.5), 'max_dd_pct': -43.0, 'sharpe': 1.12, 'losing_years': '1/8', 'worst_year_pct': -25.1}
+  hold                : {'name': 'hold', 'total_pct': np.float64(1608.3), 'cagr_pct': np.float64(43.7), 'max_dd_pct': -79.3, 'sharpe': 0.86, 'losing_years': '4/8', 'worst_year_pct': -67.5}
+  yearly picks: 2019:vbo_0.5_ma5, 2020:vbo_0.7_none, 2021:vbo_0.6_none, 2022:vbo_0.6_none, 2023:vbo_0.6_none, 2024:vbo_0.6_none, 2025:vbo_0.6_none, 2026:vbo_0.7_none
+OVERFITTING: PBO 0.00 (above 0.5 = mostly luck); deflated Sharpe of the full-period best (vbo_0.7_none, Sharpe 1.12) = 0.000
+
+BEST 3 OF EACH FAMILY over the whole period (after costs; tax columns for India):
+               family  cagr_pct  max_dd_pct  sharpe  trades_per_year  win_pct  avg_win_pct  avg_loss_pct  per_trade_after_india_tax_pct  after_india_tax_cagr_pct
+name                                                                                                                                                             
+dip_3_4_trend     dip       1.4       -37.2    0.18               18     56.1         2.45         -2.72                         -0.248                      -6.0
+dip_4_24_trend    dip       1.1       -44.8    0.17                8     54.7         5.72         -5.81                         -0.481                      -5.7
+dip_3_4_none      dip       0.2       -42.1    0.13               37     51.9         2.43         -2.45                         -0.307                     -12.8
+dow_2             dow       6.8       -42.1    0.37               51     48.6         3.62         -2.97                         -0.314                     -18.2
+dow_0             dow      -0.8       -61.9    0.15               52     49.9         3.48         -3.27                         -0.442                     -23.9
+dow_5             dow      -0.5       -43.0    0.09               52     48.9         2.06         -1.90                         -0.278                     -14.9
+imom_8_none      imom      13.2       -87.0    0.50              181     47.1         2.65         -2.13                         -0.263                     -42.3
+imom_8_trend     imom      10.7       -71.5    0.48               96     48.6         2.55         -2.10                         -0.228                     -22.7
+imom_12_trend    imom       5.7       -75.3    0.34               97     48.4         2.25         -1.91                         -0.237                     -23.1
+tod_11h_12        tod     -36.6       -98.9   -0.51              362     45.9         2.15         -1.97                         -0.389                     -78.4
+tod_12h_12        tod     -42.8       -99.5   -0.64              362     44.8         2.25         -2.01                         -0.418                     -80.8
+tod_15h_8         tod     -33.9       -97.8   -0.66              362     45.4         1.68         -1.56                         -0.323                     -71.4
+vbo_0.7_none      vbo      36.9       -47.5    1.12               97     50.1         2.66         -1.91                         -0.038                      -6.9
+vbo_0.6_none      vbo      35.3       -58.4    1.01              116     49.1         2.72         -2.00                         -0.100                     -14.7
+vbo_0.7_ma5       vbo      19.8       -32.8    0.84               51     48.9         2.94         -2.01                         -0.034                      -3.7
+
+######## BTCUSDT hourly, cost 0.08% per side, 2017-10-19 -> 2026-10-30, 188 intraday rules/home/runner/work/Trading/Trading/research/intraday_search.py:71: Pandas4Warning: DatetimeIndex.weekday is deprecated and will be removed in a future version. Use DatetimeIndex.day_of_week instead.
+  wd = days.weekday
+
+WALK-FORWARD (each year's rule picked only from earlier years), test years from 2019
+  best in-sample pick : {'name': 'wf_best', 'total_pct': np.float64(281.3), 'cagr_pct': np.float64(18.6), 'max_dd_pct': -26.0, 'sharpe': 0.8, 'losing_years': '3/8', 'worst_year_pct': -8.7}
+  3rd-best pick       : {'name': 'wf_robust', 'total_pct': np.float64(551.2), 'cagr_pct': np.float64(27.0), 'max_dd_pct': -34.0, 'sharpe': 1.11, 'losing_years': '2/8', 'worst_year_pct': -8.0}
+  daily trend rule    : {'name': 'daily_rule', 'total_pct': np.float64(2176.9), 'cagr_pct': np.float64(49.1), 'max_dd_pct': -42.6, 'sharpe': 1.29, 'losing_years': '2/8', 'worst_year_pct': -23.0}
+  hold                : {'name': 'hold', 'total_pct': np.float64(1989.4), 'cagr_pct': np.float64(47.4), 'max_dd_pct': -76.6, 'sharpe': 0.95, 'losing_years': '3/8', 'worst_year_pct': -64.2}
+  yearly picks: 2019:vbo_0.4_trend, 2020:vbo_0.6_trend, 2021:vbo_0.7_none, 2022:vbo_0.7_none, 2023:vbo_0.7_none, 2024:vbo_0.7_none, 2025:vbo_0.6_trend, 2026:vbo_0.6_trend
+OVERFITTING: PBO 0.00 (above 0.5 = mostly luck); deflated Sharpe of the full-period best (vbo_0.7_none, Sharpe 1.06) = 0.000
+
+BEST 3 OF EACH FAMILY over the whole period (after costs; tax columns for India):
+              family  cagr_pct  max_dd_pct  sharpe  trades_per_year  win_pct  avg_win_pct  avg_loss_pct  per_trade_after_india_tax_pct  after_india_tax_cagr_pct
+name                                                                                                                                                            
+dip_4_4_trend    dip       5.8        -7.4    1.01                4     73.5         2.54         -1.68                          0.838                       3.4
+dip_4_4_none     dip       6.8       -22.1    0.80                8     57.6         2.83         -1.75                          0.377                       2.8
+dip_3_4_none     dip       7.9       -18.8    0.65               22     53.8         2.19         -1.73                          0.014                      -0.2
+dow_2            dow      11.5       -36.4    0.57               51     50.5         2.65         -2.16                         -0.147                      -9.2
+dow_0            dow       9.5       -47.0    0.47               52     48.7         2.95         -2.33                         -0.204                     -12.3
+dow_4            dow      -1.4       -52.9    0.06               52     49.5         2.33         -2.24                         -0.332                     -17.5
+imom_8_trend    imom      14.2       -40.3    0.64               97     51.1         1.91         -1.64                         -0.133                     -14.2
+imom_4_trend    imom      11.5       -41.0    0.54               95     49.2         2.08         -1.72                         -0.168                     -16.8
+imom_12_trend   imom       7.7       -53.9    0.44               98     48.1         1.68         -1.36                         -0.150                     -15.2
+tod_11h_12       tod     -17.0       -93.7   -0.21              362     47.2         1.58         -1.46                         -0.258                     -63.4
+tod_15h_8        tod     -19.2       -91.5   -0.44              362     46.3         1.23         -1.15                         -0.221                     -57.1
+tod_10h_12       tod     -25.9       -96.0   -0.46              362     47.1         1.55         -1.48                         -0.283                     -66.6
+vbo_0.7_none     vbo      27.7       -26.0    1.06               99     50.7         2.04         -1.53                         -0.043                      -6.3
+vbo_0.7_trend    vbo      19.7       -19.1    1.04               55     53.0         1.95         -1.44                          0.034                       0.7
+vbo_0.6_trend    vbo      20.9       -18.8    1.01               65     52.0         2.01         -1.51                         -0.002                      -1.5
+
+######## ETHUSDT hourly, cost 0.08% per side, 2017-10-19 -> 2026-10-30, 188 intraday rules
+WALK-FORWARD (each year's rule picked only from earlier years), test years from 2019
+  best in-sample pick : {'name': 'wf_best', 'total_pct': np.float64(929.0), 'cagr_pct': np.float64(34.7), 'max_dd_pct': -49.1, 'sharpe': 1.0, 'losing_years': '1/8', 'worst_year_pct': -28.7}
+  3rd-best pick       : {'name': 'wf_robust', 'total_pct': np.float64(277.1), 'cagr_pct': np.float64(18.5), 'max_dd_pct': -80.6, 'sharpe': 0.62, 'losing_years': '5/8', 'worst_year_pct': -51.0}
+  daily trend rule    : {'name': 'daily_rule', 'total_pct': np.float64(1858.2), 'cagr_pct': np.float64(46.2), 'max_dd_pct': -42.7, 'sharpe': 1.13, 'losing_years': '1/8', 'worst_year_pct': -24.8}
+  hold                : {'name': 'hold', 'total_pct': np.float64(1608.3), 'cagr_pct': np.float64(43.7), 'max_dd_pct': -79.3, 'sharpe': 0.86, 'losing_years': '4/8', 'worst_year_pct': -67.5}
+  yearly picks: 2019:vbo_0.5_ma5, 2020:vbo_0.7_none, 2021:vbo_0.6_none, 2022:vbo_0.6_none, 2023:vbo_0.6_none, 2024:vbo_0.6_none, 2025:vbo_0.6_none, 2026:vbo_0.7_none
+OVERFITTING: PBO 0.00 (above 0.5 = mostly luck); deflated Sharpe of the full-period best (vbo_0.7_none, Sharpe 1.35) = 0.000
+
+BEST 3 OF EACH FAMILY over the whole period (after costs; tax columns for India):
+               family  cagr_pct  max_dd_pct  sharpe  trades_per_year  win_pct  avg_win_pct  avg_loss_pct  per_trade_after_india_tax_pct  after_india_tax_cagr_pct
+name                                                                                                                                                             
+dip_3_4_none      dip       3.8       -40.3    0.28               37     53.2         2.47         -2.42                         -0.228                     -10.2
+dip_3_4_trend     dip       3.2       -36.1    0.27               18     58.7         2.44         -2.80                         -0.170                      -4.7
+dip_4_24_trend    dip       1.7       -44.3    0.20                8     56.2         5.65         -5.94                         -0.415                      -5.2
+dow_2             dow      11.3       -41.2    0.49               51     49.8         3.62         -2.96                         -0.246                     -15.3
+dow_5             dow       3.7       -35.5    0.28               52     51.8         2.02         -1.93                         -0.211                     -11.9
+dow_0             dow       3.4       -57.9    0.27               52     50.3         3.53         -3.22                         -0.375                     -21.2
+imom_8_none      imom      30.9       -71.5    0.81              181     48.3         2.67         -2.09                         -0.195                     -34.7
+imom_8_trend     imom      19.5       -60.6    0.71               96     49.9         2.57         -2.08                         -0.160                     -17.5
+imom_12_trend    imom      14.3       -65.7    0.60               97     49.9         2.26         -1.89                         -0.169                     -17.8
+tod_11h_12        tod     -15.3       -95.2   -0.00              362     47.7         2.15         -1.97                         -0.321                     -72.3
+tod_15h_8         tod     -11.6       -90.7   -0.03              362     48.3         1.66         -1.56                         -0.255                     -63.3
+tod_12h_12        tod     -23.5       -97.9   -0.15              362     46.8         2.23         -2.01                         -0.350                     -75.4
+vbo_0.7_none      vbo      47.9       -36.9    1.35               97     51.8         2.65         -1.90                          0.030                      -0.6
+vbo_0.6_none      vbo      48.4       -49.1    1.27              116     50.6         2.72         -1.98                         -0.032                      -7.7
+vbo_0.7_ma5       vbo      24.7       -27.5    0.99               51     50.8         2.92         -2.00                          0.034                      -0.3
