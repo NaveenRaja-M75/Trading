@@ -1,0 +1,40 @@
+Weekly (range over the 7 possible rebalance weekdays) vs daily check with a buffer band, BTC + ETH:
+
+     since                     setup  total_min  total_max  total_avg  dd_worst  sharpe_avg  trades  win_rate  payoff
+2020-06-01  weekly ma50 (7 weekdays)     1076.4     3036.9     1637.9     -63.6        1.20     NaN       NaN     NaN
+2020-06-01        daily ma50 band 0%     1926.0     1926.0     1926.0     -55.9        1.29   130.0      28.5   11.39
+2020-06-01        daily ma50 band 2%     1823.7     1823.7     1823.7     -51.2        1.27    70.0      45.7    5.95
+2020-06-01        daily ma50 band 3%     1480.8     1480.8     1480.8     -52.1        1.20    64.0      48.4    5.14
+2020-06-01        daily ma50 band 5%      955.1      955.1      955.1     -54.3        1.06    51.0      51.0    4.40
+2020-06-01 weekly ma100 (7 weekdays)      894.8     1740.7     1246.9     -60.4        1.11     NaN       NaN     NaN
+2020-06-01       daily ma100 band 0%     1163.5     1163.5     1163.5     -52.5        1.10    99.0      20.2   15.38
+2020-06-01       daily ma100 band 2%     2249.2     2249.2     2249.2     -48.8        1.31    37.0      35.1   13.69
+2020-06-01       daily ma100 band 3%     1433.9     1433.9     1433.9     -51.3        1.16    34.0      35.3   11.86
+2020-06-01       daily ma100 band 5%     1306.6     1306.6     1306.6     -52.6        1.13    27.0      44.4    8.57
+2020-06-01 weekly ma200 (7 weekdays)      959.0     1695.2     1218.1     -49.1        1.09     NaN       NaN     NaN
+2020-06-01       daily ma200 band 0%     1495.4     1495.4     1495.4     -48.1        1.16    42.0      28.6   35.47
+2020-06-01       daily ma200 band 2%     1529.9     1529.9     1529.9     -45.7        1.17    21.0      47.6   21.38
+2020-06-01       daily ma200 band 3%     1446.7     1446.7     1446.7     -45.7        1.15    18.0      55.6   17.28
+2020-06-01       daily ma200 band 5%     1369.3     1369.3     1369.3     -45.3        1.13    15.0      66.7   11.02
+2022-01-01  weekly ma50 (7 weekdays)       42.9      278.5      125.9     -53.5        0.63     NaN       NaN     NaN
+2022-01-01        daily ma50 band 0%      196.0      196.0      196.0     -41.1        0.82   130.0      28.5   11.39
+2022-01-01        daily ma50 band 2%      125.9      125.9      125.9     -41.1        0.66    70.0      45.7    5.95
+2022-01-01        daily ma50 band 3%       82.7       82.7       82.7     -41.1        0.53    64.0      48.4    5.14
+2022-01-01        daily ma50 band 5%       19.1       19.1       19.1     -46.1        0.28    51.0      51.0    4.40
+2022-01-01 weekly ma100 (7 weekdays)       21.3       94.2       58.8     -48.9        0.44     NaN       NaN     NaN
+2022-01-01       daily ma100 band 0%       92.5       92.5       92.5     -40.5        0.57    99.0      20.2   15.38
+2022-01-01       daily ma100 band 2%      178.8      178.8      178.8     -36.2        0.79    37.0      35.1   13.69
+2022-01-01       daily ma100 band 3%       91.2       91.2       91.2     -37.1        0.57    34.0      35.3   11.86
+2022-01-01       daily ma100 band 5%       62.5       62.5       62.5     -39.9        0.47    27.0      44.4    8.57
+2022-01-01 weekly ma200 (7 weekdays)       43.9      147.2       90.3     -42.5        0.55     NaN       NaN     NaN
+2022-01-01       daily ma200 band 0%      154.5      154.5      154.5     -29.4        0.74    42.0      28.6   35.47
+2022-01-01       daily ma200 band 2%      125.6      125.6      125.6     -30.8        0.67    21.0      47.6   21.38
+2022-01-01       daily ma200 band 3%      112.4      112.4      112.4     -33.4        0.63    18.0      55.6   17.28
+2022-01-01       daily ma200 band 5%       95.3       95.3       95.3     -31.1        0.58    15.0      66.7   11.02
+
+Next 12 months for 20 USDT with different loss limits (daily ma100 band 3%, since 2022):
+  loss limit  4 USDT: chance up  56.7%  median  21.72  bad 5%  15.25  good 5%  46.07  limit hit  31.8%
+  loss limit  5 USDT: chance up  60.7%  median  22.41  bad 5%  14.40  good 5%  46.19  limit hit  21.9%
+  loss limit  7 USDT: chance up  63.6%  median  22.81  bad 5%  12.81  good 5%  46.22  limit hit   8.1%
+  loss limit 10 USDT: chance up  63.9%  median  22.82  bad 5%  12.94  good 5%  46.22  limit hit   0.7%
+  loss limit 20 USDT: chance up  63.9%  median  22.82  bad 5%  12.95  good 5%  46.22  limit hit   0.0%

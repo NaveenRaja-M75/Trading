@@ -1,0 +1,99 @@
+vote_voltgt on BTCUSDT, checked every 1 day(s), cost 12 bps/side, from 2022-01-01 to 2026-10-30
+NOTE: this strategy was chosen by a rule that saw all history, so these stats are partly in-sample.
+
+TRADES (each = buy a coin, later sell it)
+  trades                   39
+  win_rate_pct             17.9
+  avg_win_pct              32.54
+  avg_loss_pct             -3.71
+  biggest_win_pct          110.6
+  biggest_loss_pct         -10.1
+  payoff_ratio             8.76
+  profit_factor            1.92
+  avg_trade_pct            2.79
+  longest_losing_streak    12
+  avg_days_held            28.4
+
+HOW OFTEN THE ACCOUNT WAS UP
+  weeks_up_pct                   33.2
+  weeks_up_when_invested_pct     43.5
+  months_up_pct                  39.7
+  months_up_when_invested_pct    44.2
+  quarters_up_pct                35.0
+  quarters_up_when_invested_pct  35.0
+  years_up_pct                   60.0
+  years_up_when_invested_pct     60.0
+
+EVERY TRADE
+ symbol      entry       exit  days  return_pct  open
+BTCUSDT 2022-02-07 2022-02-11     4        -3.6 False
+BTCUSDT 2022-02-14 2022-02-17     3        -5.0 False
+BTCUSDT 2022-02-28 2022-03-04     4        -9.5 False
+BTCUSDT 2022-03-09 2022-03-10     1        -6.2 False
+BTCUSDT 2022-03-16 2022-04-11    26        -4.1 False
+BTCUSDT 2022-04-19 2022-04-21     2        -2.7 False
+BTCUSDT 2022-07-19 2022-07-23     4        -4.3 False
+BTCUSDT 2022-07-24 2022-07-25     1        -5.8 False
+BTCUSDT 2022-07-27 2022-08-19    23        -9.4 False
+BTCUSDT 2022-09-12 2022-09-13     1       -10.1 False
+BTCUSDT 2022-10-04 2022-10-05     1        -1.1 False
+BTCUSDT 2022-10-25 2022-11-08    14        -7.9 False
+BTCUSDT 2023-01-04 2023-08-17   225        57.6 False
+BTCUSDT 2023-08-29 2023-08-30     1        -1.7 False
+BTCUSDT 2023-09-19 2023-09-20     1        -0.6 False
+BTCUSDT 2023-09-28 2024-07-04   280       110.6 False
+BTCUSDT 2024-07-13 2024-08-03    21         2.3 False
+BTCUSDT 2024-08-23 2024-08-27     4        -7.4 False
+BTCUSDT 2024-09-13 2024-09-15     2        -2.5 False
+BTCUSDT 2024-09-17 2024-10-09    22         0.3 False
+BTCUSDT 2024-10-11 2025-03-09   149        28.8 False
+BTCUSDT 2025-03-12 2025-03-13     1        -3.3 False
+BTCUSDT 2025-03-14 2025-03-16     2        -1.9 False
+BTCUSDT 2025-03-19 2025-03-20     1        -3.3 False
+BTCUSDT 2025-03-23 2025-03-28     5        -2.2 False
+BTCUSDT 2025-04-12 2025-04-13     1        -2.0 False
+BTCUSDT 2025-04-14 2025-04-15     1        -1.4 False
+BTCUSDT 2025-04-17 2025-10-17   183        25.0 False
+BTCUSDT 2025-10-19 2025-10-22     3        -1.2 False
+BTCUSDT 2025-10-23 2025-10-30     7        -1.8 False
+BTCUSDT 2025-10-31 2025-11-03     3        -3.0 False
+BTCUSDT 2026-01-02 2026-01-20    18        -2.0 False
+BTCUSDT 2026-03-15 2026-03-19     4        -4.2 False
+BTCUSDT 2026-03-20 2026-03-21     1        -2.5 False
+BTCUSDT 2026-03-23 2026-03-26     3        -3.2 False
+BTCUSDT 2026-04-05 2026-06-01    57         3.2 False
+BTCUSDT 2026-07-14 2026-07-16     2        -2.1 False
+BTCUSDT 2026-07-17 2026-07-31    14        -1.9 False
+BTCUSDT 2026-08-02 2026-08-14    12        -1.1 False
+BTCUSDT 2026-08-17 2026-10-30    74        19.6  True
+
+STRESS TESTS (same period)
+                      total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct
+name                                                                             
+as tested                 190.4      24.7    0.88       -28.7                33.2
+trade 1 day late          135.0      19.3    0.73       -33.1                34.0
+trade 2 days late          94.2      14.7    0.60       -38.3                33.6
+double fees+slippage      168.5      22.7    0.82       -29.7                32.8
+4x fees+slippage          129.5      18.7    0.71       -31.8                32.0
+
+NEXT 12 MONTHS, 20 USDT, loss limit 5 USDT (10,000 futures stitched from real 8-week stretches since 2022-01-01)
+  budget                     20
+  chance_up_after_1y_pct     71.1
+  bad_5pct                   14.82
+  q25                        19.17
+  median                     24.36
+  q75                        31.65
+  good_5pct                  48.09
+  chance_kill_switch_pct     10.0
+  worst                      13.75
+  best                       137.22
+
+  other loss limits:
+     4 USDT: chance up  68.2%  median  24.14  bad 5%  15.64  limit hit  18.6%
+     5 USDT: chance up  71.1%  median  24.36  bad 5%  14.82  limit hit  10.0%
+     6 USDT: chance up  72.2%  median  24.43  bad 5%  14.23  limit hit   4.7%
+     7 USDT: chance up  72.4%  median  24.44  bad 5%  14.81  limit hit   1.8%
+    10 USDT: chance up  72.5%  median  24.44  bad 5%  14.95  limit hit   0.0%
+
+WHAT IT IS DOING NOW
+  BTCUSDT: price 77368.77, 100-day avg 76195.97, 200-day avg 73161.83, target weight 67%

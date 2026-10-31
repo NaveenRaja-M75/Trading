@@ -1,0 +1,20 @@
+BTCUSDT: 2019-11-03 -> 2026-10-30
+
+WALK-FORWARD on 1 coins (survivors): each year's strategy was picked using only earlier years, then traded that year.
+
+                                  pick  pick_pct  pick_dd_pct  hold_all_pct  hold_all_dd_pct  btc_pct  btc_dd_pct
+year                                                                                                             
+2022            ts_momentum_56d_voltgt     -28.6        -38.2         -64.2            -66.9    -64.2       -66.9
+2023                trend_filter_ma100      49.7        -27.4         155.6            -20.0    155.6       -20.0
+2024                trend_filter_ma200      45.0        -40.2         121.3            -26.2    121.3       -26.2
+2025                trend_filter_ma200      -8.3        -27.5          -6.3            -32.0     -6.3       -32.0
+2026 (to date)      trend_filter_ma100     -20.2        -25.9         -11.7            -39.5    -11.7       -39.5
+
+All test years stitched together (honest out-of-sample track record):
+                    total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct
+name                                                                           
+walk_forward_picks       13.4       2.6    0.25       -40.5                26.5
+equal_hold               67.4      11.3    0.46       -66.9                49.0
+btc_hold                 67.4      11.3    0.46       -66.9                49.0
+
+Strategy the rule picks today from all history (use this live): trend_filter_ma200
