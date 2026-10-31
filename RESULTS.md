@@ -283,3 +283,21 @@ Real Binance funding history, Jan 2020 -> Sep 2026:
   FY2023-24 +11.4 vs -47.0. After tax it lost money in 5 of 8 financial years on BTC, 5 of 8 on ETH.
 - Binance's BTC perpetual needs ~100 USDT per order, so a 20 USDT account cannot hold the hedge.
 Verdict: a real strategy for other countries and bigger accounts; not usable here.
+
+## 19. Google TimesFM foundation model (`research/timesfm_test.py`, TimesFM 2.5, zero-shot)
+Each forecast saw only the previous 512 closes; scored against what happened.
+| | direction right | always-up | most confident 20% | correlation | trading on it |
+|---|---|---|---|---|---|
+| BTC daily, 5 days ahead (572) | 46.5% | 52.4% | 36.5% | -0.10 | -0.008%/window vs +0.76% always long |
+| Gold daily (394) | 50.0% | 56.1% | 50.6% | +0.02 | +0.07% vs +0.40% always long |
+| Nifty daily (386) | 54.7% | 54.7% | 57.7% | -0.15 | -0.09% vs +0.23% always long |
+| BTC hourly, 1h ahead (1,460) | 50.0% | 48.9% | 48.3% | +0.01 | -0.137% per trade (intraday) |
+| BTC hourly, 4h ahead (1,460) | 51.2% | 49.5% | 50.3% | +0.01 | -0.139% per trade (intraday) |
+No forecasting skill on prices, daily or intraday; its most confident BTC calls were wrong 63% of
+the time. A strong general-purpose forecaster finds no pattern because the past price path carries
+no usable information about the next move. Intraday trading on it loses the fee on every trade.
+
+**vnpy (VeighNa 4.5)** was reviewed, not tested: an MIT-licensed trading platform (event engine,
+CTA backtester, GUI, Qlib-style Alpha158 + LightGBM/MLP stock-ranking module). Its broker gateways
+are Chinese futures/securities plus Interactive Brokers; none for Indian brokers or Binance spot.
+It is plumbing, not an edge, and our own bot already covers what the plan needs.
