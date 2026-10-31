@@ -1,0 +1,36 @@
+BTC-USD: 4428 days 2014-09-17 -> 2026-10-31; high==low 0.0%, open==prev close 1.1%
+3266 common days 2017-10-24 -> 2026-10-30
+
+A hourly path                    {'name': 'A hourly path', 'total_pct': np.float64(768.0), 'cagr_pct': np.float64(27.1), 'max_dd_pct': -36.4, 'sharpe': 1.02, 'losing_years': '2/10', 'worst_year_pct': -23.2}
+B daily-OHLC, Binance hourly     {'name': 'B daily-OHLC, Binance hourly', 'total_pct': np.float64(768.0), 'cagr_pct': np.float64(27.1), 'max_dd_pct': -36.4, 'sharpe': 1.02, 'losing_years': '2/10', 'worst_year_pct': -23.2}
+C daily-OHLC, Binance daily      {'name': 'C daily-OHLC, Binance daily', 'total_pct': np.float64(750.0), 'cagr_pct': np.float64(26.8), 'max_dd_pct': -36.4, 'sharpe': 1.02, 'losing_years': '2/10', 'worst_year_pct': -23.2}
+D daily-OHLC, Yahoo              {'name': 'D daily-OHLC, Yahoo', 'total_pct': np.float64(7765.2), 'cagr_pct': np.float64(62.3), 'max_dd_pct': -27.9, 'sharpe': 1.89, 'losing_years': '1/10', 'worst_year_pct': -22.1}
+
+year by year (%):
+      A hourly path  B daily-OHLC, Binance hourly  C daily-OHLC, Binance daily  D daily-OHLC, Yahoo
+2017           41.2                          41.2                         41.2                 59.4
+2018           63.9                          63.9                         61.4                154.0
+2019           61.0                          61.0                         61.0                144.5
+2020          126.0                         126.0                        124.8                216.7
+2021            2.0                           2.0                          2.0                 28.6
+2022          -10.6                         -10.6                        -10.6                 20.4
+2023           12.5                          12.5                         12.5                 37.1
+2024           21.9                          21.9                         21.9                 38.1
+2025          -23.2                         -23.2                        -23.2                -22.1
+2026            7.4                           7.4                          7.4                  9.9
+
+A vs B differ by >0.1% on 0 days (same data, two methods)
+Yahoo vs Binance differ by >1% on 90 days; largest:
+  2024-04-12  Binance -5.99%  Yahoo +0.00%
+  2021-12-10  Binance -5.89%  Yahoo +0.00%
+  2020-03-19  Binance +8.00%  Yahoo +13.76%
+  2018-04-09  Binance -5.65%  Yahoo +0.00%
+  2024-01-11  Binance +0.00%  Yahoo -5.35%
+  2025-01-19  Binance +0.00%  Yahoo -5.12%
+  2018-07-20  Binance -4.73%  Yahoo +0.00%
+  2019-12-09  Binance -4.21%  Yahoo +0.00%
+BTC-USD: 4428 days 2014-09-17 -> 2026-10-31; high==low 0.0%, open==prev close 1.1%
+Yahoo vs Binance daily open: median gap 0.08%, days >1% apart: 200
+Yahoo vs Binance daily high: median gap 0.12%, days >1% apart: 188
+Yahoo vs Binance daily low: median gap 0.23%, days >1% apart: 527
+Yahoo vs Binance daily close: median gap 0.08%, days >1% apart: 205
