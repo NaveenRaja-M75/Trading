@@ -1,0 +1,31 @@
+INR=X: 5943 bars 2003-12-01 -> 2026-10-30, median gap 1 day(s)
+   largest daily moves: 2012-01-31 +6.3%, 2012-01-30 -5.9%, 2012-02-01 -5.7%
+GC=F: 6568 bars 2000-08-30 -> 2026-10-30, median gap 1 day(s)
+   largest daily moves: 2026-01-30 -10.8%, 2013-04-15 -9.4%, 2008-09-17 +9.0%
+^NSEI: 4691 bars 2007-09-17 -> 2026-10-30, median gap 1 day(s)
+   largest daily moves: 2009-05-18 +17.7%, 2020-03-23 -13.0%, 2008-10-24 -12.2%
+BTC-USD: 4427 bars 2014-09-17 -> 2026-10-31, median gap 1 day(s)
+   largest daily moves: 2020-03-12 -37.2%, 2017-12-07 +25.2%, 2017-07-20 +23.9%
+
+TODAY
+gold (USD)       2026-10-30  1w   -3.1%  1m   -7.2%  3m   -5.4%  6m  -16.4%  1y   -3.3% | from 1y high  -27.0%  from all-time high  -27.0% (2026-01-29) | vs 50d  -9.5%  vs 200d -14.0% | 30d vol 19%/yr
+gold (rupees)    2026-10-30  1w   -2.6%  1m   -8.0%  3m   -5.9%  6m  -16.0%  1y   +4.2% | from 1y high  -24.5%  from all-time high  -24.5% (2026-01-29) | vs 50d  -9.8%  vs 200d -13.2% | 30d vol 20%/yr
+Nifty 50         2026-10-30  1w   +2.0%  1m   +1.9%  3m   -5.5%  6m   -3.9%  1y  -10.9% | from 1y high  -12.4%  from all-time high  -12.4% (2026-01-02) | vs 50d  -0.9%  vs 200d  -4.1% | 30d vol 14%/yr
+Bitcoin (USD)    2026-10-31  1w   -4.3%  1m   -8.9%  3m  +23.2%  6m   -1.7%  1y  -29.4% | from 1y high  -30.1%  from all-time high  -38.0% (2025-10-06) | vs 50d  -5.6%  vs 200d  +5.7% | 30d vol 24%/yr
+USD/INR          2026-10-30  1w   +0.5%  1m   -0.8%  3m   -0.6%  6m   +0.4%  1y   +7.7% | from 1y high   -1.8%  from all-time high   -1.8% (2026-07-23) | vs 50d  -0.3%  vs 200d  +0.8% | 30d vol 5%/yr
+
+GOLD'S BIGGEST DAILY MOVES IN THE LAST 12 MONTHS (USD)
+  2026-01-30 -10.8%
+  2026-02-03 +6.1%
+  2026-03-19 -5.9%
+  2025-12-29 -4.6%
+  2026-01-28 +4.3%
+  2026-03-26 -3.9%
+
+HISTORY: after gold (in rupees) was this far below its 200-day average, what came next?
+                                          days next 3m median next 3m up next 6m median next 6m up next 12m median next 12m up
+situation                                                                                                                     
+all days since 2005                       5287          +3.1%        68%          +6.0%        74%          +14.9%         81%
+days >= 9% below the 200d avg (like now)    80          +6.4%        90%          +3.3%        74%           +2.8%         65%
+
+Plan impact: gold is 35% of the plan, so every -10% in gold is about -3.5% on the whole plan.
