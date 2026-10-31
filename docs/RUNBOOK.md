@@ -12,7 +12,7 @@ that reacting to sudden drops within the day sold bottoms and lowered results (R
 | Crash big enough to hit the loss limit | The **stop order resting on Binance** sells, even if your computer is off. Next run records it and turns the kill switch on. | Read the log. Restart only by deleting `state/WEEKLY_KILL_SWITCH`, and only if you still accept the risk. |
 | Long bear market (like 2022) | Mostly in cash (USDT). Tested: -3.9% for the whole plan in 2022 while Bitcoin lost 60%. | Keep adding money to Nifty and gold as planned. |
 | Bitcoin rockets up | Holds up to 100% of its budget, scaled down if it is very wild. | Nothing. Do not add leverage. |
-| Nifty or gold crashes | Nothing: they are held on purpose (holding beat every timing rule on them). | Keep your monthly buys going: new money buys them cheaper. April rebalance moves money back to 35/35/30. |
+| Nifty or gold crashes | Nothing: they are held on purpose (holding beat every timing rule on them). You get an alert at -10%, -20%, -30% from the 1-year high; `MARKET.md` on the paper-state branch shows all three assets daily. | Keep your monthly buys going: new money buys them cheaper. April rebalance moves money back to 35/35/30. |
 | Everything falls together (COVID, March 2020) | Crypto part shrinks fast; Nifty and gold are held. Tested: -21.5%, back to a new high in 153 days. | Nothing. This was the worst case in 8 years. |
 
 ## Technical events

@@ -37,7 +37,7 @@ def drawdown_alerts(series: dict[str, pd.Series], state_path: Path) -> list[str]
         level = max([lv for lv in WATCH_LEVELS if dd <= -lv], default=0)
         prev = state.get(name, 0)
         if level > prev:
-            out.append(f"**{name} is {dd:.1f}% below its 1-year high** (crossed -{level}%). The plan keeps holding it: "
+            out.append(f"**{name} is {abs(dd):.1f}% below its 1-year high** (crossed -{level}%). The plan keeps holding it: "
                        f"monthly money buys it cheaper, and the April check rebalances if it is more than 5 points "
                        f"under target. Every -10% here is about -3.5% on the whole plan.")
         state[name] = 0 if dd > -5 else max(level, prev if dd <= -prev else level)
