@@ -1,0 +1,35 @@
+name: timesfm-test
+# One-off: Google's TimesFM forecasting model on BTC, gold and Nifty (daily) and BTC (hourly). Read-only.
+on:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  timesfm:
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+      - name: Install TimesFM (CPU)
+        run: |
+          pip install torch --index-url https://download.pytorch.org/whl/cpu
+          pip install "timesfm[torch] @ git+https://github.com/google-research/timesfm.git" || pip install "timesfm[torch]"
+          pip install numpy pandas scipy
+          python -c "import timesfm, importlib.metadata as m; print('timesfm', m.version('timesfm')); print([n for n in dir(timesfm) if not n.startswith('_')])"
+      - run: mkdir -p reports
+      - name: Test
+        run: PYTHONPATH=.:research python research/timesfm_test.py 2>&1 | tee reports/out.txt
+      - name: Save results
+        if: always()
+        run: |
+          cd reports
+          git init -q -b results-timesfm
+          git config user.name "github-actions"
+          git config user.email "github-actions@users.noreply.github.com"
+          git add -A && git commit -qm "timesfm ${GITHUB_SHA}"
+          git push -f "https://x-access-token:${{ github.token }}@github.com/${GITHUB_REPOSITORY}" results-timesfm
