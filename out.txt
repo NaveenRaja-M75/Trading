@@ -1,0 +1,51 @@
+timesfm 3.0.2
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+using TimesFM 2.5 (200M)
+INR=X: 5944 bars 2003-12-01 -> 2026-10-31, median gap 1 day(s)
+   largest daily moves: 2012-01-31 +6.3%, 2012-01-30 -5.9%, 2012-02-01 -5.7%
+GC=F: 6568 bars 2000-08-30 -> 2026-10-30, median gap 1 day(s)
+   largest daily moves: 2026-01-30 -10.8%, 2013-04-15 -9.4%, 2008-09-17 +9.0%
+BTC-USD: 4428 bars 2014-09-17 -> 2026-10-31, median gap 1 day(s)
+   largest daily moves: 2020-03-12 -37.2%, 2017-12-07 +25.2%, 2017-07-20 +23.9%
+^NSEI: 4691 bars 2007-09-17 -> 2026-10-30, median gap 1 day(s)
+   largest daily moves: 2009-05-18 +17.7%, 2020-03-23 -13.0%, 2008-10-24 -12.2%
+
+######## BTC daily: 572 forecasts, 2019-01-01 -> 2026-10-26
+  direction right: 46.5%   always-up: 52.4%   top-20% most confident: 36.5% of 115
+  correlation of forecast with what happened: -0.096  (0 = no skill)
+  trade on it (long when forecast up): avg -0.008% per window, won 45% of 222 trades
+  always long same windows:            avg +0.762% per window
+  live trend rule same windows:        avg +0.495% per window
+  TimesFM's forecast from the last close (2026-10-31): 5 days +0.4%, 20 days +0.0%  (judge it by the accuracy above)
+
+######## Gold (rupees) daily: 394 forecasts, 2019-01-02 -> 2026-10-22
+  direction right: 50.0%   always-up: 56.1%   top-20% most confident: 50.6% of 79
+  correlation of forecast with what happened: +0.018  (0 = no skill)
+  trade on it (long when forecast up): avg +0.072% per window, won 55% of 138 trades
+  always long same windows:            avg +0.402% per window
+  live trend rule same windows:        avg +0.098% per window
+  TimesFM's forecast from the last close (2026-10-30): 5 days -1.8%, 20 days -2.0%  (judge it by the accuracy above)
+
+######## Nifty 50 daily: 386 forecasts, 2019-01-02 -> 2026-10-23
+  direction right: 54.7%   always-up: 54.7%   top-20% most confident: 57.7% of 78
+  correlation of forecast with what happened: -0.149  (0 = no skill)
+  trade on it (long when forecast up): avg -0.089% per window, won 52% of 246 trades
+  always long same windows:            avg +0.226% per window
+  live trend rule same windows:        avg -0.041% per window
+  TimesFM's forecast from the last close (2026-10-30): 5 days +0.7%, 20 days +2.1%  (judge it by the accuracy above)
+
+######## BTC hourly, 1h ahead (intraday): 1460 forecasts, 2025-10-31 -> 2026-10-31
+  direction right: 50.0%   always-up: 48.9%   top-20% most confident: 48.3% of 292
+  correlation of forecast with what happened: +0.011  (0 = no skill)
+  trade on it (long when forecast up): avg -0.137% per window, won 18% of 788 trades
+  always long same windows:            avg -0.008% per window
+  live trend rule same windows:        avg -0.113% per window
+
+######## BTC hourly, 4h ahead (intraday): 1460 forecasts, 2025-10-31 -> 2026-10-31
+  direction right: 51.2%   always-up: 49.5%   top-20% most confident: 50.3% of 292
+  correlation of forecast with what happened: +0.014  (0 = no skill)
+  trade on it (long when forecast up): avg -0.139% per window, won 31% of 754 trades
+  always long same windows:            avg -0.042% per window
+  live trend rule same windows:        avg -0.150% per window
+
+finished in 15 min
