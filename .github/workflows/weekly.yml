@@ -42,6 +42,8 @@ jobs:
           GH_TOKEN: ${{ github.token }}
         run: |
           python -m jevbot alerts --out state/ALERTS.md
+          python -m jevbot market || true
+          cat state/MARKET_ALERTS.md >> state/ALERTS.md 2>/dev/null || true
           if [ -s state/ALERTS.md ]; then
             gh issue create -R "$GITHUB_REPOSITORY" --title "jevbot alert $(date -u +%F)" --body-file state/ALERTS.md
           fi

@@ -142,3 +142,24 @@ def synthetic(n: int = 5000, seed: int = 0, drift: float = 0.0, vol: float = 0.0
         "low": np.minimum(open_, close) - wiggle, "close": close,
         "volume": rng.lognormal(3, 0.5, n),
     }, index=idx)
+
+
+YAHOO = "https://query1.finance.yahoo.com/v8/finance/chart/{}?period1=0&period2=9999999999&interval=1d"
+
+
+def fetch_yahoo(sym: str, max_move: float = 0.45) -> pd.Series:
+    """Daily adjusted closes from Yahoo (explicit periods: range=max silently returns monthly bars).
+    Refuses non-daily data and impossible one-day moves (unadjusted splits, bad ticks)."""
+    req = urllib.request.Request(YAHOO.format(urllib.parse.quote(sym)),
+                                 headers={"User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64)"})
+    with urllib.request.urlopen(req, timeout=60) as r:
+        res = json.loads(r.read())["chart"]["result"][0]
+    idx = pd.to_datetime(res["timestamp"], unit="s", utc=True).normalize()
+    adj = (res["indicators"].get("adjclose") or [{}])[0].get("adjclose") or res["indicators"]["quote"][0]["close"]
+    s = pd.Series(adj, index=idx, dtype=float).dropna()
+    s = s[~s.index.duplicated(keep="last")]
+    if pd.Series(s.index).diff().dt.days.median() > 3:
+        raise RuntimeError(f"{sym}: not daily data")
+    if s.pct_change().abs().max() > max_move:
+        raise RuntimeError(f"{sym}: implausible one-day move")
+    return s

@@ -299,6 +299,32 @@ def cmd_tax(s: Settings, a) -> None:
     print(f"{n} sales written to {a.out}; tax on gains (30% + 4% cess): Rs {total:,.0f}")
 
 
+def cmd_market(s: Settings, a) -> None:
+    import time as _t
+    from . import market_watch
+    from .data import fetch_yahoo
+    series = {}
+    try:
+        fx = fetch_yahoo("INR=X", 0.2)
+        g = fetch_yahoo("GC=F", 0.2)
+        series["Gold (rupees)"] = (g * fx.reindex(fx.index.union(g.index)).ffill().reindex(g.index)).dropna()
+        series["Nifty 50"] = fetch_yahoo("^NSEI", 0.2)
+        series["Bitcoin (USD)"] = fetch_yahoo("BTC-USD", 0.45)
+    except Exception as e:
+        print(f"market data unavailable today: {e!r}")
+    if not series:
+        return
+    text = f"# Market today\n\nUpdated {_t.strftime('%Y-%m-%d %H:%M UTC', _t.gmtime())}\n\n" + market_watch.table(series)
+    print(text)
+    Path(a.out).parent.mkdir(parents=True, exist_ok=True)
+    Path(a.out).write_text(text + "\n")
+    alerts = market_watch.drawdown_alerts({k: v for k, v in series.items() if not k.startswith("Bitcoin")}, Path(a.state))
+    if a.alerts_out:
+        Path(a.alerts_out).write_text("".join(f"- {x}\n" for x in alerts))
+    for x in alerts:
+        print("ALERT:", x)
+
+
 def _llm(s: Settings, a):
     if not a.llm:
         return None
@@ -446,6 +472,10 @@ def main(argv=None) -> None:
     tx.add_argument("--books", nargs="+", default=["state/live_weekly_main_BTCUSDT.json", "state/live_weekly_main_ETHUSDT.json"])
     tx.add_argument("--usd-inr", type=float, default=88.0)
     tx.add_argument("--out", default="reports/schedule_vda.csv")
+    mk = sub.add_parser("market", help="daily snapshot of Nifty, gold and Bitcoin, with gold/Nifty drop alerts")
+    mk.add_argument("--out", default="state/MARKET.md")
+    mk.add_argument("--state", default="state/market_state.json")
+    mk.add_argument("--alerts-out", default="state/MARKET_ALERTS.md")
     po = sub.add_parser("paper-once", help="one paper decision per coin (for schedulers)")
     po.add_argument("--signal", default="chart_vote", choices=list(default_signals()))
     po.add_argument("--symbols", default="BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT")
@@ -456,7 +486,7 @@ def main(argv=None) -> None:
     a = p.parse_args(argv)
     s = Settings.from_env()
     {"fetch": cmd_fetch, "backtest": cmd_backtest, "paper": cmd_paper,
-     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "analyze": cmd_analyze, "plan": cmd_plan, "alerts": cmd_alerts, "tax-report": cmd_tax, "live": cmd_live}[a.cmd](s, a)
+     "paper-once": cmd_paper_once, "robust": cmd_robust, "learn": cmd_learn, "weekly": cmd_weekly, "weekly-paper": cmd_weekly_paper, "weekly-live": cmd_weekly_live, "analyze": cmd_analyze, "plan": cmd_plan, "alerts": cmd_alerts, "market": cmd_market, "tax-report": cmd_tax, "live": cmd_live}[a.cmd](s, a)
 
 
 if __name__ == "__main__":
