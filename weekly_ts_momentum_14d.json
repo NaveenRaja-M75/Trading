@@ -1,0 +1,33 @@
+{
+ "cash": 900.0,
+ "start": 1000.0,
+ "qty": {
+  "BNBUSDT": 0.13407791231508576
+ },
+ "last_rebalance": "2026-10-27T00:00:00+00:00",
+ "history": [
+  {
+   "day": "2026-10-27",
+   "equity": 999.88,
+   "hold_equal_px": {
+    "BTCUSDT": 80909.77,
+    "ETHUSDT": 2350.36,
+    "SOLUSDT": 101.35,
+    "BNBUSDT": 744.94,
+    "XRPUSDT": 1.3313,
+    "ADAUSDT": 0.206,
+    "DOGEUSDT": 0.07908,
+    "LINKUSDT": 11.583,
+    "AVAXUSDT": 8.961,
+    "LTCUSDT": 57.21
+   }
+  }
+ ],
+ "trades": [
+  {
+   "day": "2026-10-27",
+   "symbol": "BNBUSDT",
+   "usdt": 100.0
+  }
+ ]
+}

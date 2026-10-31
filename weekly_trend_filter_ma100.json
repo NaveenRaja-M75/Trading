@@ -1,0 +1,31 @@
+{
+ "cash": 0.0,
+ "start": 20.0,
+ "qty": {
+  "BTCUSDT": 0.0001234461548957561,
+  "ETHUSDT": 0.004249561769260879
+ },
+ "last_rebalance": "2026-10-27T00:00:00+00:00",
+ "history": [
+  {
+   "day": "2026-10-27",
+   "equity": 19.98,
+   "hold_equal_px": {
+    "BTCUSDT": 80909.77,
+    "ETHUSDT": 2350.36
+   }
+  }
+ ],
+ "trades": [
+  {
+   "day": "2026-10-27",
+   "symbol": "BTCUSDT",
+   "usdt": 10.0
+  },
+  {
+   "day": "2026-10-27",
+   "symbol": "ETHUSDT",
+   "usdt": 10.0
+  }
+ ]
+}

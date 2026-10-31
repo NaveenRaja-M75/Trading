@@ -1,0 +1,4 @@
+DRY RUN (no orders)  budget 20.0 USDT, loss limit 5.0 USDT, 1 coins
+2026-10-30 bot equity 20.00 of budget 20.00 (holding 0.00)
+targets: BTC 67%
+  DRY RUN BUY BTCUSDT 13.40 USDT

@@ -1,0 +1,38 @@
+{
+ "cash": 6.6,
+ "start": 20.0,
+ "qty": {
+  "BTCUSDT": 0.00016453582646431492
+ },
+ "last_rebalance": "2026-10-30T00:00:00+00:00",
+ "history": [
+  {
+   "day": "2026-10-28",
+   "equity": 19.98,
+   "hold_equal_px": {
+    "BTCUSDT": 81343.5
+   }
+  },
+  {
+   "day": "2026-10-29",
+   "equity": 19.43,
+   "hold_equal_px": {
+    "BTCUSDT": 77991.89
+   }
+  },
+  {
+   "day": "2026-10-30",
+   "equity": 19.33,
+   "hold_equal_px": {
+    "BTCUSDT": 77368.77
+   }
+  }
+ ],
+ "trades": [
+  {
+   "day": "2026-10-28",
+   "symbol": "BTCUSDT",
+   "usdt": 13.4
+  }
+ ]
+}
