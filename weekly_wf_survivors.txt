@@ -1,0 +1,29 @@
+BTCUSDT: 2019-11-04 -> 2026-10-31
+ETHUSDT: 2019-11-04 -> 2026-10-31
+SOLUSDT: 2020-08-11 -> 2026-10-31
+BNBUSDT: 2019-11-04 -> 2026-10-31
+XRPUSDT: 2019-11-04 -> 2026-10-31
+ADAUSDT: 2019-11-04 -> 2026-10-31
+DOGEUSDT: 2019-11-04 -> 2026-10-31
+LINKUSDT: 2019-11-04 -> 2026-10-31
+AVAXUSDT: 2020-09-22 -> 2026-10-31
+LTCUSDT: 2019-11-04 -> 2026-10-31
+
+WALK-FORWARD on 10 coins (survivors): each year's strategy was picked using only earlier years, then traded that year.
+
+                                     pick  pick_pct  pick_dd_pct  hold_all_pct  hold_all_dd_pct  btc_pct  btc_dd_pct
+year                                                                                                                
+2022            trend_filter_ma100_voltgt     -40.3        -43.9         -71.0            -72.4    -64.2       -66.9
+2023                   trend_filter_ma100      58.6        -25.3         149.8            -32.5    155.6       -20.0
+2024                      ts_momentum_56d      37.2        -34.0         105.6            -41.3    121.3       -26.2
+2025                      ts_momentum_14d      -5.5        -26.6         -29.2            -48.6     -6.3       -32.0
+2026 (to date)            ts_momentum_14d       4.5        -22.1         -23.2            -50.7    -11.5       -39.5
+
+All test years stitched together (honest out-of-sample track record):
+                    total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct
+name                                                                           
+walk_forward_picks       28.3       5.3    0.32       -48.3                41.1
+equal_hold              -19.1      -4.3    0.26       -72.4                47.4
+btc_hold                 67.9      11.3    0.46       -66.9                49.0
+
+Strategy the rule picks today from all history (use this live): ts_momentum_14d

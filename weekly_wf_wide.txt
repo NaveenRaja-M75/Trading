@@ -1,0 +1,49 @@
+BTCUSDT: 2019-11-04 -> 2026-10-31
+ETHUSDT: 2019-11-04 -> 2026-10-31
+SOLUSDT: 2020-08-11 -> 2026-10-31
+BNBUSDT: 2019-11-04 -> 2026-10-31
+XRPUSDT: 2019-11-04 -> 2026-10-31
+ADAUSDT: 2019-11-04 -> 2026-10-31
+DOGEUSDT: 2019-11-04 -> 2026-10-31
+LINKUSDT: 2019-11-04 -> 2026-10-31
+AVAXUSDT: 2020-09-22 -> 2026-10-31
+LTCUSDT: 2019-11-04 -> 2026-10-31
+EOSUSDT: 2019-11-04 -> 2025-05-25
+XLMUSDT: 2019-11-04 -> 2026-10-31
+TRXUSDT: 2019-11-04 -> 2026-10-31
+ETCUSDT: 2019-11-04 -> 2026-10-31
+BCHUSDT: 2019-11-28 -> 2026-10-31
+DOTUSDT: 2020-08-18 -> 2026-10-31
+MATICUSDT: 2019-11-04 -> 2024-09-09
+UNIUSDT: 2020-09-17 -> 2026-10-31
+ATOMUSDT: 2019-11-04 -> 2026-10-31
+FILUSDT: 2020-10-15 -> 2026-10-31
+ICPUSDT: 2021-05-11 -> 2026-10-31
+ALGOUSDT: 2019-11-04 -> 2026-10-31
+VETUSDT: 2019-11-04 -> 2026-10-31
+THETAUSDT: 2019-11-04 -> 2026-10-31
+AXSUSDT: 2020-11-04 -> 2026-10-31
+SANDUSDT: 2020-08-14 -> 2026-10-31
+MANAUSDT: 2020-08-06 -> 2026-10-31
+NEARUSDT: 2020-10-14 -> 2026-10-31
+FTMUSDT: 2019-11-04 -> 2025-01-12
+FTTUSDT: 2019-12-20 -> 2026-10-31
+
+WALK-FORWARD on 30 coins (wide): each year's strategy was picked using only earlier years, then traded that year.
+
+                                     pick  pick_pct  pick_dd_pct  hold_all_pct  hold_all_dd_pct  btc_pct  btc_dd_pct
+year                                                                                                                
+2022               ts_momentum_14d_voltgt     -62.8        -64.7         -77.7            -78.9    -64.2       -66.9
+2023            trend_filter_ma200_voltgt      25.3        -20.7         120.8            -41.1    155.6       -20.0
+2024                      ts_momentum_56d      17.2        -37.4          62.3            -51.9    121.3       -26.2
+2025                      ts_momentum_14d     -28.5        -34.8         -53.1            -61.3     -6.3       -32.0
+2026 (to date)            ts_momentum_14d       2.1        -27.7         -15.8            -46.7    -11.5       -39.5
+
+All test years stitched together (honest out-of-sample track record):
+                    total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct
+name                                                                           
+walk_forward_picks      -60.1     -17.3   -0.26       -71.2                46.2
+equal_hold              -68.4     -21.2    0.01       -78.9                47.8
+btc_hold                 67.9      11.3    0.46       -66.9                49.0
+
+Strategy the rule picks today from all history (use this live): ts_momentum_14d
