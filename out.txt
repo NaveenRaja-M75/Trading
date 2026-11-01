@@ -1,0 +1,100 @@
+
+######## BTCUSDT daily: 3299 bars 2017-10-20 -> 2026-10-31
+               pattern  h   n  excess_bps     t  same_sign_both_halves  counts
+  three_white_soldiers  3 371       117.7  3.50                   True    True
+  three_white_soldiers  5 371       138.8  3.07                   True   False
+  three_white_soldiers  1 371        48.4  2.68                   True   False
+big_range_day (2x avg) 10 194       220.2  2.57                   True   False
+  three_white_soldiers 10 371       155.4  2.28                  False   False
+big_range_day (2x avg)  3 194        97.8  2.08                   True   False
+                  doji  5 384       -71.2 -1.83                   True   False
+     bullish_engulfing  3 310       -51.3 -1.64                   True   False
+big_range_day (2x avg)  5 194       102.1  1.57                   True   False
+            inside_bar  3 693        32.0  1.43                   True   False
+  patterns passing |t| >= 3.5 AND same direction in both halves: 1 of 44
+  trading the bullish patterns (best horizon, after costs):
+    bullish_engulfing hold 10: 166 trades, avg +1.95%, won 51% (holding averages +0.78% per 10 bars)
+    hammer (after a fall) hold 10: 63 trades, avg +2.30%, won 52% (holding averages +0.78% per 10 bars)
+    three_white_soldiers hold 3: 201 trades, avg +0.72%, won 54% (holding averages +0.23% per 3 bars)
+    long_lower_wick hold 10: 166 trades, avg +1.30%, won 52% (holding averages +0.78% per 10 bars)
+
+######## ETHUSDT daily: 3299 bars 2017-10-20 -> 2026-10-31
+               pattern  h   n  excess_bps     t  same_sign_both_halves  counts
+     bullish_engulfing 10 276       178.9  2.21                   True   False
+  three_white_soldiers  5 392        94.4  1.84                   True   False
+                  doji  5 381        87.3  1.83                  False   False
+        outside_bar_up  5 132      -135.7 -1.83                   True   False
+  three_white_soldiers 10 392       140.9  1.74                  False   False
+     bullish_engulfing  5 276        91.8  1.61                   True   False
+     three_black_crows  5 315       -98.2 -1.58                   True   False
+     three_black_crows 10 312      -114.7 -1.41                   True   False
+big_range_day (2x avg)  3 200        79.7  1.37                   True   False
+big_range_day (2x avg)  1 200        46.9  1.24                  False   False
+  patterns passing |t| >= 3.5 AND same direction in both halves: 0 of 48
+  trading the bullish patterns (best horizon, after costs):
+    bullish_engulfing hold 10: 152 trades, avg +2.96%, won 54% (holding averages +0.61% per 10 bars)
+    hammer (after a fall) hold 3: 71 trades, avg +0.57%, won 54% (holding averages +0.18% per 3 bars)
+    three_white_soldiers hold 5: 186 trades, avg +1.22%, won 51% (holding averages +0.30% per 5 bars)
+    long_lower_wick hold 5: 221 trades, avg +1.12%, won 53% (holding averages +0.30% per 5 bars)
+
+######## BTCUSDT 4h: 19783 bars 2017-10-19 -> 2026-11-01
+             pattern  h    n  excess_bps     t  same_sign_both_halves  counts
+   three_black_crows  3 1811       -31.7 -5.04                   True    True
+three_white_soldiers  3 2141        16.8  3.35                   True   False
+   three_black_crows  5 1811       -25.0 -3.04                   True   False
+     long_lower_wick  1 2090        -7.1 -2.36                   True   False
+   three_black_crows 10 1811       -24.4 -2.30                   True   False
+three_white_soldiers  5 2140        13.2  1.97                   True   False
+three_white_soldiers 10 2140        18.4  1.96                   True   False
+                doji  5 2466       -11.1 -1.84                   True   False
+   bearish_engulfing  3 1768         9.6  1.67                   True   False
+        morning_star  5  147        45.0  1.62                   True   False
+  patterns passing |t| >= 3.5 AND same direction in both halves: 1 of 52
+  trading the bullish patterns (best horizon, after costs):
+    bullish_engulfing hold 10: 976 trades, avg +0.00%, won 47% (holding averages +0.13% per 10 bars)
+    hammer (after a fall) hold 1: 542 trades, avg -0.27%, won 37% (holding averages +0.01% per 1 bars)
+    morning_star hold 5: 144 trades, avg +0.32%, won 51% (holding averages +0.07% per 5 bars)
+    three_white_soldiers hold 3: 1246 trades, avg -0.03%, won 42% (holding averages +0.04% per 3 bars)
+    long_lower_wick hold 10: 1013 trades, avg -0.30%, won 44% (holding averages +0.13% per 10 bars)
+
+######## Nifty 50 daily: 4133 bars 2010-01-04 -> 2026-10-30
+               pattern  h   n  excess_bps     t  same_sign_both_halves  counts
+  three_white_soldiers  1 348        10.6  2.23                   True   False
+        outside_bar_up  3 147       -31.7 -1.76                   True   False
+  three_white_soldiers  5 348        16.6  1.57                   True   False
+        outside_bar_up  5 147       -31.4 -1.51                   True   False
+  three_white_soldiers  3 348        12.8  1.50                   True   False
+        outside_bar_up 10 147       -38.1 -1.45                   True   False
+                  doji 10 363        20.0  1.20                  False   False
+     bullish_engulfing  5  94       -25.6 -1.14                   True   False
+big_range_day (2x avg) 10 115       -51.8 -1.11                  False   False
+            inside_bar  5 393        14.4  1.10                  False   False
+  patterns passing |t| >= 3.5 AND same direction in both halves: 0 of 52
+  trading the bullish patterns (best horizon, after costs):
+    bullish_engulfing hold 10: 77 trades, avg +0.13%, won 51% (holding averages +0.36% per 10 bars)
+    hammer (after a fall) hold 5: 61 trades, avg +0.14%, won 57% (holding averages +0.18% per 5 bars)
+    morning_star hold 1: 51 trades, avg +0.03%, won 51% (holding averages +0.04% per 1 bars)
+    three_white_soldiers hold 1: 237 trades, avg +0.03%, won 50% (holding averages +0.04% per 1 bars)
+    long_lower_wick hold 5: 270 trades, avg +0.09%, won 53% (holding averages +0.18% per 5 bars)
+
+######## Bank Nifty daily: 4148 bars 2010-01-04 -> 2026-10-30
+               pattern  h   n  excess_bps     t  same_sign_both_halves  counts
+big_range_day (2x avg) 10 141      -164.7 -2.67                   True   False
+  three_white_soldiers  1 352        15.7  2.16                   True   False
+        outside_bar_up  3 200       -39.4 -2.08                   True   False
+  three_white_soldiers  5 352        32.8  1.97                   True   False
+          evening_star  1  40       -44.7 -1.89                   True   False
+        outside_bar_up 10 200       -56.0 -1.84                   True   False
+          morning_star  3  45        59.6  1.76                   True   False
+ hammer (after a fall) 10  71       -93.2 -1.75                   True   False
+ hammer (after a fall)  1  72       -23.0 -1.52                   True   False
+     three_black_crows  5 380        24.0  1.46                  False   False
+  patterns passing |t| >= 3.5 AND same direction in both halves: 0 of 52
+  trading the bullish patterns (best horizon, after costs):
+    bullish_engulfing hold 1: 136 trades, avg -0.02%, won 46% (holding averages +0.04% per 1 bars)
+    hammer (after a fall) hold 3: 66 trades, avg -0.12%, won 52% (holding averages +0.13% per 3 bars)
+    morning_star hold 3: 44 trades, avg +0.63%, won 66% (holding averages +0.13% per 3 bars)
+    three_white_soldiers hold 1: 239 trades, avg +0.04%, won 52% (holding averages +0.04% per 1 bars)
+    long_lower_wick hold 5: 246 trades, avg -0.15%, won 49% (holding averages +0.22% per 5 bars)
+
+OVERALL: 2 of 248 pattern/horizon tests show a real, stable effect.
