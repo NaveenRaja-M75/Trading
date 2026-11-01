@@ -17,7 +17,6 @@ from __future__ import annotations
 
 import json
 import os
-import re
 import sys
 import time
 import urllib.error
@@ -34,14 +33,14 @@ from jevbot.features import rsi
 COINS = "BTCUSDT,ETHUSDT,SOLUSDT,BNBUSDT,XRPUSDT,ADAUSDT,DOGEUSDT,LINKUSDT,AVAXUSDT,LTCUSDT".split(",")
 PER_COIN = int(sys.argv[1]) if len(sys.argv) > 1 else 80
 MODEL = sys.argv[2] if len(sys.argv) > 2 else "typesafe-ai/jev"
-BASE = "https://ai-gateway.vercel.sh/v1"
+BASE = "https://ai-gateway.vercel.sh/typesafe/v1"
 KEY = os.environ.get("AI_GATEWAY_API_KEY", "")
 WARM = 24 * 210                      # enough hourly history for 200-day averages
 HORIZONS = (4, 24)
-QUESTION = ("You are judging one crypto chart at one moment. Using everything above, give the probability "
-            "that the price will be HIGHER than now 4 hours from now, and 24 hours from now. Be calibrated: "
-            "0.5 means no edge. Reply only with JSON "
-            '{"p_up_4h": <number 0-1>, "p_up_24h": <number 0-1>}.')
+QUESTIONS = {f"up_{h}h": {"type": "noul", "instructions":
+                          f"Will this coin's price be higher {h} hours from now than it is right now?"} for h in HORIZONS}
+QUESTION = "Questions (yes/no probability each): " + " | ".join(q["instructions"] for q in QUESTIONS.values())
+COST = []
 TREND = {1: "uptrend (higher highs and higher lows)", -1: "downtrend (lower highs and lower lows)", 0: "range, no clear trend"}
 
 
@@ -108,29 +107,20 @@ def rich_state(sym: str, h: pd.DataFrame, btc: pd.DataFrame | None) -> str:
     return "\n".join(lines)
 
 
-def parse(text: str) -> tuple[float | None, float | None]:
-    try:
-        j = json.loads(text[text.index("{"): text.rindex("}") + 1])
-        v = (float(j["p_up_4h"]), float(j["p_up_24h"]))
-    except Exception:                                            # noqa: BLE001
-        nums = [float(x) for x in re.findall(r"\d*\.?\d+", text) if 0 <= float(x) <= 1]
-        if len(nums) < 2:
-            return None, None
-        v = (nums[0], nums[1])
-    return tuple(x if 0 <= x <= 1 else None for x in v)          # type: ignore[return-value]
-
-
 def call(state: str, retries: int = 4) -> tuple[tuple[float | None, float | None], str]:
-    body = json.dumps({"model": MODEL, "temperature": 0, "max_tokens": 80,
-                       "messages": [{"role": "user", "content": state + "\n\n" + QUESTION}]}).encode()
+    """Jev through the gateway's TypeSafe-compatible API: state + typed noul questions -> P(yes) each."""
+    body = json.dumps({"model": MODEL, "state": state, "questions": QUESTIONS}).encode()
     for i in range(retries):
-        req = urllib.request.Request(f"{BASE}/chat/completions", data=body, headers={
+        req = urllib.request.Request(f"{BASE}/systemone", data=body, headers={
             "Content-Type": "application/json", "Authorization": f"Bearer {KEY}"})
         try:
             with urllib.request.urlopen(req, timeout=60) as r:
                 raw = r.read().decode()
-            text = json.loads(raw)["choices"][0]["message"]["content"] or ""
-            return parse(text), raw[:700]
+            j = json.loads(raw)
+            COST.append(float(j.get("provider_metadata", {}).get("gateway", {}).get("cost", 0) or 0))
+            ans = j["answers"]
+            vals = tuple(float(ans[f"up_{h}h"]["noul"]) for h in HORIZONS)
+            return tuple(v if 0 <= v <= 1 else None for v in vals), raw[:700]   # type: ignore[return-value]
         except urllib.error.HTTPError as e:
             msg = e.read().decode(errors="replace")[:400]
             if e.code in (429, 500, 502, 503) and i < retries - 1:
@@ -148,10 +138,6 @@ def call(state: str, retries: int = 4) -> tuple[tuple[float | None, float | None
 def main() -> None:
     if not KEY:
         sys.exit("AI_GATEWAY_API_KEY is not set (add it as a GitHub secret)")
-    with urllib.request.urlopen(urllib.request.Request(f"{BASE}/models", headers={"User-Agent": "Mozilla/5.0"}),
-                                timeout=60) as r:
-        meta = [m for m in json.loads(r.read())["data"] if "typesafe" in m["id"]]
-    print("Gateway entries for TypeSafe:\n" + json.dumps(meta, indent=1)[:3000] + "\n", flush=True)
 
     rng = np.random.default_rng(0)
     data = {sym: load_or_fetch(sym, "1h", 1095) for sym in COINS}
@@ -187,7 +173,7 @@ def main() -> None:
     for i, hz in enumerate(HORIZONS):
         d[f"jev_{hz}h"] = [r[i] for r in real]
         d[f"jev_shuffled_{hz}h"] = [r[i] for r in shuf]
-    print(f"Jev answered {2 * len(d)} descriptions in {time.time() - t0:.0f}s; unusable replies: "
+    print(f"Jev answered {2 * len(d)} descriptions in {time.time() - t0:.0f}s, cost ${sum(COST):.4f}; unusable replies: "
           f"{d.jev_4h.isna().sum()} real + {d.jev_shuffled_4h.isna().sum()} shuffled\n")
 
     for hz in HORIZONS:
