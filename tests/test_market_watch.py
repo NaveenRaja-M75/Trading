@@ -24,3 +24,14 @@ def test_alerts_once_per_new_level_and_reset_on_recovery(tmp_path):
 def test_table_renders():
     t = market_watch.table({"Nifty 50": series(np.linspace(100, 120, 400))})
     assert "Nifty 50" in t and "vs 200-day avg" in t
+
+
+def test_vix_alert_once_per_level_and_reset(tmp_path):
+    st = tmp_path / "v.json"
+    assert market_watch.vix_alert(series([18.0]), st) == []
+    assert len(market_watch.vix_alert(series([31.0]), st)) == 1
+    assert market_watch.vix_alert(series([33.0]), st) == []
+    assert len(market_watch.vix_alert(series([41.0]), st)) == 1
+    assert market_watch.vix_alert(series([22.0]), st) == []          # back under 25: reset
+    assert len(market_watch.vix_alert(series([30.5]), st)) == 1
+    assert "nervous" in market_watch.stress_line(series([24.0]))

@@ -312,13 +312,27 @@ def cmd_market(s: Settings, a) -> None:
         series["Bitcoin (USD)"] = fetch_yahoo("BTC-USD", 0.45)
     except Exception as e:
         print(f"market data unavailable today: {e!r}")
+    stress = {}
+    for name, sym, mx in (("US stocks (S&P 500)", "^GSPC", 0.2), ("Fear index (VIX)", "^VIX", 2.0),
+                          ("Crude oil (USD)", "CL=F", 0.6)):
+        try:
+            stress[name] = fetch_yahoo(sym, mx)
+        except Exception as e:
+            print(f"{name}: unavailable today ({e!r})")
+    series |= {k: v for k, v in stress.items() if k != "Fear index (VIX)"}
     if not series:
         return
     text = f"# Market today\n\nUpdated {_t.strftime('%Y-%m-%d %H:%M UTC', _t.gmtime())}\n\n" + market_watch.table(series)
+    vix = stress.get("Fear index (VIX)")
+    if vix is not None and len(vix):
+        text += "\n\n" + market_watch.stress_line(vix)
     print(text)
     Path(a.out).parent.mkdir(parents=True, exist_ok=True)
     Path(a.out).write_text(text + "\n")
-    alerts = market_watch.drawdown_alerts({k: v for k, v in series.items() if not k.startswith("Bitcoin")}, Path(a.state))
+    watched = {k: v for k, v in series.items() if k in ("Gold (rupees)", "Nifty 50", "US stocks (S&P 500)")}
+    alerts = market_watch.drawdown_alerts(watched, Path(a.state))
+    if vix is not None and len(vix):
+        alerts += market_watch.vix_alert(vix, Path(a.state).with_name("vix_state.json"))
     if a.alerts_out:
         Path(a.alerts_out).write_text("".join(f"- {x}\n" for x in alerts))
     for x in alerts:

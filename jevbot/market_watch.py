@@ -44,3 +44,26 @@ def drawdown_alerts(series: dict[str, pd.Series], state_path: Path) -> list[str]
     state_path.parent.mkdir(parents=True, exist_ok=True)
     state_path.write_text(json.dumps(state, indent=1))
     return out
+
+
+def stress_line(vix: pd.Series) -> str:
+    v = float(vix.iloc[-1])
+    level = "calm" if v < 20 else "nervous" if v < 30 else "fear" if v < 40 else "panic"
+    return (f"**Fear index (VIX): {v:.1f} ({level}).** Under 20 is calm, 20-30 nervous, 30-40 fear, over 40 "
+            f"panic (March 2020 reached 82). It is the market's own read of crash risk in US stocks.")
+
+
+def vix_alert(vix: pd.Series, state_path: Path) -> list[str]:
+    """Alert when the fear index crosses 30 and again at 40; resets once it is back under 25."""
+    state = json.loads(state_path.read_text()) if state_path.exists() else {"level": 0}
+    v = float(vix.iloc[-1])
+    level = 40 if v >= 40 else 30 if v >= 30 else 0
+    out = []
+    if level > state.get("level", 0):
+        out.append(f"**Market fear is high: VIX {v:.1f}** (crossed {level}). This is when crashes and war or crisis "
+                   f"headlines show up in prices. The bot already holds less crypto when markets are wild; Nifty and "
+                   f"gold stay held. No action needed; do not sell in panic.")
+    state["level"] = 0 if v < 25 else max(level, state.get("level", 0))
+    state_path.parent.mkdir(parents=True, exist_ok=True)
+    state_path.write_text(json.dumps(state))
+    return out
