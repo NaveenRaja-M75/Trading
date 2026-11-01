@@ -319,3 +319,24 @@ PBO and deflated Sharpe, two fee levels, Indian tax.
   Backtests here use exchange data only.
 Verdict: no intraday bot. The one real intraday edge is weaker than the daily rule before tax and
 negative after Indian crypto tax.
+
+## 21. Smarter SIP? (`research/sip_test.py`, Rs 1,000/month, same money in)
+"Smart" SIP (2x when 15% below the 200-day average ... 0.5x when 25% above, spare cash in a 6% liquid
+fund) and "pause while falling" SIP vs a plain fixed SIP, Nifty and gold since 2008/2013/2018, Bitcoin
+since 2018/2020/2022. Final value was within about 1-2% of the plain SIP every time, and usually just
+below it (e.g. Nifty from 2008: plain 2.67x, smart 2.66x, pause 2.63x; gold from 2008: 4.45x / 4.42x
+/ 4.39x). Verdict: keep the plain monthly SIP; buying "dips" with an SIP does not add value.
+
+## 22. Candlestick patterns (`research/candles_test.py`)
+13 classic patterns (engulfing, hammer, shooting star, doji, morning/evening star, three white
+soldiers/black crows, inside/outside bars, long lower wick, big range day) on BTC and ETH daily,
+BTC 4h, Nifty and Bank Nifty daily; return after the pattern minus the average return, |t| >= 3.5
+(multiple-testing) and the same direction in both halves required.
+**2 of 248 tests pass**, both momentum: three rising daily BTC candles (+1.2% excess over 3 days,
+t = 3.50) and three falling 4h BTC candles (-0.32% over 3 bars, t = -5.0). The reversal patterns
+(hammer, engulfing, doji, stars) show nothing stable on any market. Momentum is already what the
+trend + volatility rule trades.
+
+## Daily market watch
+`MARKET.md` (paper-state branch, daily) now covers gold, Nifty, Bitcoin, the S&P 500 and Brent oil,
+plus the VIX fear index; alerts fire on 10/20/30% falls from 1-year highs and when VIX crosses 30/40.
