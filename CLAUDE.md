@@ -52,7 +52,7 @@ Standards for a new idea: walk-forward, locked years, PBO, deflated Sharpe, rand
 - Last updated: 2026-11-01. 65 tests pass.
 - Owner still to do: open demat + start Nifty/gold SIP; create Binance Spot-only key; follow docs/GO_LIVE.md.
 - Jev: the Vercel AI Gateway lists `typesafe-ai/jev`, `jev-1.13.0`, `jev-1.14.0` (research/gateway_models.py).
-  Test ready: research/jev_test.py (800 moments, same as Laya), run via the "research" workflow with
+  Test ready: research/jev_test.py (800 random moments, 10 coins, multi-timeframe description with no dates or price levels, graded 4h and 24h ahead), run via the "research" workflow with
   script=research/jev_test.py. Needs GitHub secret `AI_GATEWAY_API_KEY`, which the owner adds; Claude may not write secrets.
   Adopt Jev only if it beats a coin flip by more than 2 standard errors AND beats the shuffled-text control.
 - Open offers: Binance/demat walkthrough.
