@@ -32,3 +32,21 @@ def test_goal_maths():
 def test_report_renders():
     text = planner.report({"nifty": 0, "gold": 0, "crypto": 0}, 5000, 4, usd_inr=88)
     assert "Nifty" in text and "Goal" in text and "years" in text
+
+
+def test_future_value_and_step_up():
+    assert planner.future_value(1000, 1, 0.0) == pytest.approx(12000)
+    assert planner.future_value(1000, 2, 0.0, step_up=0.10) == pytest.approx(12000 + 13200)
+    assert planner.future_value(0, 1, 0.12, start=100) == pytest.approx(112)
+
+
+def test_sip_for_goal_hits_the_inflated_target():
+    sip = planner.sip_for_goal(1e7, 20, 0.12, inflation=0.06, step_up=0.10)
+    assert planner.future_value(sip, 20, 0.12, 0.10) == pytest.approx(1e7 * 1.06 ** 20)
+    assert planner.sip_for_goal(1e7, 20, 0.12, step_up=0.10) < planner.sip_for_goal(1e7, 20, 0.12, step_up=0.0)
+    assert planner.sip_for_goal(100, 5, 0.12, start=1e6) == 0.0     # already there
+
+
+def test_report_has_crore_section():
+    text = planner.report({}, 5000, 1, usd_inr=88)
+    assert "crore of today's money" in text and "| 30 |" in text

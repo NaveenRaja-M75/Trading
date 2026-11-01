@@ -269,7 +269,8 @@ def cmd_plan(s: Settings, a) -> None:
     from . import planner
     h = planner.load_holdings(Path(a.holdings))
     monthly = a.monthly if a.monthly is not None else float(h.get("monthly_add", 5000))
-    text = planner.report(h, monthly, a.month or dt.date.today().month, a.usd_inr, a.goal)
+    text = planner.report(h, monthly, a.month or dt.date.today().month, a.usd_inr, a.goal,
+                          float(h.get("step_up", planner.STEP_UP)), float(h.get("inflation", planner.INFLATION)))
     print(text)
     if a.out:
         Path(a.out).parent.mkdir(parents=True, exist_ok=True)

@@ -2,5 +2,7 @@
   "nifty": 0,
   "gold": 0,
   "crypto": 0,
-  "monthly_add": 5000
+  "monthly_add": 5000,
+  "step_up": 0.10,
+  "inflation": 0.06
 }

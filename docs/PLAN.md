@@ -16,3 +16,19 @@ promise: plan with 10-15% a year.
 
 Avoid (every test lost money): fast trading, leverage, meme coins, prediction-market betting,
 stat-arb pair trading, and anything promising a fixed daily profit.
+
+## Crores, after inflation
+
+Rs 1 crore buys less each year (about 6% inflation), so aim for **1 crore of today's money**.
+Raise the SIP 10% every year as income grows. At 12% a year:
+
+| years | 1 crore of today's money will cost | SIP to start now |
+|---|---|---|
+| 15 | 2.4 cr | Rs 29,237 |
+| 20 | 3.2 cr | Rs 17,377 |
+| 25 | 4.3 cr | Rs 11,009 |
+| 30 | 5.7 cr | Rs 7,260 |
+
+Rs 5,000 a month with the 10% step-up reaches about 1.95 cr in 25 years (0.45 cr in today's money)
+and 3.96 cr in 30 years (0.69 cr today). The monthly plan (`python -m jevbot plan`) shows this table
+with your own numbers every month.
