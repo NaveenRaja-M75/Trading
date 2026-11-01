@@ -1,0 +1,26 @@
+BTCUSDT: 80 moments prepared
+ETHUSDT: 80 moments prepared
+SOLUSDT: 80 moments prepared
+BNBUSDT: 80 moments prepared
+XRPUSDT: 80 moments prepared
+ADAUSDT: 80 moments prepared
+DOGEUSDT: 80 moments prepared
+LINKUSDT: 80 moments prepared
+AVAXUSDT: 80 moments prepared
+LTCUSDT: 80 moments prepared
+descriptions containing a year or a price level: 0 (must be 0)
+
+Example description shown to Jev:
+Coin: ADAUSDT. Time of day 12:00 UTC, Monday.
+ADAUSDT daily view: price is above 0 of its 50/100/200-day averages; -43.8% from its 90-day high; 30-day volatility 51% a year; -1.4% over 7 days, -3.2% over 30 days, -41.2% over 90 days.
+4-hour chart: downtrend (lower highs and lower lows). Last swing high is -0.29% from price (broken above); last swing low is -3.25% from price (acting as support). Price is +1.2% vs 20-bar average, +0.3% vs 50-bar average, -2.1% vs 100-bar average. RSI(14) 57. Typical bar range 1.23% of price. Volume 0.3x its 20-bar average.
+1-hour chart: range, no clear trend. Last swing high is -0.29% from price (broken above); last swing low is -3.25% from price (acting as support). Price is +1.3% vs 20-bar average, +1.1% vs 50-bar average, +0.2% vs 200-bar average. RSI(14) 61. Typical bar range 0.65% of price. Volume 0.9x its 20-bar average.
+Recent moves: +0.44% over 1h, -0.02% over 4h, +2.29% over 12h, +1.07% over 24h, +0.33% over 72h. Last 12 hourly changes in % (oldest to newest): +1.24, +0.09, -0.24, +0.02, +0.13, +0.84, -0.24, +0.46, -0.37, -0.33, +0.24, +0.44. Price sits at 90% of its 24-hour high-low range.
+Market leader BTC: +2.67% over 24h, +1.64% over 7 days, above 3 of its 50/100/200-day averages.
+
+Questions (yes/no probability each): Will this coin's price be higher 4 hours from now than it is right now? | Will this coin's price be higher 24 hours from now than it is right now?
+
+Probe call to typesafe-ai/jev: p_up_4h=None, p_up_24h=None
+raw reply: HTTP 403: {"error":{"message":"Free tier users do not have access to this model. Upgrade to paid credits at https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dtop-up for unrestricted access.","type":"no_providers_available","param":{"error":"Free tier users do not have access to this model. Upgrade to paid credits at https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai%3Fmodal%3Dtop-up for unrestricted 
+
+Jev did not return usable probabilities; stopping before the full test.
