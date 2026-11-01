@@ -313,8 +313,8 @@ def cmd_market(s: Settings, a) -> None:
     except Exception as e:
         print(f"market data unavailable today: {e!r}")
     stress = {}
-    for name, sym, mx in (("US stocks (S&P 500)", "^GSPC", 0.2), ("Fear index (VIX)", "^VIX", 2.0),
-                          ("Crude oil (USD)", "CL=F", 0.6)):
+    for name, sym, mx in (("US stocks (S&P 500)", "^GSPC", 0.25), ("Fear index (VIX)", "^VIX", 2.0),
+                          ("Brent oil (USD)", "BZ=F", 0.6)):
         try:
             stress[name] = fetch_yahoo(sym, mx)
         except Exception as e:
