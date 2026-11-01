@@ -1,0 +1,1182 @@
+
+
+==================== https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe.md
+---
+title: TypeSafe API with AI Gateway
+product: vercel
+url: /docs/ai-gateway/sdks-and-apis/typesafe
+canonical_url: "https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe"
+last_updated: 2026-10-05
+type: conceptual
+prerequisites:
+  - /docs/ai-gateway/sdks-and-apis
+  - /docs/ai-gateway
+related:
+  - /docs/ai-gateway/modalities/decision
+  - /docs/ai-gateway/authentication-and-byok/byok
+  - /docs/ai-gateway/models-and-providers/decision-fallbacks
+  - /docs/ai-gateway/models-and-providers
+summary: Point an existing TypeSafe client at AI Gateway by changing its base URL to route System One decision requests through it.
+install_vercel_plugin: npx plugins add vercel/vercel-plugin
+---
+
+# TypeSafe API with AI Gateway
+
+Keep using the [TypeSafe SDK](https://docs.typesafe.ai/introduction) and route requests through AI Gateway by changing one setting.
+
+
+<!-- docsgraph:related -->
+## Related pages
+
+> **For AI agents:** Follow these links to understand how this page connects to the rest of the Vercel ecosystem. For the full cross-link map (inbound, outbound, prerequisites, and semantic neighbors), see the .graph.md link below.
+
+- [AI Gateway now supports TypeSafe clients and an HTTP API for Jev](https://vercel.com/changelog/ai-gateway-now-supports-typesafe-clients-and-http-api-for-jev)
+- [Laya decision model now available on AI Gateway, free through October 31](https://vercel.com/changelog/laya-decision-model-now-available-on-ai-gateway-free-through-october-31)
+- [Liquid AI's d1 is available on AI Gateway](https://vercel.com/changelog/liquid-ai-d1-is-available-on-ai-gateway)
+- [Microsoft Decision-1 now available on AI Gateway](https://vercel.com/changelog/microsoft-decision-1-now-available-on-ai-gateway)
+- [Perplexity's Decider V1.2 models now available on AI Gateway](https://vercel.com/changelog/perplexity-decider-v1-2-models-now-available-on-ai-gateway)
+- [Moderate product reviews with Jev, TanStack AI, and AI Gateway](https://vercel.com/kb/guide/moderate-product-reviews-jev-tanstack-ai) — Moderate product reviews for an e-commerce storefront with Jev from TypeSafe AI and TanStack AI's \\`decide\\(\\)\\` functio
+- [Decisions](https://ai-sdk.dev/docs/ai-sdk-core/decisions) — Decide answers to Choice, Score, and Boolean questions against shared state.
+- [AI SDK with AI Gateway](https://vercel.com/docs/ai-gateway/sdks-and-apis/ai-sdk) — Build AI-powered TypeScript applications using the AI SDK with AI Gateway for unified access to 400+ models.
+
+Full cross-link map for this page: [/docs/ai-gateway/sdks-and-apis/typesafe.graph.md](/docs/ai-gateway/sdks-and-apis/typesafe.graph.md)
+<!-- /docsgraph:related -->
+
+Requests are billed through AI Gateway and appear in your usage and observability alongside every other model you call.
+
+If you are writing new code instead of migrating, use the [Decision API](/docs/ai-gateway/modalities/decision). It is the same capability without TypeSafe-specific naming.
+
+## Base URL
+
+The TypeSafe-compatible API is available at the following base URL:
+
+```
+https://ai-gateway.vercel.sh/typesafe
+```
+
+## Authentication
+
+The TypeSafe-compatible API supports the same authentication methods as the main AI Gateway:
+
+- **API key**: Use your AI Gateway API key with the `Authorization: Bearer <token>` header
+- **OIDC token**: Use your Vercel OIDC token with the `Authorization: Bearer <token>` header
+
+You only need one of these. This is the credential AI Gateway authenticates you with, not the credential used to call the model.
+
+To bill the provider directly instead of through AI Gateway, add a TypeSafe key under [BYOK](/docs/ai-gateway/authentication-and-byok/byok).
+
+## Migrating an existing client
+
+Change the base URL and the API key:
+
+```diff filename="client.ts"
+  import { TypeSafeClient } from '@typesafe-ai/sdk';
+
+  const client = new TypeSafeClient({
+-   apiKey: process.env.TYPESAFE_API_KEY,
++   apiKey: process.env.AI_GATEWAY_API_KEY,
++   baseURL: 'https://ai-gateway.vercel.sh/typesafe',
+  });
+```
+
+Everything else stays the same:
+
+```typescript filename="triage.ts"
+const result = await client.systemOne({
+  state: 'I was charged twice for my subscription.',
+  questions: {
+    refund: { type: 'noul', instructions: 'Is the customer asking for money back?' },
+    department: {
+      type: 'choice',
+      instructions: 'Which team should handle this?',
+      criteria: { billing: 'Charges and refunds', technical: 'Bugs and outages' },
+    },
+  },
+});
+
+console.log(result.answers.refund); // { type: 'noul', noul: 0.98 }
+```
+
+## Supported endpoints
+
+- `POST /typesafe/v1/systemone` answers typed questions about state
+- `GET /typesafe/v1/models` lists the decision models available to you
+
+## Request and response format
+
+This API implements the TypeSafe request and response shapes.
+
+#### cURL
+
+```bash filename="systemone.sh"
+curl https://ai-gateway.vercel.sh/typesafe/v1/systemone \
+  -H "Authorization: Bearer $AI_GATEWAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "typesafe-ai/jev",
+    "state": "I was charged twice for my subscription.",
+    "questions": {
+      "refund": {
+        "type": "noul",
+        "instructions": "Is the customer asking for money back?"
+      }
+    }
+  }'
+```
+
+#### TypeScript
+
+```typescript filename="systemone.ts"
+import { TypeSafeClient } from '@typesafe-ai/sdk';
+
+const client = new TypeSafeClient({
+  apiKey: process.env.AI_GATEWAY_API_KEY,
+  baseURL: 'https://ai-gateway.vercel.sh/typesafe',
+});
+
+const result = await client.systemOne({
+  model: 'typesafe-ai/jev',
+  state: 'I was charged twice for my subscription.',
+  questions: {
+    refund: {
+      type: 'noul',
+      instructions: 'Is the customer asking for money back?',
+    },
+  },
+});
+```
+
+#### Python
+
+```python filename="systemone.py"
+import os
+import requests
+
+response = requests.post(
+    "https://ai-gateway.vercel.sh/typesafe/v1/systemone",
+    headers={
+        "Authorization": f"Bearer {os.environ['AI_GATEWAY_API_KEY']}",
+        "Content-Type": "application/json",
+    },
+    json={
+        "model": "typesafe-ai/jev",
+        "state": "I was charged twice for my subscription.",
+        "questions": {
+            "refund": {
+                "type": "noul",
+                "instructions": "Is the customer asking for money back?",
+            }
+        },
+    },
+)
+
+print(response.json()["answers"])
+```
+
+The response uses TypeSafe's field names:
+
+```json
+{
+  "model": "typesafe-ai/jev",
+  "answers": {
+    "refund": { "type": "noul", "noul": 0.98 }
+  },
+  "usage": { "input_tokens": 275, "output_tokens": 20 },
+  "provider_metadata": {
+    "gateway": {
+      "routing": {
+        "originalModelId": "typesafe-ai/jev",
+        "resolvedProvider": "typesafe-ai",
+        "canonicalSlug": "typesafe-ai/jev",
+        "finalProvider": "typesafe-ai"
+      },
+      "cost": "0.00001155",
+      "marketCost": "0.00001155",
+      "surchargeCost": "0",
+      "gatewayCost": "0.00001155",
+      "generationId": "gen_..."
+    }
+  }
+}
+```
+
+## Decision fallbacks
+
+Decision fallbacks are an AI Gateway extension to the TypeSafe request. Add one conditional object to `providerOptions.gateway.models` to rerun a successful but uncertain decision with another model.
+
+The official TypeSafe SDK forwards additional request properties at runtime, but its request type does not currently include `providerOptions`. Supply the extension through an intermediate object:
+
+```typescript filename="typesafe-decision-fallback.ts" {21-30}
+import { TypeSafeClient } from '@typesafe-ai/sdk';
+
+const client = new TypeSafeClient({
+  apiKey: process.env.AI_GATEWAY_API_KEY,
+  baseURL: 'https://ai-gateway.vercel.sh/typesafe',
+});
+
+const request = {
+  model: 'typesafe-ai/jev',
+  state: 'I was charged twice and cannot sign in.',
+  questions: {
+    intent: {
+      type: 'choice' as const,
+      instructions: 'Which team should handle this?',
+      criteria: {
+        billing: 'Charges and refunds',
+        account: 'Sign-in and account access',
+      },
+    },
+  },
+  providerOptions: {
+    gateway: {
+      models: [
+        {
+          model: 'openai/gpt-6-astra',
+          when: { question: 'intent', confidenceBelow: 0.6 },
+        },
+      ],
+    },
+  },
+};
+
+const result = await client.systemOne(request);
+```
+
+> **💡 Note:** If a language model returns the final Choice or Score answer, `confidence: 0`
+> and `probabilities: {}` mean those values are unavailable. They do not mean
+> the model measured zero confidence. Native decision-model fallbacks preserve
+> native confidence and probabilities.
+
+Noul returns the fallback model's final `P(true)` normally. The response's top-level `model` echoes the model ID you requested when the primary answered, and names the fallback model whenever a fallback answered. AI Gateway routing metadata lists each model attempt and marks the one your condition triggered. Triggered requests bill both stages and report their combined usage.
+
+When a condition matches, the response also carries these headers, listed in `Access-Control-Expose-Headers` so browser clients can read them:
+
+| Header | Value |
+| --- | --- |
+| `x-ai-gateway-decision-fallback-triggered` | `true` |
+| `x-ai-gateway-decision-fallback-final-model` | The model that produced the returned answers |
+| `x-ai-gateway-decision-fallback-primary-model` | The primary model whose answers matched the condition |
+| `x-ai-gateway-decision-fallback-triggering-questions` | A percent-encoded JSON array of the question IDs that matched. Read it with `JSON.parse(decodeURIComponent(value))` |
+| `x-ai-gateway-decision-fallback-triggering-questions-truncated` | `true` when the question list was cut short. `provider_metadata.gateway.routing` has the full list |
+
+AI Gateway omits these headers when the condition doesn't match. Use them to detect a fallback when your client only reads TypeSafe's typed response fields.
+
+AI Gateway also sends the deprecated `x-ai-gateway-evaluation-fallback-*` headers with identical values. Read the `x-ai-gateway-decision-fallback-*` headers in new code.
+
+See [Decision Fallbacks](/docs/ai-gateway/models-and-providers/decision-fallbacks#use-the-typesafe-compatible-api) for Boolean probability conditions, compound policies, virtual models, the complete sentinel response, and two-stage cost and latency.
+
+## Errors
+
+Errors use TypeSafe's shape, with a machine-readable code alongside the message:
+
+```json
+{
+  "message": "questions.refund.type: expected one of 'noul', 'choice', 'score'",
+  "error_type": "invalid_request"
+}
+```
+
+Errors returned by the model provider are passed through unchanged, so a client that already handles TypeSafe errors keeps working.
+
+## Related
+
+- [Decision](/docs/ai-gateway/modalities/decision) for the HTTP API and the AI SDK
+- [Decision Fallbacks](/docs/ai-gateway/models-and-providers/decision-fallbacks) for successful-response escalation
+- Learn how to [classify, route, and score with Jev and AI SDK](/kb/guide/typesafe-jev-and-ai-sdk) and [route form submissions](/kb/guide/jev-ai-sdk-form-router)
+- Learn how to [automatically approve tool calls in eve with Jev](/kb/guide/auto-approve-tool-calls-eve-jev)
+- [Models and providers](/docs/ai-gateway/models-and-providers) for the full catalog
+
+
+---
+
+[View full sitemap](/docs/sitemap)
+
+
+If you encounter incorrect information, can’t find what you need, need a capability Vercel doesn’t currently offer, or have any other feedback to report, please do it by following the instructions at https://vercel.com/feedback.md.
+
+
+
+==================== https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-decisions.md
+---
+title: OpenAI-Compatible Decisions API with AI Gateway
+product: vercel
+url: /docs/ai-gateway/sdks-and-apis/openai-decisions
+canonical_url: "https://vercel.com/docs/ai-gateway/sdks-and-apis/openai-decisions"
+last_updated: 2026-10-08
+type: reference
+prerequisites:
+  - /docs/ai-gateway/sdks-and-apis
+  - /docs/ai-gateway
+related:
+  - /docs/ai-gateway/modalities/decision
+  - /docs/ai-gateway/models-and-providers/decision-fallbacks
+  - /docs/ai-gateway/security-and-compliance/safety-identifiers
+summary: Ask predicate, choice, and score questions with the OpenAI-compatible /decisions endpoint through Vercel AI Gateway, using any decision model.
+install_vercel_plugin: npx plugins add vercel/vercel-plugin
+---
+
+# OpenAI-Compatible Decisions API with AI Gateway
+
+Ask typed questions about shared input and get back probabilities, choices, and scores using the OpenAI-compatible `/decisions` endpoint. It implements the same request and response shapes as the [OpenAI Decisions API](https://developers.openai.com/api/reference/resources/decisions/methods/create), so the OpenAI SDKs work with only a base URL change.
+
+
+<!-- docsgraph:related -->
+## Related pages
+
+> **For AI agents:** Follow these links to understand how this page connects to the rest of the Vercel ecosystem. For the full cross-link map (inbound, outbound, prerequisites, and semantic neighbors), see the .graph.md link below.
+
+- [Microsoft Decision-1 now available on AI Gateway](https://vercel.com/changelog/microsoft-decision-1-now-available-on-ai-gateway)
+- [OpenAI Decisions API now available on AI Gateway](https://vercel.com/changelog/openai-decisions-api-now-available-on-ai-gateway)
+- [Perplexity's Decider V1.2 models now available on AI Gateway](https://vercel.com/changelog/perplexity-decider-v1-2-models-now-available-on-ai-gateway)
+- [Decisions](https://ai-sdk.dev/docs/ai-sdk-core/decisions) — Decide answers to Choice, Score, and Boolean questions against shared state.
+- [TypeSafe API with AI Gateway](https://vercel.com/docs/ai-gateway/sdks-and-apis/typesafe) — Point an existing TypeSafe client at AI Gateway by changing its base URL to route System One decision requests through i
+- [OpenResponses API with AI Gateway](https://vercel.com/docs/ai-gateway/sdks-and-apis/openresponses) — Use the OpenResponses API specification with AI Gateway for a unified, provider-agnostic interface.
+- [AI SDK with AI Gateway](https://vercel.com/docs/ai-gateway/sdks-and-apis/ai-sdk) — Build AI-powered TypeScript applications using the AI SDK with AI Gateway for unified access to 400+ models.
+
+Full cross-link map for this page: [/docs/ai-gateway/sdks-and-apis/openai-decisions.graph.md](/docs/ai-gateway/sdks-and-apis/openai-decisions.graph.md)
+<!-- /docsgraph:related -->
+
+Any [decision model](/ai-gateway/models?capabilities=decision) on AI Gateway can answer, not just OpenAI's. For an overview of decision models and the AI SDK `decide` function, see [Decision](/docs/ai-gateway/modalities/decision). This page covers the OpenAI-compatible REST endpoint.
+
+## Base URL
+
+The Decisions API is available at the following base URL:
+
+```
+https://ai-gateway.vercel.sh/v1
+```
+
+## Authentication
+
+The Decisions API supports the same authentication methods as the main AI Gateway:
+
+- **API key**: Use your AI Gateway API key with the `Authorization: Bearer <token>` header
+- **OIDC token**: Use your Vercel OIDC token with the `Authorization: Bearer <token>` header
+
+You only need one of these. If an API key is specified it takes precedence over any OIDC token, even if the API key is invalid.
+
+## Endpoint
+
+```
+POST /decisions
+```
+
+## Example request
+
+#### TypeScript
+
+```typescript filename="decisions.ts"
+import OpenAI from 'openai';
+
+const openai = new OpenAI({
+  apiKey: process.env.AI_GATEWAY_API_KEY,
+  baseURL: 'https://ai-gateway.vercel.sh/v1',
+});
+
+const decision = await openai.decisions.create({
+  model: 'openai/gpt-6-luna-decisions',
+  input: 'The package arrived with a broken screen. I want my money back.',
+  questions: [
+    {
+      type: 'predicate',
+      name: 'damaged',
+      instructions: 'Does the customer report a damaged item?',
+    },
+    {
+      type: 'choice',
+      name: 'queue',
+      instructions: 'Which team should handle this ticket?',
+      choices: [
+        { value: 'billing', description: 'Refunds and payments' },
+        { value: 'shipping', description: 'Delivery and damaged items' },
+      ],
+    },
+    {
+      type: 'score',
+      name: 'urgency',
+      instructions: 'How urgent is this ticket?',
+      levels: [{ label: 'low' }, { label: 'medium' }, { label: 'high' }],
+    },
+  ],
+});
+
+console.log(decision.answers);
+```
+
+#### Python
+
+```python filename="decisions.py"
+import os
+from openai import OpenAI
+
+client = OpenAI(
+    api_key=os.getenv("AI_GATEWAY_API_KEY"),
+    base_url="https://ai-gateway.vercel.sh/v1",
+)
+
+decision = client.decisions.create(
+    model="openai/gpt-6-luna-decisions",
+    input="The package arrived with a broken screen. I want my money back.",
+    questions=[
+        {
+            "type": "predicate",
+            "name": "damaged",
+            "instructions": "Does the customer report a damaged item?",
+        },
+        {
+            "type": "choice",
+            "name": "queue",
+            "instructions": "Which team should handle this ticket?",
+            "choices": [
+                {"value": "billing", "description": "Refunds and payments"},
+                {"value": "shipping", "description": "Delivery and damaged items"},
+            ],
+        },
+        {
+            "type": "score",
+            "name": "urgency",
+            "instructions": "How urgent is this ticket?",
+            "levels": [{"label": "low"}, {"label": "medium"}, {"label": "high"}],
+        },
+    ],
+)
+
+print(decision.answers)
+```
+
+#### cURL
+
+```bash filename="decisions.sh"
+curl -X POST "https://ai-gateway.vercel.sh/v1/decisions" \
+  -H "Authorization: Bearer $AI_GATEWAY_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "openai/gpt-6-luna-decisions",
+    "input": "The package arrived with a broken screen. I want my money back.",
+    "questions": [
+      {
+        "type": "predicate",
+        "name": "damaged",
+        "instructions": "Does the customer report a damaged item?"
+      },
+      {
+        "type": "choice",
+        "name": "queue",
+        "instructions": "Which team should handle this ticket?",
+        "choices": [
+          { "value": "billing", "description": "Refunds and payments" },
+          { "value": "shipping", "description": "Delivery and damaged items" }
+        ]
+      },
+      {
+        "type": "score",
+        "name": "urgency",
+        "instructions": "How urgent is this ticket?",
+        "levels": [{ "label": "low" }, { "label": "medium" }, { "label": "high" }]
+      }
+    ]
+  }'
+```
+
+## Response format
+
+Answers come back in question order. The response also reports the model that answered, token usage, and AI Gateway routing and cost metadata:
+
+```json
+{
+  "model": "openai/gpt-6-luna-decisions",
+  "answers": [
+    { "type": "predicate", "name": "damaged", "probability": 0.95 },
+    {
+      "type": "choice",
+      "name": "queue",
+      "choice": "shipping",
+      "confidence": 0.81,
+      "probabilities": [
+        { "value": "billing", "probability": 0.19 },
+        { "value": "shipping", "probability": 0.81 }
+      ]
+    },
+    {
+      "type": "score",
+      "name": "urgency",
+      "score": 1.3,
+      "confidence": 0.62,
+      "probabilities": [
+        { "value": 0, "label": "low", "probability": 0.08 },
+        { "value": 1, "label": "medium", "probability": 0.54 },
+        { "value": 2, "label": "high", "probability": 0.38 }
+      ]
+    }
+  ],
+  "usage": { "input_tokens": 96, "output_tokens": 0, "total_tokens": 96 },
+  "provider_metadata": {
+    "gateway": {
+      "routing": {
+        "originalModelId": "openai/gpt-6-luna-decisions",
+        "resolvedProvider": "openai",
+        "canonicalSlug": "openai/gpt-6-luna-decisions",
+        "finalProvider": "openai"
+      },
+      "cost": "0.0000096",
+      "generationId": "gen_..."
+    }
+  }
+}
+```
+
+A score is the probability-weighted average of the level indexes, starting at `0`. `confidence` and `probabilities` appear when the answering model returns them.
+
+## Models
+
+Set `model` to any decision model slug, such as `openai/gpt-6-luna-decisions` or `typesafe-ai/jev`. Use the **Decision** filter on the [AI Gateway Models page](/ai-gateway/models?capabilities=decision) to see them all.
+
+## Input
+
+`input` accepts a string, or an array of user messages. Each message's content is a string or an ordered list of `input_text` and `input_image` parts, and every question is asked against the whole input.
+
+Images must be base64-encoded data URLs. External URLs and file IDs aren't supported, and a request can include at most 128 images. Set `detail` to `low`, `high`, `auto`, or `original` to choose an image's detail level:
+
+```json
+{
+  "model": "openai/gpt-6-luna-decisions",
+  "input": [
+    {
+      "role": "user",
+      "content": [
+        { "type": "input_text", "text": "Inspect the product in this photo." },
+        {
+          "type": "input_image",
+          "image_url": "data:image/png;base64,iVBORw0KGgo...",
+          "detail": "high"
+        }
+      ]
+    }
+  ],
+  "questions": [
+    {
+      "type": "predicate",
+      "name": "visible_damage",
+      "instructions": "Does the product have visible damage?"
+    }
+  ]
+}
+```
+
+Image input needs a decision model that accepts images, such as `openai/gpt-6-luna-decisions`. Models that only accept text, such as `typesafe-ai/jev`, return a `400` error for requests with images. If a request with images falls back to a language model, that model must support vision. See [decision fallbacks](/docs/ai-gateway/models-and-providers/decision-fallbacks).
+
+## Questions
+
+Each question needs a `type` and `instructions`. `name` is optional, and an unnamed question comes back with `name: null`.
+
+| Type        | Request fields                                                                      | Answer fields                           |
+| ----------- | ----------------------------------------------------------------------------------- | --------------------------------------- |
+| `predicate` | `instructions`                                                                      | `probability` that the answer is yes    |
+| `choice`    | `instructions`, between 1 and 255 `choices` with a `value` and optional `description` | `choice`, `confidence`, `probabilities` |
+| `score`     | `instructions`, between 2 and 10 `levels` with a `label` and optional `description` | `score`, `confidence`, `probabilities`  |
+
+If the model declines to answer a question, its answer is `{ "type": "refusal", "name": ... }` in that question's position, and the other questions are answered normally. A request with refused questions is billed for its input like any other.
+
+Question names must be unique within a request. Choice values can be strings or booleans, but a string and a boolean with the same text (such as `true` and `"true"`) can't both appear in one question.
+
+## Provider options
+
+`safety_identifier` maps to `providerOptions.gateway.safetyIdentifier`, the same as on Chat Completions. It must be non-empty, and values longer than 64 characters are truncated. See [Safety identifiers](/docs/ai-gateway/security-and-compliance/safety-identifiers) for which providers receive it and how precedence works.
+
+The request body also accepts AI Gateway `providerOptions`, so you can require zero data retention, restrict providers, or add [decision fallbacks](/docs/ai-gateway/models-and-providers/decision-fallbacks):
+
+```json
+{
+  "model": "openai/gpt-6-luna-decisions",
+  "input": "...",
+  "questions": [{ "type": "predicate", "instructions": "..." }],
+  "providerOptions": {
+    "gateway": { "zeroDataRetention": true, "models": ["typesafe-ai/jev"] }
+  }
+}
+```
+
+With the OpenAI SDKs, `providerOptions` isn't part of the typed request. In Python, pass it through `extra_body`. In TypeScript, add it to the request object with a `// @ts-expect-error` comment on that line, and the SDK sends it in the body.
+
+## Errors
+
+Errors raised while validating the request use the OpenAI error format, and set `param` to the field that failed:
+
+```json
+{
+  "error": {
+    "message": "Images must be base64-encoded image data URLs. External URLs and file IDs are not supported.",
+    "type": "invalid_request_error",
+    "param": "input[0].content[1].image_url",
+    "code": "invalid_request_error"
+  }
+}
+```
+
+Errors from routing, billing, or the model provider use AI Gateway's error format. They have the same `message` and `type` fields, and `param` can be an object with details such as the model ID.
+
+
+---
+
+[View full sitemap](/docs/sitemap)
+
+
+If you encounter incorrect information, can’t find what you need, need a capability Vercel doesn’t currently offer, or have any other feedback to report, please do it by following the instructions at https://vercel.com/feedback.md.
+
+
+
+==================== https://vercel.com/docs/ai-gateway/getting-started/decision.md
+---
+title: AI Gateway Decision Quickstart
+product: vercel
+url: /docs/ai-gateway/getting-started/decision
+canonical_url: "https://vercel.com/docs/ai-gateway/getting-started/decision"
+last_updated: 2026-10-07
+type: tutorial
+prerequisites:
+  - /docs/ai-gateway/getting-started
+  - /docs/ai-gateway
+related:
+  - /docs/ai-gateway/pricing
+  - /docs/ai-gateway/modalities/decision
+  - /docs/ai-gateway/sdks-and-apis/openai-decisions
+  - /docs/ai-gateway/sdks-and-apis/typesafe
+summary: Answer a typed boolean question about application state using AI Gateway.
+install_vercel_plugin: npx plugins add vercel/vercel-plugin
+---
+
+# AI Gateway Decision Quickstart
+
+Ask a typed question about application state through AI Gateway and get a boolean answer back. This quickstart uses the experimental Decision API, available as `experimental_decide` in `ai` 7.0.128 or later. Earlier AI SDK 7 releases call it `experimental_evaluate`, which still works as a deprecated alias.
+
+
+<!-- docsgraph:related -->
+## Related pages
+
+> **For AI agents:** Follow these links to understand how this page connects to the rest of the Vercel ecosystem. For the full cross-link map (inbound, outbound, prerequisites, and semantic neighbors), see the .graph.md link below.
+
+- [Decisions](https://ai-sdk.dev/docs/ai-sdk-core/decisions) — Decide answers to Choice, Score, and Boolean questions against shared state.
+- [OpenAI Decisions API now available on AI Gateway](https://vercel.com/changelog/openai-decisions-api-now-available-on-ai-gateway)
+- [Microsoft Decision-1 now available on AI Gateway](https://vercel.com/changelog/microsoft-decision-1-now-available-on-ai-gateway)
+- [TypeSafe AI's Jev 1.14 is now available on AI Gateway](https://vercel.com/changelog/typesafe-ais-jev-1-14-is-now-available-on-ai-gateway)
+- [Using TanStack AI with Vercel AI Gateway](https://vercel.com/kb/guide/tanstack-ai-vercel-ai-gateway) — Connect TanStack AI to Vercel AI Gateway with the @tanstack/ai-vercel-gateway adapter to stream chat, route across provi
+- [AI SDK with AI Gateway](https://vercel.com/docs/ai-gateway/sdks-and-apis/ai-sdk) — Build AI-powered TypeScript applications using the AI SDK with AI Gateway for unified access to 400+ models.
+- [AI SDK for Python with AI Gateway](https://vercel.com/docs/ai-gateway/sdks-and-apis/ai-sdk-python) — Build AI-powered Python applications using the AI SDK for Python with AI Gateway for unified access to 400+ models.
+
+Full cross-link map for this page: [/docs/ai-gateway/getting-started/decision.graph.md](/docs/ai-gateway/getting-started/decision.graph.md)
+<!-- /docsgraph:related -->
+
+## Make your first decision
+
+### Use a coding agent
+
+Paste this prompt into a coding agent with terminal access:
+
+**Agent prompt**
+
+```text
+Add a decision request through AI Gateway in the current environment. Use the AI Gateway skill for this task. If it is unavailable, run npx skills add vercel/vercel-plugin --skill ai-gateway, then find and read its SKILL.md before continuing. Reuse the environment's Node.js project, framework, and package manager when possible. Otherwise, add the smallest TypeScript entry point and explain why. Use ai 7.0.128 or later for this quickstart, upgrading an existing ai dependency if it is older, and add only required dependencies. Read AI_GATEWAY_API_KEY from the environment. If it is missing, run npx vercel@latest whoami and pause for login if needed. Determine the team, then run npx vercel@latest --scope <team-slug> ai-gateway api-keys create --name <descriptive-name>. Capture stdout directly into AI_GATEWAY_API_KEY for the request or existing ignored secret storage, and never expose the value. Use typesafe-ai/jev with experimental_decide from the ai package to decide whether a support agent issued a refund, print the structured boolean answer, run the result, and report the output.
+```
+
+### Run the Node.js example
+
+Use [Node.js 22.18 or later](https://nodejs.org/) and a team with available [AI Gateway Credits](/docs/ai-gateway/pricing). Export `AI_GATEWAY_API_KEY` in your current shell. If you need a key, open the [Create API Key dialog](https://vercel.com/d?to=%2F%5Bteam%5D%2F%7E%2Fai-gateway%2Fapi-keys%3FshowCreateKeyModal%3Dtrue\&title=AI+Gateway+API+Keys).
+
+```bash filename="Terminal"
+export AI_GATEWAY_API_KEY="your_ai_gateway_api_key"
+```
+
+Install the latest AI SDK:
+
+```bash filename="Terminal"
+pnpm add ai@latest
+```
+
+Create `index.mts`:
+
+```typescript filename="index.mts"
+import { experimental_decide as decide } from 'ai';
+
+const result = await decide({
+  model: 'typesafe-ai/jev',
+  state: 'The support agent issued a full refund to the customer.',
+  questions: {
+    refunded: {
+      type: 'boolean',
+      instructions: 'Was a refund issued?',
+    },
+  },
+});
+
+console.log(JSON.stringify(result.answers, null, 2));
+```
+
+Run the script:
+
+```bash filename="Terminal"
+node index.mts
+```
+
+This quickstart logs only `result.answers`. The probability can vary, but you should see output with this shape:
+
+```json
+{
+  "refunded": {
+    "type": "boolean",
+    "probability": 0.99
+  }
+}
+```
+
+## Next steps
+
+- Make decisions through the [HTTP API](/docs/ai-gateway/modalities/decision#http-api)
+- Use the OpenAI SDK with the [OpenAI-Compatible Decisions API](/docs/ai-gateway/sdks-and-apis/openai-decisions)
+- Migrate an existing client to the [TypeSafe-compatible API](/docs/ai-gateway/sdks-and-apis/typesafe)
+- Add [choice and score questions](/docs/ai-gateway/modalities/decision#question-types)
+- Ask [multiple questions](/docs/ai-gateway/modalities/decision#multiple-questions-in-one-request) or pass [structured state](/docs/ai-gateway/modalities/decision#structured-state)
+- Learn how to [classify, route, and score with Jev and AI SDK](/kb/guide/typesafe-jev-and-ai-sdk) and [route form submissions](/kb/guide/jev-ai-sdk-form-router)
+- Learn how to [automatically approve tool calls in eve with Jev](/kb/guide/auto-approve-tool-calls-eve-jev)
+- Build a [product review moderation workflow with Jev and TanStack AI](/kb/guide/moderate-product-reviews-jev-tanstack-ai)
+- Browse [decision models](/ai-gateway/models?capabilities=decision)
+
+
+---
+
+[View full sitemap](/docs/sitemap)
+
+
+If you encounter incorrect information, can’t find what you need, need a capability Vercel doesn’t currently offer, or have any other feedback to report, please do it by following the instructions at https://vercel.com/feedback.md.
+
+
+
+==================== https://zuplo.com/docs/ai-gateway/jev.md
+# Using Jev
+
+> **Scope of this page**
+>
+> This page documents the Zuplo **gateway** runtime (API, AI, and MCP gateways), not the Developer Portal.
+>
+> It applies to every Zuplo hosting option: Managed Edge, Managed Dedicated, and Self-Hosted. See [Hosting options](https://zuplo.com/docs/articles/hosting-options).
+
+**Jev** is [TypeSafe's](https://typesafe.ai) System One model. It doesn't write
+text. You send it a piece of text—the _state_—and a set of typed questions, and
+it returns a calibrated answer for each one: a probability, a choice from
+options you define, or a score on a scale you define. Adding it as a provider
+puts the gateway in front of TypeSafe's API for authentication, model filtering,
+usage metering, and cost tracking, on your own TypeSafe account and billing.
+
+Jev differs from every other provider in three ways that change what you type:
+
+- **It has its own endpoint.** Requests go to `/v1/systemone`, not to chat
+  completions.
+- **Chat clients can't call it.** Every other endpoint refuses a Jev model, and
+  the default model list doesn't include it.
+- **Only input tokens cost money.** TypeSafe charges $0.042 per million input
+  tokens, and output tokens are free.
+
+## What Jev answers
+
+Each request carries a `state` and a set of named `questions`. A question's type
+decides the shape of its answer:
+
+| Question type | Asks                                | Answer                                                               |
+| ------------- | ----------------------------------- | -------------------------------------------------------------------- |
+| `noul`        | A yes-or-no question                | A probability between 0 and 1                                        |
+| `choice`      | Which of your options applies       | The chosen option, a probability for each option, and a confidence   |
+| `score`       | Where the state falls on your scale | A score on the scale, a probability for each level, and a confidence |
+
+The `state` is text: a string, a JSON object, or an array of text values. Jev
+doesn't accept images, audio, or video. TypeSafe's documentation explains
+[state](https://docs.typesafe.ai/concepts/state), the
+[question types](https://docs.typesafe.ai/primitives), and how to read a
+[confidence](https://docs.typesafe.ai/confidence).
+
+## Supported endpoint
+
+A Jev model serves one endpoint:
+
+| Endpoint                                                                  | Jev |
+| ------------------------------------------------------------------------- | --- |
+| `/v1/systemone`                                                           | ✅  |
+| `/v1/chat/completions`, `/v1/responses`, `/v1/messages`, `/v1/embeddings` | ❌  |
+
+The gateway forwards your request body to TypeSafe unchanged, except for the
+`model` field, which it replaces with the model ID your provider serves. The
+response body comes back unchanged too, including the `model` field, which
+reports the versioned model that answered. The `x-typesafe-request-id` header
+comes back as well. TypeSafe's own error responses (`401`, `422`, `429`, and
+`529`) pass through with TypeSafe's body, so the field a `422` names is the one
+to fix.
+
+The refusal works in both directions. A Jev model sent to a chat endpoint
+(`/v1/chat/completions`, `/v1/responses`, or `/v1/messages`) returns a `400`
+that names the endpoint, and a model from any other provider sent to
+`/v1/systemone` returns a `400` that names Jev. `/v1/embeddings` fails
+differently: Jev has no embedding models, so the gateway returns a `500` saying
+the model `is not included in model selections`.
+
+## Before you begin
+
+You need:
+
+- A TypeSafe account and an API key. Create a key in the
+  [TypeSafe console](https://console.typesafe.ai/keys).
+- An AI Gateway project in the Zuplo Portal, and an [app](./apps.mdx) to call
+  from. The app page shows its API URL, and its API key lives on the app's **API
+  Key** tab.
+
+## Add the provider
+
+Adding or editing providers requires the **Edit** permission, granted to Zuplo
+account and project **Admins**—see
+[Managing Providers](./managing-providers.mdx).
+
+<Stepper>
+
+1. Open
+   [**Settings → AI Providers**](https://portal.zuplo.com/+/account/project/ai/settings/data-models)
+   in your AI Gateway project in the Zuplo Portal.
+
+1. Click the **Add Provider** button.
+
+1. In the **AI Provider** list, select **Jev**.
+
+1. Review the **Provider Name**, which fills in as `jev`. You can replace it
+   with your own name, but only now—the name is permanent after creation, and
+   it's the prefix in every model reference.
+
+1. Paste your TypeSafe **API Key**. There's no endpoint or region to enter,
+   because TypeSafe is a single global host.
+
+1. Select the models to enable, then click **Create**.
+
+</Stepper>
+
+:::note
+
+Saving provider settings triggers an automatic production deployment of your
+gateway, because provider credentials are part of the deployed gateway. The
+change is live once the deployment completes.
+
+:::
+
+## Model references
+
+Apps reference models as `providerName/model`, where `providerName` is the name
+you gave the provider. The Jev catalog has three models, so a provider named
+`jev` can serve:
+
+| Model reference   | What it is                                                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------- |
+| `jev/jev-latest`  | TypeSafe's most recent stable release, and the default in TypeSafe's SDKs.                                                             |
+| `jev/jev-1.13.0`  | A specific release. Pin it when you tune confidence thresholds against one version.                                                    |
+| `jev/jev-preview` | TypeSafe's most recent release, official or not. It points to the same model as `jev-latest` until TypeSafe publishes a preview build. |
+
+An alias moves when TypeSafe ships a release, so the answers behind it can
+change without a change on your side. The response's `model` field reports the
+versioned ID that answered, so you can log which release produced each result.
+
+## Call the model
+
+Send requests to `/v1/systemone` under your app's URL, with the app's API key as
+a bearer token. Include the `model` in every request, as `jev/<model>`.
+
+### With TypeSafe's SDK
+
+TypeSafe's JavaScript SDK works against your app. Set `baseURL` to the app URL
+**without** `/v1`, because the SDK appends `/v1/systemone` itself. The `apiKey`
+is the app's API key, not your TypeSafe key.
+
+```ts
+import { choice, noul, score, TypeSafeClient } from "@typesafe-ai/sdk";
+
+const client = new TypeSafeClient({
+  baseURL:
+    "https://my-gateway-main-2e18f50.zuplo.app/config_fe0a04972d2848e0a94ae4b8bcd1497e",
+  apiKey: process.env.ZUPLO_APP_API_KEY,
+  defaultModel: "jev/jev-latest",
+});
+
+const response = await client.systemOne({
+  state: "Help! My payouts have been failing for 3 days.",
+  questions: {
+    urgent: noul("Does this convey urgency?"),
+    department: choice("Which team should handle this?", {
+      billing: "Payments and invoices",
+      technical: null,
+    }),
+    frustration: score("How frustrated is the customer?", [
+      "Calm",
+      "Frustrated",
+      "Very angry",
+    ]),
+  },
+});
+
+console.log(response.answers.department.choice);
+```
+
+To use a different model for one call, pass `model: "jev/jev-1.13.0"` to
+`systemOne()`.
+
+### With HTTP
+
+```bash
+curl https://my-gateway-main-2e18f50.zuplo.app/config_fe0a04972d2848e0a94ae4b8bcd1497e/v1/systemone \
+  -H "Authorization: Bearer $ZUPLO_APP_API_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{
+    "model": "jev/jev-latest",
+    "state": "Help! My payouts have been failing for 3 days.",
+    "questions": {
+      "urgent": {
+        "type": "noul",
+        "instructions": "Does this convey urgency?"
+      },
+      "department": {
+        "type": "choice",
+        "instructions": "Which team should handle this?",
+        "criteria": { "billing": "Payments and invoices", "technical": null }
+      },
+      "frustration": {
+        "type": "score",
+        "instructions": "How frustrated is the customer?",
+        "criteria": ["Calm", "Frustrated", "Very angry"]
+      }
+    }
+  }'
+```
+
+The response is TypeSafe's, unchanged. The values below are illustrative:
+
+```json
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "urgent": { "type": "noul", "noul": 0.95 },
+    "department": {
+      "type": "choice",
+      "choice": "billing",
+      "probabilities": { "billing": 0.88, "technical": 0.12 },
+      "confidence": 0.81
+    },
+    "frustration": {
+      "type": "score",
+      "score": 1.05,
+      "legend": { "0": "Calm", "1": "Frustrated", "2": "Very angry" },
+      "probabilities": { "0": 0, "1": 0.95, "2": 0.05 },
+      "confidence": 0.92
+    }
+  },
+  "usage": { "input_tokens": 296, "output_tokens": 20 }
+}
+```
+
+### List the Jev models
+
+The default `GET /v1/models` list holds chat models, so it leaves Jev out. To
+list your Jev models, send `x-zuplo-models-endpoint: systemone`:
+
+```bash
+curl https://my-gateway-main-2e18f50.zuplo.app/config_fe0a04972d2848e0a94ae4b8bcd1497e/v1/models \
+  -H "Authorization: Bearer $ZUPLO_APP_API_KEY" \
+  -H "x-zuplo-models-endpoint: systemone"
+```
+
+The list has one entry for each enabled model, such as `jev/jev-latest`.
+
+## Pricing and budgets
+
+The gateway prices each request from the model catalog at the rate on TypeSafe's
+[Models page](https://docs.typesafe.ai/models): $0.042 per million input tokens,
+and nothing for output. The response carries `X-Cost-USD` with the cost and
+`X-Cost-Source: catalog`, which tells you the figure came from the catalog
+rather than from TypeSafe. Each request counts toward token, request, and
+spending [budgets](./usage-limits.mdx).
+
+A token budget counts output tokens too, even though they're free, so it's
+slightly stricter than your TypeSafe invoice. A spending budget matches it.
+
+When a budget is exhausted, the gateway refuses the request with a `429` before
+it calls TypeSafe. A System One request never falls back to another model,
+because no chat model can answer a set of typed questions.
+
+TypeSafe's own rate limits apply to your key. A request over a limit returns
+TypeSafe's `429` with its `retry-after` header. The Models page lists the
+current limits.
+
+## Policies on System One routes
+
+These routes run your app's [policy chain](./policy-chains.mdx) like any other.
+What changes is the request body: it's a System One request, not a chat message,
+so a policy that reads chat content applies its `onUnknownShape` setting
+instead. Each policy's default follows from its job: a guardrail fails closed,
+while an observer or an optimization fails open.
+
+| Policy                                                                                                                                                                                       | On System One routes                                                                                                                                                                                             |
+| -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Authentication](../policies/ai-gateway-auth-inbound.mdx)                                                                                                                                    | Works. Reads the app key from `Authorization: Bearer`, which is how TypeSafe's SDK sends it.                                                                                                                     |
+| [Model Filtering](../policies/ai-gateway-model-filtering-inbound.mdx)                                                                                                                        | Works. Add the Jev models to the allow list. A Jev model outside the list returns `403`, and a listed model from another provider returns `400`.                                                                 |
+| [Model Override](../policies/ai-gateway-model-override-inbound.mdx)                                                                                                                          | Works when the configured model is a Jev model. A chat model returns a configuration error that names the option, such as `options.models.completions.force`.                                                    |
+| [Metering and budgets](../policies/ai-gateway-metering-inbound.mdx)                                                                                                                          | Works. Counts each request with its tokens and cost. An exhausted budget returns `429`.                                                                                                                          |
+| [DLP](../policies/ai-gateway-dlp-inbound.mdx), [Akamai AI Firewall](../policies/ai-gateway-akamai-firewall-inbound.mdx), and [Prompt Injection](../policies/ai-gateway-prompt-injection.mdx) | **Blocks by default.** The policy can't inspect a System One body, so it denies the request with a `400` and the error code `guardrail_uninspectable`. Set `onUnknownShape` to `skip` to forward it uninspected. |
+| [Galileo](../policies/ai-gateway-galileo-tracing-inbound.mdx) and [Comet Opik](../policies/ai-gateway-opik-tracing-inbound.mdx) tracing                                                      | **Skipped by default.** The request goes through untraced. Set `onUnknownShape` to `deny` to make a trace a hard requirement.                                                                                    |
+| Semantic Cache and Smart Router                                                                                                                                                              | Skipped.                                                                                                                                                                                                         |
+| [Fallback Model](./fallback.mdx)                                                                                                                                                             | Doesn't apply. A System One request goes to the one model it names, so a configured backup isn't used.                                                                                                           |
+
+:::tip{title="Give System One its own app"}
+
+An app can serve chat models and Jev side by side, as long as every request
+names its model and no policy overrides it. Model Override's `force` replaces
+the model in every request, and
+
+
+==================== https://docs.litellm.ai/docs/pass_through/typesafe.md
+---
+title: "TypeSafe AI (Jev)"
+url: "/docs/pass_through/typesafe"
+canonical_url: "https://docs.litellm.ai/docs/pass_through/typesafe"
+type: "docs"
+last_updated: "2026-10-31"
+summary: "Pass-through endpoint for the TypeSafe AI System One API. Jev returns typed decisions (a choice, a score, or a yes/no probability) instead of text, so it is called through its own evaluate endpoint rather than /chat/completions."
+related:
+  - "/docs/pass_through/transcribe"
+  - "/docs/proxy/passthrough_managed_ids"
+---
+# TypeSafe AI (Jev)
+
+> Index of all LiteLLM docs: https://docs.litellm.ai/llms.txt
+
+
+Pass-through endpoint for the [TypeSafe AI](https://docs.typesafe.ai/api) System One API. Jev returns typed decisions (a choice, a score, or a yes/no probability) instead of text, so it is called through its own evaluate endpoint rather than `/chat/completions`.
+
+| Feature | Supported | Notes |
+|-------|-------|-------|
+| Cost Tracking | ✅ | Priced from the response `usage` and the model registry |
+| Logging | ✅ | works across all integrations |
+| End-user Tracking | ❌ | [Tell us if you need this](https://github.com/BerriAI/litellm/issues/new) |
+| Streaming | ❌ | Not offered by the TypeSafe API |
+
+Just replace `https://api.typesafe.ai` with `LITELLM_PROXY_BASE_URL/typesafe`
+
+LiteLLM adds the TypeSafe API key from the proxy environment, so clients only need a LiteLLM virtual key.
+
+Client headers that start with `TypeSafe-Danger-Zone-`, such as `TypeSafe-Danger-Zone-Images: true` for images and `box` questions on Jev 1.14, are forwarded to TypeSafe. Other client headers are not.
+
+To call Jev through your `model_list` with load balancing, fallbacks and per-deployment keys, or to send the same request to OpenAI, Perplexity, Cloudflare or Strands Decider, use the unified [`/v1/systemone` endpoint](../decisions.md#v1systemone) instead. It takes the same System One body, and [`/v1/decisions`](../decisions.md#v1decisions) takes the OpenAI Decisions format
+
+To let JEV pick the model for a completion, configure the [JEV Auto Router](/docs/auto_router/setup#jev-classifier-typesafe-ai) with `classifier_type: jev` and `jev_classifier_config`. It uses one System One Choice question for the configured tiers, then dispatches to the selected completion model. See [routing context, fallback and accounting](/docs/proxy/auto_routing#jev-classifier) and the [measured classifier comparison](/blog/jev-auto-router-benchmark)
+
+The [OSS classifier guide](/docs/auto_router/decision_classifiers) documents the canonical `classifier_type: oss_classifier` and `opensource_classifier_config.provider: jev` names, which require a gateway build containing [backend #43626](https://github.com/BerriAI/litellm/pull/43626). Both configurations use the TypeSafe transport; the new backend continues to accept the existing Jev names.
+
+## Quick Start
+
+1. Set the TypeSafe API key in the proxy environment
+
+```bash showLineNumbers
+export TYPESAFE_API_KEY=""
+# optional, defaults to https://api.typesafe.ai
+export TYPESAFE_API_BASE="https://api.typesafe.ai"
+```
+
+2. Start the proxy
+
+```bash showLineNumbers
+litellm
+
+# RUNNING on http://0.0.0.0:4000
+```
+
+3. Ask Jev a question through the proxy
+
+```bash showLineNumbers
+curl -X POST 'http://0.0.0.0:4000/typesafe/v1/systemone' \
+-H "Authorization: Bearer $LITELLM_API_KEY" \
+-H 'Content-Type: application/json' \
+-d '{
+  "state": "Help! My payouts have been failing for 3 days.",
+  "model": "jev-latest",
+  "questions": {
+    "department": {
+      "type": "choice",
+      "instructions": "Which team should handle this?",
+      "criteria": {
+        "billing": "Payments, invoicing, refunds",
+        "technical": "Bugs, outages, integrations",
+        "sales": "Pricing, upgrades, new accounts"
+      }
+    }
+  }
+}'
+```
+
+The response is TypeSafe's own, unchanged:
+
+```json
+{
+  "model": "jev-1.13.0",
+  "answers": {
+    "department": {
+      "type": "choice",
+      "choice": "technical",
+      "probabilities": {"billing": 0.08, "technical": 0.85, "sales": 0.07},
+      "confidence": 0.82
+    }
+  },
+  "usage": {"input_tokens": 312, "output_tokens": 48}
+}
+```
+
+Any path under `/typesafe/` is forwarded, so `GET /typesafe/v1/models` lists the available models. [See the TypeSafe API reference](https://docs.typesafe.ai/api)
+
+## Limit which keys can call Jev
+
+The pass-through runs the same model access check as `/chat/completions`. When a key, its team or its project has a `models` list, a `/typesafe/` call is allowed only if each list allows the `model` in the request body, which is the bare Jev name such as `jev-latest`.
+
+| Entry in `models` | Allows |
+|-------|-------|
+| `jev-latest` | `jev-latest` only |
+| `typesafe/*` | `jev-latest`, `jev-preview` and the versioned names LiteLLM prices, such as `jev-1.14.0` |
+| `typesafe/jev-latest` | Not a bare `jev-latest` call |
+
+A call whose model a list does not allow gets a 403, such as `team_model_access_denied` for a team list. For example, this team allows the published Jev models:
+
+```bash showLineNumbers
+curl -X POST "$LITELLM_PROXY_BASE_URL/team/new" \
+  -H "Authorization: Bearer $LITELLM_MASTER_KEY" \
+  -H "Content-Type: application/json" \
+  -d '{"team_alias": "jev-users", "models": ["typesafe/*"]}'
+```
+
+In the Admin UI, the team and organization **Models** dropdowns, and the key dropdown when no team is picked, offer **All Typesafe models** (`typesafe/*`) and each Jev model when `TYPESAFE_API_KEY` is set in the proxy environment.
+
+The proxy offers these dropdown options (since LiteLLM v1.109.0). `typesafe/*` matching comes from LiteLLM's model registry, so a proxy that loads the registry from GitHub, which is the default, gets it before upgrading.
+
+## Try it in the Admin UI
+
+The Playground **Decisions** tab (Beta) sends Jev requests without curl. It calls the proxy's `/v1/systemone` route rather than this pass-through, so add a `typesafe/` model to your `model_list` first, for example `jev` from the [proxy setup](../decisions.md#proxy-setup) on the Decisions page, and set `TYPESAFE_API_KEY`. Open `LITELLM_PROXY_BASE_URL/ui/?page=llm-playground&tab=system-one`, or go to **Playground** and pick **Decisions**.
+
+Pick `/v1/systemone` under **Endpoint** and your Jev model under **Model**. **Load example** fills in a request, such as **Triage a bug report**, which asks one question of each type: `area` (choice), `has_repro_steps` (yes / no) and `severity` (score). The eraser button clears the form.
+
+[Image: Decisions playground with /v1/systemone and the jev model picked, showing the form and the answers]
+
+The editor opens on the **Form** tab, so you can build a request without writing JSON. Type the text the model should read into **Input**, then fill in each question card: its **Name**, its **Answer type** (**Choice**, **Yes / no** or **Score**), its **Instructions** and its criteria. A choice takes **Options** with descriptions, a yes / no question takes **Yes means** and **No means**, and a score takes **Levels, lowest first**, numbered from 0. **Add question**, **Add option** and **Add level** add rows, and the trash buttons remove them.
+
+The **cURL** tab shows the request as a read-only curl command for the proxy's `/v1/systemone`, and it follows your edits. Once the form has no issues, **Copy cURL** copies it, and you replace `$LITELLM_API_KEY` with a virtual key. To tag the call in LiteLLM's spend logs, which the form has no input for, copy the curl and add `"metadata": {"tags": ["triage"]}` to its `-d` body.
+
+The form checks the request as you type. Problems are listed above **Send**, such as `Add the text the model should decide about.` for an empty **Input** and `Give every question a name.` for an unnamed question, and **Send** stays disabled until they are fixed. TypeSafe checks the rest when you send, so a yes / no question with no instructions and no **Yes means** or **No means** comes back as a 400.
+
+**API key** picks the key. **Current UI Session** uses your dashboard login, and **Virtual Key** lets you paste one so the call is attributed and budgeted against that key. **Send** posts to `/v1/systemone` through your `model_list`, so spend and logs land under the proxy model name like any other request. The `/typesafe/v1/systemone` pass-through from the curl above is not selectable in the Playground.
+
+Once the call returns, the **Response** card shows one card per question: the picked choice with its confidence and a bar per option, the yes / no probability, and the score with its confidence and a bar per level. Its header shows the latency, the model name from the response and the input and output tokens, and **Raw response** opens the JSON body. Auth and upstream errors, such as a 401 for an unknown key, replace the answers with **Decisions request failed** and the error.
+
+## Cost Tracking
+
+Spend uses `usage.input_tokens` and `usage.output_tokens` from the response and the `typesafe/<model>` entry in LiteLLM's model registry (`jev-1.13.0`, `jev-1.14.0`, `jev-latest`, `jev-preview`). The request is logged under the versioned model TypeSafe reports, for example `typesafe/jev-1.13.0`, even when the request used an alias.
+
+## Related pages
+
+- [Amazon Transcribe](https://docs.litellm.ai/docs/pass_through/transcribe.md)
+- [Passthrough Managed IDs](https://docs.litellm.ai/docs/proxy/passthrough_managed_ids.md)
+
