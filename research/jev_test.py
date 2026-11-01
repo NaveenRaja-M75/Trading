@@ -48,20 +48,60 @@ def pct(a: float, b: float) -> float:
     return (a / b - 1) * 100
 
 
+# Jev reads text. Every number below also gets plain words, so the meaning is clear without maths.
+def rel(x: float, nd: int = 1) -> str:
+    return f"{abs(x):.{nd}f}% {'above' if x >= 0 else 'below'}"
+
+
+def move(x: float, nd: int = 2) -> str:
+    return f"{'up' if x >= 0 else 'down'} {abs(x):.{nd}f}%"
+
+
+def w_rsi(x: float) -> str:
+    return "oversold" if x < 30 else "weak" if x < 45 else "neutral" if x <= 55 else "strong" if x <= 70 else "overbought"
+
+
+def w_volume(x: float) -> str:
+    return "very low" if x < 0.5 else "low" if x < 0.8 else "normal" if x <= 1.5 else "high" if x <= 2.5 else "very high"
+
+
+def w_votes(v: int) -> str:
+    return {3: "strong long-term uptrend", 2: "long-term trend mostly up", 1: "long-term trend mostly down",
+            0: "long-term downtrend"}[int(v)]
+
+
+def w_drop(dd: float) -> str:
+    return ("at or near its high" if dd > -5 else "a normal pullback" if dd > -15 else "a deep drop" if dd > -30
+            else "a crash-size drop")
+
+
+def w_volatility(v: float) -> str:
+    return "calm" if v < 40 else "normal" if v <= 80 else "wild"
+
+
+def w_position(x: float) -> str:
+    return ("near the 24-hour low" if x < 20 else "in the lower half of the 24-hour range" if x < 50
+            else "in the upper half of the 24-hour range" if x < 80 else "near the 24-hour high")
+
+
 def frame_read(df: pd.DataFrame, label: str, mas: tuple[int, ...]) -> str:
     c = df["close"]
     p = c.iloc[-1]
     s = chart.swings(df, 5).iloc[-1]
     out = [f"{label}: {TREND[int(chart.structure(df, 5).iloc[-1])]}."]
     if np.isfinite(s.last_sh) and np.isfinite(s.last_sl):
-        out.append(f"Last swing high is {pct(s.last_sh, p):+.2f}% from price ({'broken above' if p > s.last_sh else 'acting as resistance'}); "
-                   f"last swing low is {pct(s.last_sl, p):+.2f}% from price ({'broken below' if p < s.last_sl else 'acting as support'}).")
-    avg = [f"{pct(p, c.rolling(n).mean().iloc[-1]):+.1f}% vs {n}-bar average" for n in mas if len(c) >= n]
+        out.append(f"Last swing high is {rel(pct(s.last_sh, p), 2)} price "
+                   f"({'price has broken above it' if p > s.last_sh else 'resistance overhead'}); "
+                   f"last swing low is {rel(pct(s.last_sl, p), 2)} price "
+                   f"({'price has broken below it' if p < s.last_sl else 'support underneath'}).")
+    avg = [f"{rel(pct(p, c.rolling(n).mean().iloc[-1]))} the {n}-bar average" for n in mas if len(c) >= n]
     if avg:
         out.append("Price is " + ", ".join(avg) + ".")
     a = chart.atr(df).iloc[-1]
     vr = df["volume"].iloc[-1] / df["volume"].tail(20).mean()
-    out.append(f"RSI(14) {rsi(c).iloc[-1]:.0f}. Typical bar range {a / p * 100:.2f}% of price. Volume {vr:.1f}x its 20-bar average.")
+    r = rsi(c).iloc[-1]
+    out.append(f"RSI(14) {r:.0f} ({w_rsi(r)}). Typical bar range {a / p * 100:.2f}% of price. "
+               f"Volume {vr:.1f}x its 20-bar average ({w_volume(vr)}).")
     return " ".join(out)
 
 
@@ -77,17 +117,19 @@ def context(sym: str, h: pd.DataFrame) -> str:
     votes = sum(p > c.rolling(n).mean().iloc[-1] for n in (50, 100, 200))
     dd = pct(p, h.high.tail(24 * 90).max())
     vol = c.pct_change().tail(30).std() * np.sqrt(365) * 100
-    rets = ", ".join(f"{pct(p, h.close.iloc[-1 - n]):+.1f}% over {lbl}" for n, lbl in
+    rets = ", ".join(f"{move(pct(p, h.close.iloc[-1 - n]), 1)} over {lbl}" for n, lbl in
                      ((24 * 7, "7 days"), (24 * 30, "30 days"), (24 * 90, "90 days")))
-    return (f"{sym} daily view: price is above {votes} of its 50/100/200-day averages; {dd:+.1f}% from its 90-day high; "
-            f"30-day volatility {vol:.0f}% a year; {rets}.")
+    return (f"{sym} daily view: price is above {votes} of its 50/100/200-day averages ({w_votes(votes)}); "
+            f"{abs(dd):.1f}% below its 90-day high ({w_drop(dd)}); 30-day volatility {vol:.0f}% a year "
+            f"({w_volatility(vol)} for crypto); {rets}.")
 
 
 def rich_state(sym: str, h: pd.DataFrame, btc: pd.DataFrame | None) -> str:
     c = h.close
     p = c.iloc[-1]
-    moves = ", ".join(f"{pct(p, c.iloc[-1 - n]):+.2f}% over {n}h" for n in (1, 4, 12, 24, 72))
-    last12 = ", ".join(f"{x:+.2f}" for x in (c.pct_change().tail(12) * 100))
+    moves = ", ".join(f"{move(pct(p, c.iloc[-1 - n]))} over {n}h" for n in (1, 4, 12, 24, 72))
+    ch = c.pct_change().tail(12) * 100
+    last12 = ", ".join(f"{x:+.2f}" for x in ch)
     d24 = h.tail(24)
     pos = (p - d24.low.min()) / max(d24.high.max() - d24.low.min(), 1e-12) * 100
     ts = h.index[-1]
@@ -96,14 +138,15 @@ def rich_state(sym: str, h: pd.DataFrame, btc: pd.DataFrame | None) -> str:
         context(sym, h),
         frame_read(to_bars(h.tail(24 * 60), "4h"), "4-hour chart", (20, 50, 100)),
         frame_read(h.tail(400), "1-hour chart", (20, 50, 200)),
-        f"Recent moves: {moves}. Last 12 hourly changes in % (oldest to newest): {last12}. "
-        f"Price sits at {pos:.0f}% of its 24-hour high-low range.",
+        f"Recent moves: {moves}. Last 12 hourly changes in % (oldest to newest): {last12}; "
+        f"{int((ch > 0).sum())} of those 12 hours went up. Price is {w_position(pos)} ({pos:.0f}% of the way from low to high).",
     ]
     if btc is not None:
         b = btc.close
         bv = sum(b.iloc[-1] > b.rolling(24 * n).mean().iloc[-1] for n in (50, 100, 200))
-        lines.append(f"Market leader BTC: {pct(b.iloc[-1], b.iloc[-25]):+.2f}% over 24h, "
-                     f"{pct(b.iloc[-1], b.iloc[-169]):+.2f}% over 7 days, above {bv} of its 50/100/200-day averages.")
+        lines.append(f"Market leader BTC: {move(pct(b.iloc[-1], b.iloc[-25]))} over 24h, "
+                     f"{move(pct(b.iloc[-1], b.iloc[-169]))} over 7 days, above {bv} of its 50/100/200-day averages "
+                     f"({w_votes(bv)}).")
     return "\n".join(lines)
 
 

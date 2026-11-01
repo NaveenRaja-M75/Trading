@@ -53,7 +53,9 @@ Standards for a new idea: walk-forward, locked years, PBO, deflated Sharpe, rand
 - Owner still to do: open demat + start Nifty/gold SIP; create Binance Spot-only key; follow docs/GO_LIVE.md.
 - Jev: the Vercel AI Gateway lists `typesafe-ai/jev`, `jev-1.13.0`, `jev-1.14.0` (research/gateway_models.py).
   Test ready: research/jev_test.py (800 random moments, 10 coins, multi-timeframe description with no dates or price levels, graded 4h and 24h ahead), run via the "research" workflow with
-  script=research/jev_test.py. Needs GitHub secret `AI_GATEWAY_API_KEY`, which the owner adds; Claude may not write secrets.
+  script=research/jev_test.py. Needs GitHub secret `AI_GATEWAY_API_KEY` (owner added it 2026-11-01; Claude may not write secrets).
+  Jev API: POST https://ai-gateway.vercel.sh/typesafe/v1/systemone {model, state, questions{type:noul}}. First run (2026-11-01)
+  got HTTP 403 "Free tier users do not have access to this model": the Vercel account needs paid credits first.
   Adopt Jev only if it beats a coin flip by more than 2 standard errors AND beats the shuffled-text control.
 - Open offers: Binance/demat walkthrough.
 - Dashboard: https://claude.ai/artifact/VfXXtQjnDQ6EEu1eSGkhsb
