@@ -337,6 +337,31 @@ t = 3.50) and three falling 4h BTC candles (-0.32% over 3 bars, t = -5.0). The r
 (hammer, engulfing, doji, stars) show nothing stable on any market. Momentum is already what the
 trend + volatility rule trades.
 
+## 23. Crypto regime score from tradermonty/claude-trading-skills (`research/crypto_regime_test.py`)
+Their crypto-regime-analyzer scores the market 0-100 (BTC trend, alt breadth, BTC dominance, funding,
+drawdown & volatility, momentum) into RISK_ON / NEUTRAL / RISK_OFF; their own docs say it was never
+backtested. Rebuilt from their published thresholds (no tuning, dominance left out as no history),
+day by day on Binance data, BTC, 2018-11 -> 2026-11, 0.12% per side, 5% trade band:
+
+| variant | per year | worst drop | Sharpe | P(beats ours) |
+|---|---|---|---|---|
+| ours, vote_voltgt | +46.3% | -46.8% | 1.22 | - |
+| their zones alone (100/50/0%) | +30.7% | -38.6% | 0.96 | 0.06 |
+| their score/100 alone | +33.3% | -50.4% | 0.97 | 0.04 |
+| ours, but cash while RISK_OFF | +46.1% | -40.0% | 1.23 | 0.52 |
+| ours, halved when funding crowded | +41.0% | -43.4% | 1.19 | 0.33 |
+| hold BTC | +33.2% | -76.6% | 0.78 | 0.04 |
+
+Verdict: the score on its own is worse than our rule. "Cash while RISK_OFF" kept the same return and
+cut the worst drop (2022: -14.7% vs -24.3%), but the Sharpe gain is a coin flip (0.52) and rests on one
+bear market, so it is not adopted. It goes on the January re-test list. The alt list is coins that still
+trade today (survivorship), which flatters breadth slightly.
+
+The second repo, ZhuLinsen/daily_stock_analysis, is an LLM daily report and alert system for China, Hong
+Kong, US, Japan, Korea and Taiwan stocks (no India). Its strategies are natural-language prompts (moving-
+average alignment, Chan theory, wave theory, candle patterns) and it publishes no tested accuracy. Those
+ideas are already covered by sections 7, 15, 19 and 22 (LLM judges and candles: no edge).
+
 ## Daily market watch
 `MARKET.md` (paper-state branch, daily) now covers gold, Nifty, Bitcoin, the S&P 500 and Brent oil,
 plus the VIX fear index; alerts fire on 10/20/30% falls from 1-year highs and when VIX crosses 30/40.
