@@ -1,0 +1,102 @@
+BTCUSDT: 2019-11-20 -> 2026-11-16
+ETHUSDT: 2019-11-20 -> 2026-11-16
+SOLUSDT: 2020-08-11 -> 2026-11-16
+BNBUSDT: 2019-11-20 -> 2026-11-16
+XRPUSDT: 2019-11-20 -> 2026-11-16
+ADAUSDT: 2019-11-20 -> 2026-11-16
+DOGEUSDT: 2019-11-20 -> 2026-11-16
+LINKUSDT: 2019-11-20 -> 2026-11-16
+AVAXUSDT: 2020-09-22 -> 2026-11-16
+LTCUSDT: 2019-11-20 -> 2026-11-16
+10 coins, daily, 2019-11-20 -> 2026-11-16; weekly rebalance; cost 12 bps per side
+DEV period: up to 2025-11-17. The final 365 days are LOCKED until the pick is made.
+
+                                        family  total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct  exposure_pct
+name                                                                                                                     
+ts_momentum_28d                    ts_momentum     6984.6     123.0    1.76       -37.1                46.9          50.5
+rotation_14d_top5                     rotation     7653.4     126.8    1.70       -52.4                42.2          51.3
+ts_momentum_28d_voltgt      ts_momentum_voltgt     1898.5      75.7    1.70       -34.4                46.9          40.5
+rotation_14d_top5_voltgt       rotation_voltgt     1654.1      71.5    1.64       -45.6                40.8          37.2
+rotation_28d_top5                     rotation     8167.2     129.6    1.63       -52.5                43.3          55.7
+trend_filter_ma50_voltgt   trend_filter_voltgt     1534.7      69.2    1.63       -33.1                46.2          39.3
+trend_filter_ma50                 trend_filter     4852.4     108.5    1.63       -37.5                46.9          50.0
+rotation_28d_top2_voltgt       rotation_voltgt     1521.6      69.0    1.57       -45.5                45.8          35.8
+rotation_28d_top2                     rotation    20250.7     172.0    1.56       -71.8                45.1          68.6
+rotation_14d_top3                     rotation     8451.3     131.0    1.54       -66.7                41.2          59.9
+ts_momentum_14d                    ts_momentum     2698.0      87.2    1.53       -56.1                48.0          50.0
+rotation_14d_top3_voltgt       rotation_voltgt     1338.7      65.2    1.52       -48.6                41.2          37.1
+rotation_14d_top2_voltgt       rotation_voltgt     1283.5      64.0    1.50       -44.0                40.4          35.0
+rotation_56d_top5                     rotation     9554.3     136.4    1.48       -62.6                45.8          62.7
+rotation_28d_top5_voltgt       rotation_voltgt     1198.1      62.0    1.47       -46.0                43.7          38.4
+rotation_28d_top3                     rotation     7703.8     127.1    1.44       -64.3                45.1          63.7
+ts_momentum_14d_voltgt      ts_momentum_voltgt     1177.1      61.5    1.44       -54.1                47.7          42.1
+trend_filter_ma100                trend_filter     2817.4      88.7    1.42       -51.2                46.2          52.5
+ts_momentum_56d                    ts_momentum     3019.9      91.1    1.41       -57.8                46.2          53.3
+rotation_56d_top5_voltgt       rotation_voltgt     1078.0      59.1    1.40       -53.0                46.6          40.3
+rotation_14d_top2                     rotation     7221.9     124.4    1.38       -75.5                39.7          65.0
+trend_filter_ma200_voltgt  trend_filter_voltgt      841.2      52.5    1.36       -42.6                46.9          40.0
+rotation_56d_top2_voltgt       rotation_voltgt     1216.8      62.5    1.36       -43.8                46.6          39.4
+ts_momentum_56d_voltgt      ts_momentum_voltgt      837.3      52.4    1.34       -54.1                46.6          39.6
+trend_filter_ma100_voltgt  trend_filter_voltgt      783.9      50.7    1.34       -47.3                46.2          39.1
+rotation_28d_top3_voltgt       rotation_voltgt      903.3      54.4    1.33       -48.2                45.5          38.2
+rotation_56d_top3_voltgt       rotation_voltgt     1040.6      58.1    1.33       -51.4                46.6          41.2
+rotation_56d_top3                     rotation     8787.3     132.7    1.27       -71.2                46.2          70.3
+trend_filter_ma200                trend_filter     1519.0      68.9    1.21       -49.8                46.6          53.7
+equal_hold                           benchmark     2965.7      90.5    1.21       -79.4                53.1         100.0
+rotation_56d_top2                     rotation     8202.4     129.8    1.12       -71.6                45.1          75.2
+btc_hold                             benchmark      849.1      52.7    1.01       -76.6                53.1         100.0
+
+Families (worst and median Sharpe across nearby settings):
+                      min  median
+family                           
+ts_momentum          1.41    1.53
+trend_filter_voltgt  1.34    1.36
+ts_momentum_voltgt   1.34    1.44
+rotation_voltgt      1.33    1.47
+trend_filter         1.21    1.42
+rotation             1.12    1.48
+
+PRE-COMMITTED PICK (rule: best worst-neighbour Sharpe, median member): ts_momentum_14d
+
+=== LOCKED YEAR, opened once: 2025-11-17 -> 2026-11-16 ===
+                 total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct  exposure_pct
+name                                                                                      
+equal_hold           -48.0     -48.0   -0.91       -51.6                34.0         100.0
+btc_hold             -31.2     -31.2   -0.62       -39.5                43.4         100.0
+ts_momentum_14d       -4.7      -4.7   -0.05       -22.2                34.0          41.8
+
+(for transparency: every candidate on the locked year; NOT used for picking)
+                           total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct  exposure_pct
+name                                                                                                
+rotation_14d_top3               21.9      21.9    0.86       -17.2                17.0          25.2
+rotation_14d_top3_voltgt        14.1      14.1    0.76       -12.5                18.9          19.9
+rotation_28d_top5               14.5      14.5    0.66       -15.3                22.6          26.6
+rotation_14d_top2               16.0      16.0    0.66       -17.4                18.9          28.4
+rotation_14d_top2_voltgt        12.1      12.1    0.64       -11.7                18.9          22.4
+rotation_28d_top5_voltgt        11.4      11.4    0.63       -10.8                20.8          22.6
+rotation_14d_top5               12.0      12.0    0.61       -15.3                17.0          21.5
+rotation_14d_top5_voltgt         8.8       8.8    0.54       -12.6                17.0          18.3
+rotation_28d_top3_voltgt         4.4       4.4    0.30       -12.2                18.9          25.0
+rotation_28d_top3                4.3       4.3    0.29       -18.1                18.9          30.6
+ts_momentum_56d                  0.1       0.1    0.13       -19.0                17.0          34.6
+trend_filter_ma50               -0.5      -0.5    0.12       -22.8                26.4          37.3
+rotation_28d_top2               -1.3      -1.3    0.11       -20.3                18.9          33.3
+rotation_28d_top2_voltgt        -0.7      -0.7    0.09       -15.8                18.9          26.7
+trend_filter_ma50_voltgt        -3.0      -3.0   -0.00       -22.8                26.4          33.6
+ts_momentum_56d_voltgt          -3.3      -3.3   -0.03       -16.6                17.0          30.5
+trend_filter_ma100              -3.7      -3.7   -0.04       -19.9                18.9          26.7
+ts_momentum_14d                 -4.7      -4.7   -0.05       -22.2                34.0          41.8
+ts_momentum_14d_voltgt          -6.8      -6.8   -0.14       -22.2                34.0          40.7
+trend_filter_ma100_voltgt       -6.1      -6.1   -0.20       -17.6                18.9          23.4
+ts_momentum_28d                -10.5     -10.5   -0.24       -28.5                37.7          43.1
+rotation_56d_top5              -12.4     -12.4   -0.35       -24.6                18.9          30.9
+ts_momentum_28d_voltgt         -13.4     -13.4   -0.41       -28.5                37.7          40.0
+rotation_56d_top3              -16.4     -16.4   -0.43       -29.3                18.9          35.1
+rotation_56d_top5_voltgt       -12.1     -12.1   -0.44       -20.6                18.9          26.0
+trend_filter_ma200_voltgt      -12.4     -12.4   -0.62       -27.2                17.0          19.3
+trend_filter_ma200             -12.7     -12.7   -0.62       -27.7                17.0          20.0
+btc_hold                       -31.2     -31.2   -0.62       -39.5                43.4         100.0
+rotation_56d_top3_voltgt       -16.5     -16.5   -0.62       -22.8                18.9          28.1
+rotation_56d_top2              -24.0     -24.0   -0.67       -30.6                15.1          37.3
+rotation_56d_top2_voltgt       -20.5     -20.5   -0.80       -23.2                15.1          29.2
+equal_hold                     -48.0     -48.0   -0.91       -51.6                34.0         100.0

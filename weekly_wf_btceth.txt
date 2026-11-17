@@ -1,0 +1,21 @@
+BTCUSDT: 2019-11-20 -> 2026-11-16
+ETHUSDT: 2019-11-20 -> 2026-11-16
+
+WALK-FORWARD on 2 coins (survivors): each year's strategy was picked using only earlier years, then traded that year.
+
+                                     pick  pick_pct  pick_dd_pct  hold_all_pct  hold_all_dd_pct  btc_pct  btc_dd_pct
+year                                                                                                                
+2022            trend_filter_ma100_voltgt     -36.8        -40.5         -65.1            -68.3    -64.2       -66.9
+2023                    rotation_14d_top5      15.3         -8.9         122.7            -21.9    155.6       -20.0
+2024                    rotation_14d_top5      20.3        -15.5          83.3            -35.5    121.3       -26.2
+2025                    rotation_14d_top5       5.1         -9.5          -6.2            -45.0     -6.3       -32.0
+2026 (to date)          rotation_28d_top3       4.2         -6.5         -32.1            -46.5    -26.0       -39.5
+
+All test years stitched together (honest out-of-sample track record):
+                    total_pct  cagr_pct  sharpe  max_dd_pct  weeks_positive_pct
+name                                                                           
+walk_forward_picks       -4.0      -0.8    0.02       -40.5                28.1
+equal_hold               -9.4      -2.0    0.25       -68.3                48.8
+btc_hold                 40.4       7.2    0.39       -66.9                48.4
+
+Strategy the rule picks today from all history (use this live): rotation_56d_top2

@@ -1,0 +1,85 @@
+BTCUSDT 1h: 8759 bars 2025-11-17 -> 2026-11-16
+ETHUSDT 1h: 8759 bars 2025-11-17 -> 2026-11-16
+SOLUSDT 1h: 8759 bars 2025-11-17 -> 2026-11-16
+BNBUSDT 1h: 8759 bars 2025-11-17 -> 2026-11-16
+cost per side 12.0 bps; parameters fixed in advance, not tuned
+
+Out-of-sample, per coin:
+ symbol         name  total_return_pct  sharpe  max_drawdown_pct  trades  win_rate_pct  exposure_pct  cost_paid_pct
+BTCUSDT     coinflip           -93.552  -19.27           -93.559    1074          22.7          48.8         257.64
+BTCUSDT     momentum           -13.446   -1.28           -17.669      75          24.0          26.0          18.00
+BTCUSDT      meanrev           -36.960   -3.28           -40.682     127          57.5          37.8          30.48
+BTCUSDT        model           -44.174   -4.72           -45.035     227          29.1          26.9          54.36
+BTCUSDT     ensemble             1.576    0.57            -3.270       7          42.9           0.8           1.68
+BTCUSDT        trend             6.005    0.65           -10.815      22          22.7          32.3           5.28
+BTCUSDT     breakout            -6.933   -0.62           -14.558      30          23.3          28.2           7.20
+BTCUSDT    structure            14.289    1.64            -7.076      23          39.1          18.9           5.52
+BTCUSDT    sr_volume            -3.687   -0.30           -15.412      25          28.0          23.8           6.00
+BTCUSDT     pullback           -11.465   -2.85           -13.305      74          39.2           5.7          17.76
+BTCUSDT   chart_vote            14.062    1.79            -6.971      11          45.5          15.2           2.64
+BTCUSDT buy_and_hold           -16.632   -0.72           -28.155       1           0.0         100.0           0.24
+ETHUSDT     coinflip           -92.473  -13.26           -92.533    1074          26.8          48.8         257.64
+ETHUSDT     momentum           -20.339   -1.48           -26.159      77          23.4          25.8          18.48
+ETHUSDT      meanrev           -31.470   -1.98           -36.043     136          61.0          36.7          32.64
+ETHUSDT        model           -50.987   -4.38           -51.890     242          30.6          32.7          57.96
+ETHUSDT     ensemble            -2.481   -0.59            -5.266       7          42.9           1.5           1.68
+ETHUSDT        trend            -0.914    0.09           -23.587      43          18.6          36.0          10.32
+ETHUSDT     breakout            -9.321   -0.56           -27.463      27          29.6          27.4           6.48
+ETHUSDT    structure           -14.632   -1.48           -15.060      23          30.4          16.8           5.52
+ETHUSDT    sr_volume             7.391    0.63           -23.360      26          34.6          30.5           6.24
+ETHUSDT     pullback           -18.865   -3.45           -20.335      72          48.6           5.6          17.28
+ETHUSDT   chart_vote            10.145    1.02           -13.886      10          40.0          11.8           2.40
+ETHUSDT buy_and_hold           -15.560   -0.37           -37.847       1           0.0         100.0           0.24
+SOLUSDT     coinflip           -94.267  -13.36           -94.315    1074          30.6          48.8         257.64
+SOLUSDT     momentum             6.728    0.57           -21.350      67          28.4          25.1          16.08
+SOLUSDT      meanrev           -33.605   -1.85           -39.086     136          62.5          39.9          32.64
+SOLUSDT        model           -50.541   -3.92           -52.984     241          41.1          23.9          57.72
+SOLUSDT     ensemble             4.100    1.27            -2.795       6          66.7           0.7           1.44
+SOLUSDT        trend            23.403    1.38           -17.149      39          12.8          34.2           9.36
+SOLUSDT     breakout             4.779    0.45           -19.065      26          30.8          30.1           6.24
+SOLUSDT    structure            13.961    1.13           -14.460      21          33.3          18.0           5.04
+SOLUSDT    sr_volume            15.292    1.10           -20.884      21          33.3          23.4           5.04
+SOLUSDT     pullback            -6.245   -0.93            -8.536      77          59.7           6.1          18.48
+SOLUSDT   chart_vote            28.125    2.01            -9.636      12          33.3          16.4           2.88
+SOLUSDT buy_and_hold           -16.550   -0.30           -45.481       1           0.0         100.0           0.24
+BNBUSDT     coinflip           -93.967  -18.21           -93.969    1074          25.5          48.8         257.64
+BNBUSDT     momentum            -7.989   -0.69           -20.847      76          26.3          27.4          18.24
+BNBUSDT      meanrev           -37.799   -3.10           -40.863     122          59.0          38.1          29.28
+BNBUSDT        model           -56.346   -6.27           -57.833     260          33.5          33.4          62.28
+BNBUSDT     ensemble            -1.256   -0.44            -4.217      10          60.0           1.1           2.40
+BNBUSDT        trend           -23.424   -1.88           -26.230      44          18.2          38.2          10.56
+BNBUSDT     breakout             4.247    0.48           -14.007      28          35.7          29.5           6.72
+BNBUSDT    structure           -10.882   -1.15           -15.169      25          24.0          20.4           6.00
+BNBUSDT    sr_volume             4.357    0.54           -10.096      21          33.3          22.7           5.04
+BNBUSDT     pullback           -11.027   -2.00           -17.193      87          44.8           7.8          20.88
+BNBUSDT   chart_vote            -4.632   -0.50           -11.618      15          26.7          14.2           3.60
+BNBUSDT buy_and_hold            -8.312   -0.20           -29.023       1           0.0         100.0           0.24
+
+Out-of-sample, averaged over coins:
+              coins  coins_profitable  avg_return_pct  avg_sharpe  avg_max_dd_pct  total_trades
+name                                                                                           
+chart_vote        4                 3           11.92        1.08          -10.53            48
+sr_volume         4                 3            5.84        0.49          -17.44            93
+ensemble          4                 2            0.48        0.20           -3.89            30
+trend             4                 2            1.27        0.06          -19.45           148
+structure         4                 2            0.68        0.03          -12.94            92
+breakout          4                 2           -1.81       -0.06          -18.77           111
+buy_and_hold      4                 0          -14.26       -0.40          -35.13             4
+momentum          4                 1           -8.76       -0.72          -21.51           295
+pullback          4                 0          -11.90       -2.31          -14.84           310
+meanrev           4                 0          -34.96       -2.55          -39.17           521
+model             4                 0          -50.51       -4.82          -51.94           970
+coinflip          4                 0          -93.56      -16.02          -93.59          4296
+
+Verdict:
+  PASS  chart_vote  avg  +11.92% sharpe  1.08 dd  -10.53% profitable 3/4 trades 48
+  FAIL  sr_volume   avg   +5.84% sharpe  0.49 dd  -17.44% profitable 3/4 trades 93   missing: sharpe>0.8
+  FAIL  ensemble    avg   +0.48% sharpe  0.20 dd   -3.89% profitable 2/4 trades 30   missing: most coins, sharpe>0.8
+  FAIL  trend       avg   +1.27% sharpe  0.06 dd  -19.45% profitable 2/4 trades 148   missing: most coins, sharpe>0.8
+  FAIL  structure   avg   +0.68% sharpe  0.03 dd  -12.94% profitable 2/4 trades 92   missing: most coins, sharpe>0.8
+  FAIL  breakout    avg   -1.81% sharpe -0.06 dd  -18.77% profitable 2/4 trades 111   missing: positive, most coins, sharpe>0.8
+  FAIL  momentum    avg   -8.76% sharpe -0.72 dd  -21.51% profitable 1/4 trades 295   missing: positive, most coins, sharpe>0.8
+  FAIL  pullback    avg  -11.90% sharpe -2.31 dd  -14.84% profitable 0/4 trades 310   missing: positive, most coins, sharpe>0.8
+  FAIL  meanrev     avg  -34.96% sharpe -2.55 dd  -39.17% profitable 0/4 trades 521   missing: positive, most coins, sharpe>0.8, less drawdown than holding
+  FAIL  model       avg  -50.51% sharpe -4.82 dd  -51.94% profitable 0/4 trades 970   missing: positive, most coins, sharpe>0.8, less drawdown than holding
+  (holding: avg -14.26%, drawdown -35.13%)
