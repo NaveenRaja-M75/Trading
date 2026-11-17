@@ -1,0 +1,19 @@
+BTC hourly 2017-11-04 -> 2026-11-17; scored from 2018-07-23
+
+                               total_pct  cagr_pct  max_dd_pct  sharpe losing_years  worst_year_pct
+name                                                                                               
+A order  0h after the close       1779.6      42.3       -46.7    1.18          3/9           -24.4
+A order  1h after the close       1736.8      41.9       -44.9    1.17          3/9           -24.2
+A order  3h after the close       1754.1      42.0       -43.6    1.17          3/9           -24.4
+A order  7h after the close       1757.8      42.1       -43.7    1.17          3/9           -24.8
+A order 12h after the close       1803.9      42.5       -43.6    1.18          2/9           -25.4
+A order 23h after the close       1425.8      38.8       -44.6    1.10          3/9           -27.5
+B PC runs every 2 days            1587.0      40.4       -49.1    1.14          2/9           -28.9
+B PC runs every 3 days            1489.6      39.4       -45.7    1.11          4/9           -27.4
+B PC runs every 7 days            1037.9      33.9       -43.8    1.00          4/9           -19.9
+C misses 30% of days (draw 0)     1967.4      43.9       -37.9    1.21          3/9           -18.4
+C misses 30% of days (draw 1)     1897.8      43.3       -47.5    1.20          2/9           -25.7
+C misses 30% of days (draw 2)     1769.9      42.2       -43.3    1.18          3/9           -23.8
+C misses 30% of days (draw 3)     1539.7      40.0       -46.2    1.13          3/9           -28.6
+C misses 30% of days (draw 4)     2003.1      44.2       -38.4    1.22          3/9           -20.2
+hold BTC                           775.9      29.8       -76.6    0.74          4/9           -64.3
