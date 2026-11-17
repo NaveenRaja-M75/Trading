@@ -39,6 +39,11 @@ def fetch_recent(symbol: str, interval: str, limit: int = 500) -> pd.DataFrame:
     return df
 
 
+def fetch_price(symbol: str) -> float:
+    """Price right now (public, no key)."""
+    return float(_get_json(BINANCE_DATA_URL.replace("klines", "ticker/price"), {"symbol": symbol})["price"])
+
+
 ARCHIVE = "https://data.binance.vision/data/spot/{period}/klines/{s}/{i}/{s}-{i}-{d}.zip"
 
 

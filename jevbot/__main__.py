@@ -215,9 +215,13 @@ def cmd_weekly_live(s: Settings, a) -> None:
     syms = [x.strip().upper() for x in a.symbols.split(",") if x.strip()]
     print(f"{'*** EXECUTING on ' + ('TESTNET' if s.binance_testnet else 'REAL MONEY') + ' ***' if execute else 'DRY RUN (no orders)'}"
           f"  budget {budget} USDT, loss limit {max_loss} USDT, {len(syms)} coins")
-    for line in WeeklyLive(syms, a.strategy, budget, max_loss, make).run(execute, every_days=a.every_days,
-                                                                         force=a.force):
+    from .data import fetch_price
+    lines = WeeklyLive(syms, a.strategy, budget, max_loss, make, live_price=fetch_price).run(
+        execute, every_days=a.every_days, force=a.force)
+    for line in lines:
         print(line)
+    if any(line.startswith("ERROR") for line in lines):
+        sys.exit(1)
 
 
 def cmd_analyze(s: Settings, a) -> None:

@@ -56,15 +56,40 @@ def data_problem(df: pd.DataFrame, now: pd.Timestamp) -> str:
 
 class WeeklyLive:
     def __init__(self, symbols: list[str], strategy: str, budget: float, max_loss: float,
-                 make_broker, state_dir: Path = Path("state"), fetch=fetch_recent, clock=None):
+                 make_broker, state_dir: Path = Path("state"), fetch=fetch_recent, clock=None, live_price=None):
         self.symbols, self.strategy, self.budget, self.max_loss = symbols, strategy, budget, max_loss
         self.make_broker, self.dir, self.fetch = make_broker, state_dir, fetch
         self.clock = clock or (lambda: pd.Timestamp.now(tz="UTC"))
+        self.live_price = live_price          # symbol -> price right now (dry runs); None = last daily close
         self.meta_path = state_dir / "weekly_live.json"
         self.latch = state_dir / "WEEKLY_KILL_SWITCH"
 
     def _meta(self) -> dict:
         return json.loads(self.meta_path.read_text()) if self.meta_path.exists() else {"last_rebalance": "", "log": []}
+
+    def _set_latch(self, why: str) -> None:
+        self.dir.mkdir(parents=True, exist_ok=True)
+        self.latch.write_text(f"{why}, {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())}")
+
+    def _now_prices(self, closes: dict[str, float], brokers: dict, out: list[str]) -> dict[str, float]:
+        """Price right now for sizing, the loss limit and the stop. The signal itself always uses daily
+        closes; the last close can be a day old if this computer started late."""
+        prices = {}
+        for s, close in closes.items():
+            b = brokers[s]
+            try:
+                p = float(b.last_price()) if hasattr(b, "last_price") else (
+                    float(self.live_price(s)) if self.live_price else close)
+            except Exception as e:
+                if hasattr(b, "last_price"):
+                    out.append(f"{s}: no live price ({e}); not traded today")
+                    continue
+                p = close
+            if not p > 0 or abs(p / close - 1) > 0.5:
+                out.append(f"{s}: live price {p} is too far from the last close {close:.2f}; not traded today")
+                continue
+            prices[s] = p
+        return prices
 
     def run(self, execute: bool, every_days: int = 7, force: bool = False) -> list[str]:
         out = []
@@ -85,20 +110,43 @@ class WeeklyLive:
         if not dfs:
             return out + ["no trustworthy data for any coin: nothing done today"]
         px = portfolio.closes(dfs)
+        closes = {s: float(px[s].iloc[-1]) for s in px.columns if pd.notna(px[s].iloc[-1])}
+        brokers = {s: self.make_broker(s) for s in closes}
+        prices = self._now_prices(closes, brokers, out)
+        brokers = {s: brokers[s] for s in prices}
+        if not prices:
+            return out + ["no live price for any coin: nothing done today"]
+        try:
+            return self._trade(out, execute, every_days, force, px[list(prices)], prices, brokers)
+        except Exception as e:
+            # Whatever went wrong (connection lost, Binance error), never leave coins without their stop.
+            out.append(f"ERROR: stopped part-way: {e}")
+            try:
+                self._protect(out, execute, brokers, prices)
+            except Exception as e2:
+                out.append(f"ERROR: could not put the protective stop back: {e2}. Run again as soon as possible.")
+            return out
+
+    def _trade(self, out, execute, every_days, force, px, prices, brokers) -> list[str]:
         day = px.index[-1]
-        prices = {s: float(px[s].iloc[-1]) for s in px.columns if pd.notna(px[s].iloc[-1])}
-        brokers = {s: self.make_broker(s) for s in prices}
-        if execute:  # a stop that fired while the bot was off means the loss limit was reached
+        if execute:
             fired = False
             for s, b in brokers.items():
-                if hasattr(b, "sync_stop"):
+                if hasattr(b, "resolve_pending"):       # an order the last run sent but never saw confirmed
+                    msg = b.resolve_pending()
+                    if msg:
+                        out.append(f"{s}: {msg}")
+                if hasattr(b, "sync_stop"):             # a stop that fired while the bot was off = loss limit reached
                     sold, msg = b.sync_stop()
                     if msg:
                         out.append(f"{s}: {msg}")
                     fired = fired or sold > 0
+                if hasattr(b, "reconcile"):             # coins sold or moved by hand
+                    msg = b.reconcile(prices[s])
+                    if msg:
+                        out.append(f"{s}: {msg}")
             if fired:
-                self.dir.mkdir(parents=True, exist_ok=True)
-                self.latch.write_text(f"exchange stop filled, seen {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())}")
+                self._set_latch("exchange stop filled, seen")
                 return out + ["KILL SWITCH set: the protective stop sold while the bot was off."]
         held = {s: b.book.qty * prices[s] for s, b in brokers.items()}
         cost = sum(b.book.cost_usdt for b in brokers.values())
@@ -109,12 +157,11 @@ class WeeklyLive:
 
         if equity <= self.budget - abs(self.max_loss):
             out.append(f"LOSS LIMIT: equity {equity:.2f} <= {self.budget - abs(self.max_loss):.2f}; selling everything")
+            if execute:
+                self._set_latch(f"tripped at equity {equity:.2f}")   # latched first: holds even if a sale below fails
             for s, b in brokers.items():
                 if b.book.qty > 0:
                     out.append(f"  {s}: " + (b.sell_qty(b.book.qty, prices[s]) if execute else "would sell all"))
-            if execute:
-                self.dir.mkdir(parents=True, exist_ok=True)
-                self.latch.write_text(f"tripped {time.strftime('%Y-%m-%d %H:%M UTC', time.gmtime())}, equity {equity:.2f}")
             return out
 
         meta = self._meta()
@@ -124,13 +171,14 @@ class WeeklyLive:
             return self._protect(out, execute, brokers, prices)
 
         w = STRATEGIES[self.strategy](px).iloc[-1].fillna(0.0).to_dict()
-        slot = equity / max(len(prices), 1)
-        if slot < MIN_SLOT_USDT:
-            return out + [f"REFUSED: {slot:.2f} USDT per coin is too close to Binance's 5 USDT minimum order; "
-                          f"positions could not be sold after a dip. Use at most "
-                          f"{max(1, int(equity // MIN_SLOT_USDT))} coin(s) for this budget, or a bigger budget."]
         # trade only when the target moves by >= 5% of the account (as in every backtest), never under 5 USDT
         orders = plan_orders(w, prices, held, equity, min_trade=max(5.0, TRADE_BAND * equity))
+        slot = equity / max(len(prices), 1)
+        if slot < MIN_SLOT_USDT:      # too thin to BUY safely; selling and the stop still work
+            out.append(f"REFUSED to buy: {slot:.2f} USDT per coin is too close to Binance's 5 USDT minimum order; "
+                       f"positions could not be sold after a dip. Use at most "
+                       f"{max(1, int(equity // MIN_SLOT_USDT))} coin(s) for this budget, or a bigger budget.")
+            orders = [o for o in orders if o[1] == "SELL"]
         targets = ", ".join(f"{s[:-4]} {v * 100:.0f}%" for s, v in w.items() if v > 0) or "all cash"
         out.append(f"targets: {targets}")
         for s, side, usdt in orders:
@@ -163,6 +211,6 @@ class WeeklyLive:
             return out
         drop = min(0.9, max(0.05, room / total))   # how far the coins can fall before the limit is hit
         for s, b in brokers.items():
-            if b.book.qty > 0 and hasattr(b, "place_stop"):
+            if b.book.qty > 0 and hasattr(b, "place_stop") and not getattr(b.book, "stop_order_id", 0):
                 out.append(f"  {s}: " + b.place_stop(prices[s] * (1 - drop)))
         return out
