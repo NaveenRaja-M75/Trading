@@ -362,6 +362,45 @@ Kong, US, Japan, Korea and Taiwan stocks (no India). Its strategies are natural-
 average alignment, Chan theory, wave theory, candle patterns) and it publishes no tested accuracy. Those
 ideas are already covered by sections 7, 15, 19 and 22 (LLM judges and candles: no edge).
 
+## 24. Real-money code audit and run timing (`tests/test_weekly_live.py`, `research/timing_test.py`)
+A line-by-line audit of the live path found one bug that would have stopped real trading and several
+gaps; all fixed, each with a test (74 tests):
+- **Order amounts under 0.0001 BTC were sent as `9e-05`**, which Binance rejects. At today's prices
+  that is any order or stop under about 8-10 USDT, i.e. most of a 20 USDT account. The test exchange
+  did not check number format; it does now.
+- The protective stop is now put back on every exit, including an error half-way through a run.
+- A thin account was blocked from selling as well as buying; now only buying is blocked.
+- Sizing, the loss limit and the stop used the last daily close (up to a day old); they now use the
+  price at that moment, and a price far from the last close stops trading for that coin.
+- Orders are written down before they are sent and recovered next run if never confirmed.
+- Coins sold by hand, a stop order the exchange forgot, and a wrong PC clock no longer break a run.
+
+Run timing, BTC hourly 2018-07 -> 2026-11 (+42.3%/yr, worst drop -46.7% when on time): order 1-12
+hours late +41.9 to +42.5%/yr; 23 hours late +38.8%; run every 2 / 3 / 7 days +40.4 / +39.4 / +33.9%;
+missing a random 30% of days +40.0 to +44.2% (5 draws). The rule does not depend on exact timing.
+
+## 25. How much crypto? The risk/return menu (`research/allocation_menu.py`)
+The earlier search stopped at a 30% crypto share (top of its grid). Full menu, rupees, 2018-06 -> 2026-11,
+crypto = BTC + ETH on vote_voltgt, rest half Nifty half gold; after-tax is approximate (31.2% of each
+year's crypto gain):
+
+| crypto share | per year | after tax | worst drop | worst 12 months | Sharpe | last 2 years (locked) |
+|---|---|---|---|---|---|---|
+| 0% | +15.5% | +15.5% | -19.2% | | 1.21 | |
+| 20% | +21.9% | +18.8% | -21.6% | -9.0% | 1.55 | +16.5%, drop -12.1% |
+| **30%** | +25.4% | +20.8% | -21.7% | -13.1% | **1.57** | +17.1%, drop -11.0% |
+| 40% | +28.2% | +22.4% | -22.3% | -18.0% | 1.51 | +17.1%, drop -10.0% |
+| 50% | +30.9% | +23.7% | -22.7% | -22.5% | 1.44 | +17.1%, drop -10.8% |
+| 60% | +33.6% | +25.0% | -27.2% | -27.1% | 1.37 | +17.2%, drop -13.0% |
+| 80% | +38.8% | +27.5% | -35.7% | -35.5% | 1.26 | +17.0%, drop -18.0% |
+| 100% | +42.6% | +29.0% | -43.9% | -43.1% | 1.16 | +16.0%, drop -25.2% |
+
+Verdict: 30% is confirmed as the best return for the risk. More crypto paid more over the whole period,
+but all of that came from 2018-2024: in the last two years every mix from 30% to 80% made the same
+~17% a year, with bigger drops. Bootstrapped 5-year bad case (1 in 20) is the same Rs 167 per Rs 100
+for 30/40/50% and worse above 50%. Default stays 30%; `"crypto_share"` in my/holdings.json accepts
+10-50% for someone who wants more growth and accepts a -20% year.
+
 ## Daily market watch
 `MARKET.md` (paper-state branch, daily) now covers gold, Nifty, Bitcoin, the S&P 500 and Brent oil,
 plus the VIX fear index; alerts fire on 10/20/30% falls from 1-year highs and when VIX crosses 30/40.

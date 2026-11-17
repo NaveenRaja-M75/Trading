@@ -274,7 +274,8 @@ def cmd_plan(s: Settings, a) -> None:
     h = planner.load_holdings(Path(a.holdings))
     monthly = a.monthly if a.monthly is not None else float(h.get("monthly_add", 5000))
     text = planner.report(h, monthly, a.month or dt.date.today().month, a.usd_inr, a.goal,
-                          float(h.get("step_up", planner.STEP_UP)), float(h.get("inflation", planner.INFLATION)))
+                          float(h.get("step_up", planner.STEP_UP)), float(h.get("inflation", planner.INFLATION)),
+                          planner.targets_for(h.get("crypto_share")))
     print(text)
     if a.out:
         Path(a.out).parent.mkdir(parents=True, exist_ok=True)

@@ -49,10 +49,12 @@ loses after per-trade tax), funding carry (+11.7%/yr pre-tax, killed by tax and 
 Crypto regime score (claude-trading-skills): worse alone; "cash while RISK_OFF" on our rule cut the worst drop
 -47% -> -40% at equal return but P(better Sharpe) 0.52, one bear market: re-test in January, not adopted.
 LLM report systems (daily_stock_analysis): no published accuracy, no India; same ideas already failed.
+Crypto share above 30% (allocation_menu): more return 2018-2024 only; last 2 years no gain, bigger drops. 30% stays;
+`crypto_share` in my/holdings.json allows 10-50%. Run timing (timing_test): up to 12h late or 30% missed days = no change.
 Standards for a new idea: walk-forward, locked years, PBO, deflated Sharpe, random-entry control, |t| >= 3.5, exchange data only.
 
 ## Status (update when it changes)
-- Last updated: 2026-11-15. 65 tests pass. Paper vote_voltgt since 2026-10-28: -6.4% vs hold -21.1%, now all cash.
+- Last updated: 2026-11-17. 74 tests pass. Paper vote_voltgt since 2026-10-28: -6.4% vs hold -21.1%, now all cash.
 - Owner still to do: open demat + start Nifty/gold SIP; create Binance Spot-only key; follow docs/GO_LIVE.md.
 - Jev: the Vercel AI Gateway lists `typesafe-ai/jev`, `jev-1.13.0`, `jev-1.14.0` (research/gateway_models.py).
   Test ready: research/jev_test.py (800 random moments, 10 coins, multi-timeframe description with no dates or price levels, graded 4h and 24h ahead), run via the "research" workflow with
@@ -60,7 +62,10 @@ Standards for a new idea: walk-forward, locked years, PBO, deflated Sharpe, rand
   Jev API: POST https://ai-gateway.vercel.sh/typesafe/v1/systemone {model, state, questions{type:noul}}. First run (2026-11-01)
   got HTTP 403 "Free tier users do not have access to this model": the Vercel account needs paid credits first.
   Adopt Jev only if it beats a coin flip by more than 2 standard errors AND beats the shuffled-text control.
-- Open offers: Binance/demat walkthrough.
+- Live path audited 2026-11-17 (RESULTS 24): plain-decimal order numbers, stop always put back, live prices,
+  unconfirmed-order recovery, hand-sale detection, clock sync. Keep these tests; the fake exchange rejects 9e-05 style numbers.
+- Binance blocks GitHub's US servers (HTTP 451), so live orders must run from the owner's PC, any time of day.
+- Open offers: Binance/demat walkthrough; Telegram alerts.
 - Dashboard: https://claude.ai/artifact/VfXXtQjnDQ6EEu1eSGkhsb
 
 ## Where to look

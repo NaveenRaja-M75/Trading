@@ -50,3 +50,12 @@ def test_sip_for_goal_hits_the_inflated_target():
 def test_report_has_crore_section():
     text = planner.report({}, 5000, 1, usd_inr=88)
     assert "crore of today's money" in text and "| 30 |" in text
+
+
+def test_crypto_share_is_optional_and_capped():
+    assert planner.targets_for(None) == planner.TARGETS
+    assert planner.targets_for(0.40) == pytest.approx({"nifty": 0.30, "gold": 0.30, "crypto": 0.40})
+    assert planner.targets_for(0.90)["crypto"] == 0.50 and planner.targets_for(0.0)["crypto"] == 0.10
+    p = planner.monthly({}, 10000, 1, planner.targets_for(0.5))
+    assert p.buys == pytest.approx({"nifty": 2500, "gold": 2500, "crypto": 5000})
+    assert "target 50%" in planner.report({}, 5000, 1, usd_inr=88, targets=planner.targets_for(0.5))

@@ -15,6 +15,7 @@ from pathlib import Path
 
 TARGETS = {"nifty": 0.35, "gold": 0.35, "crypto": 0.30}
 NAMES = {"nifty": "Nifty 50 index fund / ETF", "gold": "Gold ETF", "crypto": "Crypto bot (BTC + ETH, Binance)"}
+MIN_CRYPTO, MAX_CRYPTO = 0.10, 0.50   # research/allocation_menu.py: above 50% the bad case gets worse
 REBALANCE_MONTH = 4          # April: start of the Indian financial year
 BAND = 0.05
 INFLATION = 0.06             # long-run Indian consumer inflation, roughly
@@ -29,6 +30,14 @@ class Plan:
     total_after: float
     weights_after: dict
     notes: list
+
+
+def targets_for(crypto_share: float | None) -> dict:
+    """Targets for a chosen crypto share (rest split equally Nifty/gold). Default and best risk-adjusted: 30%."""
+    if crypto_share is None:
+        return dict(TARGETS)
+    c = min(MAX_CRYPTO, max(MIN_CRYPTO, float(crypto_share)))
+    return {"nifty": round((1 - c) / 2, 4), "gold": round((1 - c) / 2, 4), "crypto": round(c, 4)}
 
 
 def monthly(holdings: dict, deposit: float, month: int, targets: dict = TARGETS) -> Plan:
@@ -105,13 +114,14 @@ def crore_section(start: float, monthly_add: float, step_up: float = STEP_UP, in
 
 
 def report(holdings: dict, deposit: float, month: int, usd_inr: float, goal_usd_day: float = 10.0,
-           step_up: float = STEP_UP, inflation: float = INFLATION) -> str:
-    p = monthly(holdings, deposit, month)
+           step_up: float = STEP_UP, inflation: float = INFLATION, targets: dict | None = None) -> str:
+    targets = targets or TARGETS
+    p = monthly(holdings, deposit, month, targets)
     inr = lambda x: f"Rs {x:,.0f}"
     lines = [f"# Your plan this month", "", f"New money: **{inr(deposit)}**", "",
              "| put into | amount | share after |", "|---|---|---|"]
     for k, v in p.buys.items():
-        lines.append(f"| {NAMES[k]} | **{inr(v)}** | {p.weights_after[k] * 100:.0f}% (target {TARGETS[k] * 100:.0f}%) |")
+        lines.append(f"| {NAMES[k]} | **{inr(v)}** | {p.weights_after[k] * 100:.0f}% (target {targets[k] * 100:.0f}%) |")
     if p.rebalance:
         lines += ["", "**Yearly rebalance proposed:**"]
         lines += [f"- {NAMES[k]}: {'buy' if v > 0 else 'sell'} {inr(abs(v))}" for k, v in p.rebalance.items() if abs(v) >= 1]
