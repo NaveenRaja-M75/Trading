@@ -1,0 +1,31 @@
+^NSEI: 4700 bars 2007-09-17 -> 2026-11-13, median gap 1 day(s)
+   largest daily moves: 2009-05-18 +17.7%, 2020-03-23 -13.0%, 2008-10-24 -12.2%
+INR=X: 5955 bars 2003-12-01 -> 2026-11-17, median gap 1 day(s)
+   largest daily moves: 2012-01-31 +6.3%, 2012-01-30 -5.9%, 2012-02-01 -5.7%
+GC=F: 6579 bars 2000-08-30 -> 2026-11-17, median gap 1 day(s)
+   largest daily moves: 2026-01-30 -10.8%, 2013-04-15 -9.4%, 2008-09-17 +9.0%
+Rupee portfolios 2018-06-14 -> 2026-11-13; locked years from 2024-11-13
+
+                        per_year_%  after_tax_%  worst_drop_%  sharpe losing_years  worst_12_months_%  locked_2y_per_year_%  locked_2y_drop_%  locked_2y_sharpe
+mix                                                                                                                                                            
+0% (Nifty + gold only)        15.5         15.5         -19.2    1.21          1/9                NaN                   NaN               NaN               NaN
+20% crypto bot                21.9         18.8         -21.6    1.55          3/9               -9.0                  16.5             -12.1              1.20
+30% crypto bot                25.4         20.8         -21.7    1.57          3/9              -13.1                  17.1             -11.0              1.19
+40% crypto bot                28.2         22.4         -22.3    1.51          3/9              -18.0                  17.1             -10.0              1.12
+50% crypto bot                30.9         23.7         -22.7    1.44          3/9              -22.5                  17.1             -10.8              1.02
+60% crypto bot                33.6         25.0         -27.2    1.37          3/9              -27.1                  17.2             -13.0              0.93
+80% crypto bot                38.8         27.5         -35.7    1.26          2/9              -35.5                  17.0             -18.0              0.78
+100% crypto bot               42.6         29.0         -43.9    1.16          2/9              -43.1                  16.0             -25.2              0.66
+
+Next 5 years, 3,000 reshuffles of the past in 30-day blocks (before tax):
+                P(down after 1y)  5y: Rs100 -> typical  5y: bad case (1 in 20) 5y: typical worst drop 5y: bad worst drop
+mix                                                                                                                     
+20% crypto bot                8%                   273                     158                   -16%               -28%
+30% crypto bot                8%                   315                     167                   -18%               -29%
+40% crypto bot               10%                   352                     167                   -19%               -32%
+50% crypto bot               11%                   388                     167                   -22%               -36%
+60% crypto bot               13%                   430                     162                   -25%               -40%
+80% crypto bot               16%                   520                     155                   -32%               -50%
+100% crypto bot              19%                   602                     140                   -40%               -60%
+
+The past here includes a strong crypto and gold run; plan with less. The bootstrap can only reshuffle what already happened, so it cannot show a future that is worse than the past.
