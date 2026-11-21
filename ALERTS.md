@@ -1,0 +1,2 @@
+- **US stocks (S&P 500) is 11.6% below its 1-year high** (crossed -10%). The plan keeps holding it: monthly money buys it cheaper, and the April check rebalances if it is more than 5 points under target. Every -10% here is about -3.5% on the whole plan.
+- **Market fear is high: VIX 35.9** (crossed 30). This is when crashes and war or crisis headlines show up in prices. The bot already holds less crypto when markets are wild; Nifty and gold stay held. No action needed; do not sell in panic.
