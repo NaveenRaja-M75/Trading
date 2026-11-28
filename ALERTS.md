@@ -1,0 +1,1 @@
+- **Gold (rupees) is 31.3% below its 1-year high** (crossed -30%). The plan keeps holding it: monthly money buys it cheaper, and the April check rebalances if it is more than 5 points under target. Every -10% here is about -3.5% on the whole plan.
